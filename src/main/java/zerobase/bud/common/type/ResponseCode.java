@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum ErrorCode {
-    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "내부 서버 오류가 발생했습니다.");
+public enum ResponseCode {
+    TEST_OK(HttpStatus.OK, "설명입니다");
     private final HttpStatus httpStatus;
     private final String description;
 }
