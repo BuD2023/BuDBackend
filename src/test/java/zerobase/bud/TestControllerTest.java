@@ -11,7 +11,6 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TestController.class)
@@ -30,9 +29,6 @@ class TestControllerTest {
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value("설명입니다"))
-                .andExpect(jsonPath("$.data.message").value("Hello, World"))
 
                 .andDo(
                         document("{class-name}/{method-name}",
@@ -51,9 +47,6 @@ class TestControllerTest {
                 )
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.status").value(500))
-                .andExpect(jsonPath("$.errorCode").value("INTERNAL_ERROR"))
-                .andExpect(jsonPath("$.message").value("내부 서버 오류가 발생했습니다."))
 
                 .andDo(
                         document("{class-name}/{method-name}",

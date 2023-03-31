@@ -1,4 +1,4 @@
-package zerobase.bud.common.config;
+package zerobase.bud.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
