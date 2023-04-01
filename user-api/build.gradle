@@ -5,9 +5,8 @@ plugins {
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
 }
 
-group = 'zerobase'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+group 'zerobase.bud'
+version '0.0.1-SNAPSHOT'
 
 configurations {
     asciidoctorExt
@@ -15,6 +14,7 @@ configurations {
         extendsFrom annotationProcessor
     }
 }
+
 
 repositories {
     mavenCentral()
@@ -34,6 +34,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+    
+    implementation project(':core')
 }
 
 tasks.named('test') {
@@ -44,11 +46,4 @@ tasks.named('test') {
 tasks.named('asciidoctor') {
     inputs.dir snippetsDir
     dependsOn test
-}
-
-tasks.named('bootJar') {
-    dependsOn asciidoctor
-    from ("${asciidoctor.outputDir}/html5") {
-        into 'static/docs'
-    }
 }
