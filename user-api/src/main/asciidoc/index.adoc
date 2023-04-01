@@ -10,3 +10,12 @@ include::{snippets}/test-controller-test/테스트/http-request.adoc[]
 include::{snippets}/test-controller-test/테스트/http-response.adoc[]
 
 As you can see the format is very simple, and in fact you always get the same message.
+
+
+== 채팅
+=== 1. 채팅방 생성
+.request
+include::{snippets}/chat-controller-test/success-create-chat-room-test/http-request.adoc[]
+
+.response
+include::{snippets}/chat-controller-test/success-create-chat-room-test/http-response.adoc[]
