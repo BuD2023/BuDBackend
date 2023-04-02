@@ -45,5 +45,13 @@ tasks.named('test') {
 
 tasks.named('asciidoctor') {
     inputs.dir snippetsDir
+    configurations 'asciidoctorExt'
     dependsOn test
+}
+
+tasks.named('bootJar') {
+    dependsOn asciidoctor
+    from ("${asciidoctor.outputDir}/html5") {
+        into 'static/docs'
+    }
 }
