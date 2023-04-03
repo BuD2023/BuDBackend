@@ -1,1 +1,4 @@
 rootProject.name = 'bud'
+include 'user-api'
+include 'core'
+
