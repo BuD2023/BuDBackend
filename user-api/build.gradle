@@ -52,7 +52,7 @@ tasks.named('asciidoctor') {
 
 tasks.named('bootJar') {
     dependsOn asciidoctor
-    from ("${asciidoctor.outputDir}/html5") {
-        into 'static/docs'
+    from("${asciidoctor.outputDir}") {
+        into "static/docs"
     }
 }

@@ -6,9 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import zerobase.bud.type.ChatRoomStatus;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Getter
@@ -17,6 +15,9 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @Entity
 public class ChatRoom extends BaseEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
 
     @NotNull
     private String title;
