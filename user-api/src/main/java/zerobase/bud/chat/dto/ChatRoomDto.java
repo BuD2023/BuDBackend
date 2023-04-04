@@ -9,6 +9,8 @@ import zerobase.bud.domain.ChatRoom;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -28,7 +30,11 @@ public class ChatRoomDto {
                 .title(chatRoom.getTitle())
                 .numberOfMembers(chatRoom.getNumberOfMembers())
                 .description(chatRoom.getDescription())
-                .hashTags(Arrays.asList(chatRoom.getHashTag().split("#")))
+                .hashTags(
+                        Arrays.stream(chatRoom.getHashTag().split("#"))
+                                .filter(hashTag -> !Objects.equals(hashTag, ""))
+                                .collect(Collectors.toList())
+                )
                 .createdAt(chatRoom.getCreatedAt())
                 .build();
     }
