@@ -1,10 +1,10 @@
-package zerobase.bud.dto;
+package zerobase.bud.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import zerobase.bud.type.ErrorCode;
+import zerobase.bud.common.type.ErrorCode;
 
 @Getter
 @AllArgsConstructor

@@ -1,11 +1,11 @@
-package zerobase.bud.exception;
+package zerobase.bud.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import zerobase.bud.type.ErrorCode;
+import zerobase.bud.common.type.ErrorCode;
 
 @Getter
 @Setter

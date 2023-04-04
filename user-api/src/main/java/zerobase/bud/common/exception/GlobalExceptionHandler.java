@@ -1,13 +1,12 @@
 package zerobase.bud.common.exception;
 
-import static zerobase.bud.type.ErrorCode.INTERNAL_ERROR;
+import static zerobase.bud.common.type.ErrorCode.INTERNAL_ERROR;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import zerobase.bud.dto.ErrorResponse;
-import zerobase.bud.exception.BudException;
+import zerobase.bud.common.dto.ErrorResponse;
 
 @Slf4j
 @RestControllerAdvice
