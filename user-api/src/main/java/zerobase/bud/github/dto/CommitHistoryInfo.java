@@ -17,7 +17,7 @@ public class CommitHistoryInfo {
     Long totalCommitCount;
     Long todayCommitCount;
     Long thisWeekCommitCount;
-    Long continuouslyCommitDays;
+    Long consecutiveCommitDays;
     List<CommitCountByDate> commits;
 
 }

@@ -66,7 +66,7 @@ public class GithubApi {
                 .totalCommitCount(totalCommitCount)
                 .todayCommitCount(todayCommitCount)
                 .thisWeekCommitCount(thisWeekCommitCount)
-                .continuouslyCommitDays(consecutiveCommitDays)
+                .consecutiveCommitDays(consecutiveCommitDays)
                 .commits(new ArrayList<>())
                 .build();
         }
@@ -99,7 +99,7 @@ public class GithubApi {
             .totalCommitCount(totalCommitCount)
             .todayCommitCount(todayCommitCount)
             .thisWeekCommitCount(thisWeekCommitCount)
-            .continuouslyCommitDays(consecutiveCommitDays)
+            .consecutiveCommitDays(consecutiveCommitDays)
             .commits(commits)
             .build();
     }
@@ -160,7 +160,7 @@ public class GithubApi {
 
         if (commitDateCountMap.size() > 1) {
             commitDateCountList = commitDateCountMap.entrySet()
-                .stream().sorted(Comparator.comparing(Entry::getKey))
+                .stream().sorted(Entry.comparingByKey())
                 .collect(
                     Collectors.toList());
         }
