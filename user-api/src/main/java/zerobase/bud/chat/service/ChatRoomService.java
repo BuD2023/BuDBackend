@@ -11,31 +11,44 @@ import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.type.ChatRoomStatus;
 
+import java.util.List;
+
+import static zerobase.bud.common.util.Constant.*;
+
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class ChatService {
+public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
 
     @Transactional
-    public Long createChatRoom(String title) {
+    public Long createChatRoom(String title, String description, List<String> hashTag) {
+
+        String hastStr = String.join("#", hashTag);
+
         return chatRoomRepository.save(
-                        ChatRoom.builder().title(title).status(ChatRoomStatus.ACTIVE).build())
-                .getId();
+                ChatRoom.builder()
+                        .title(title)
+                        .status(ChatRoomStatus.ACTIVE)
+                        .hashTag(hastStr)
+                        .description(description)
+                        .build()).getId();
     }
 
     @Transactional(readOnly = true)
     public Slice<ChatRoomDto> searchChatRoom(String keyword, int page) {
         return chatRoomRepository
-                .findAllByTitleContainingIgnoreCaseAndStatus(keyword, ChatRoomStatus.ACTIVE, PageRequest.of(page, 3))
+                .findAllByTitleContainingIgnoreCaseAndStatus(keyword, ChatRoomStatus.ACTIVE,
+                        PageRequest.of(page, CHATROOM_PAGE_SIZE))
                 .map(ChatRoomDto::from);
     }
 
     @Transactional(readOnly = true)
     public Slice<ChatRoomDto> getChatRoom(int page) {
-        return chatRoomRepository.findAllByStatus(ChatRoomStatus.ACTIVE, PageRequest.of(page, 3))
+        return chatRoomRepository.findAllByStatus(ChatRoomStatus.ACTIVE,
+                        PageRequest.of(page, CHATROOM_PAGE_SIZE))
                 .map(ChatRoomDto::from);
     }
 }

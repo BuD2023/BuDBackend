@@ -27,5 +27,9 @@ public class ChatRoom extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ChatRoomStatus status;
 
+    private String hashTag;
+
+    private String description;
+
     //TODO: 멤버 추가
 }

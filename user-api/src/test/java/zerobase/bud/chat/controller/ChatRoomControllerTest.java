@@ -1,6 +1,9 @@
 package zerobase.bud.chat.controller;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,22 +11,19 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.SliceImpl;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.CreateChatRoomRequest;
-import zerobase.bud.chat.service.ChatService;
+import zerobase.bud.chat.service.ChatRoomService;
 
-
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
@@ -32,12 +32,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ChatController.class)
+@WebMvcTest(ChatRoomController.class)
 @AutoConfigureRestDocs
-class ChatControllerTest {
+class ChatRoomControllerTest {
 
     @MockBean
-    private ChatService chatService;
+    private ChatRoomService chatRoomService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,18 +45,25 @@ class ChatControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @BeforeEach
+    void init() {
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+    }
 
     @Test
     @DisplayName("채팅룸 생성 성공")
     void successCreateChatRoomTest() throws Exception {
         //given
-        given(chatService.createChatRoom(anyString())).willReturn(1L);
+        given(chatRoomService.createChatRoom(anyString(), anyString(), any())).willReturn(1L);
         //when
         //then
         this.mockMvc.perform(post("/chatroom")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new CreateChatRoomRequest("챗지비티그거어쩌구")
+                                CreateChatRoomRequest.builder()
+                                        .title("챗지비티는 거짓말쟁이")
+                                        .description("챗지비티와 인공지능")
+                                        .hashTag(Arrays.asList("인공지능", "챗지비티", "ai"))
                         ))
                 )
                 .andExpect(status().isCreated())
@@ -77,27 +84,36 @@ class ChatControllerTest {
         List<ChatRoomDto> dtos = Arrays.asList(
                 ChatRoomDto.builder()
                         .chatRoomId(1L)
-                        .title("하이하이")
+                        .title("챗지비티에 관한 소통방")
+                        .description("챗지비티에 관해 이야기 나놔보아요")
+                        .createdAt(LocalDateTime.now())
+                        .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(2)
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(2L)
-                        .title("안녕안녕")
-                        .numberOfMembers(3)
+                        .title("주니어 프엔들 모여")
+                        .description("주니어 프엔에 관해 이야기 나놔보아요")
+                        .createdAt(LocalDateTime.now())
+                        .hashTags(Arrays.asList("주니어", "웤라이프", "프론트엔드"))
+                        .numberOfMembers(12)
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(1L)
-                        .title("제목제목")
+                        .title("챗지비티에 관한 소통방")
+                        .description("챗지비티에 관해 이야기 나놔보아요")
+                        .createdAt(LocalDateTime.now())
+                        .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(4)
                         .build()
         );
 
-        given(chatService.searchChatRoom(anyString(), anyInt()))
+        given(chatRoomService.searchChatRoom(anyString(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatroom/search")
-                        .param("keyword","word")
+                        .param("keyword", "word")
                         .param("page", "0")
                 )
                 .andExpect(status().isOk())
@@ -111,8 +127,14 @@ class ChatControllerTest {
                                                 .description("채팅룸의 id"),
                                         fieldWithPath("content[].title").type(JsonFieldType.STRING)
                                                 .description("채팅룸의 제목"),
+                                        fieldWithPath("content[].description").type(JsonFieldType.STRING)
+                                                .description("채팅룸의 설명"),
                                         fieldWithPath("content[].numberOfMembers").type(JsonFieldType.NUMBER)
                                                 .description("채팅룸에 속한 사람의 수"),
+                                        fieldWithPath("content[].createdAt").type(JsonFieldType.STRING)
+                                                .description("채팅방 개설 시"),
+                                        fieldWithPath("content[].hashTags").type(JsonFieldType.ARRAY)
+                                                .description("해시태그"),
                                         fieldWithPath("first").type(JsonFieldType.BOOLEAN)
                                                 .description("첫번째 페이지인지 여부"),
                                         fieldWithPath("last").type(JsonFieldType.BOOLEAN)
@@ -134,22 +156,31 @@ class ChatControllerTest {
         List<ChatRoomDto> dtos = Arrays.asList(
                 ChatRoomDto.builder()
                         .chatRoomId(1L)
-                        .title("하이하이")
+                        .title("챗지비티에 관한 소통방")
+                        .description("챗지비티에 관해 이야기 나놔보아요")
+                        .createdAt(LocalDateTime.now())
+                        .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(2)
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(2L)
-                        .title("안녕안녕")
-                        .numberOfMembers(3)
+                        .title("주니어 프엔들 모여")
+                        .description("주니어 프엔에 관해 이야기 나놔보아요")
+                        .createdAt(LocalDateTime.now())
+                        .hashTags(Arrays.asList("주니어", "웤라이프", "프론트엔드"))
+                        .numberOfMembers(12)
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(1L)
-                        .title("제목제목")
+                        .title("챗지비티에 관한 소통방")
+                        .description("챗지비티에 관해 이야기 나놔보아요")
+                        .createdAt(LocalDateTime.now())
+                        .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(4)
                         .build()
         );
 
-        given(chatService.getChatRoom(anyInt()))
+        given(chatRoomService.getChatRoom(anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
@@ -166,8 +197,14 @@ class ChatControllerTest {
                                                 .description("채팅룸의 id"),
                                         fieldWithPath("content[].title").type(JsonFieldType.STRING)
                                                 .description("채팅룸의 제목"),
+                                        fieldWithPath("content[].description").type(JsonFieldType.STRING)
+                                                .description("채팅룸의 설명"),
                                         fieldWithPath("content[].numberOfMembers").type(JsonFieldType.NUMBER)
                                                 .description("채팅룸에 속한 사람의 수"),
+                                        fieldWithPath("content[].createdAt").type(JsonFieldType.STRING)
+                                                .description("채팅방 개설 시"),
+                                        fieldWithPath("content[].hashTags").type(JsonFieldType.ARRAY)
+                                                .description("해시태그"),
                                         fieldWithPath("first").type(JsonFieldType.BOOLEAN)
                                                 .description("첫번째 페이지인지 여부"),
                                         fieldWithPath("last").type(JsonFieldType.BOOLEAN)

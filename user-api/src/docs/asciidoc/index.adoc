@@ -15,15 +15,15 @@ As you can see the format is very simple, and in fact you always get the same me
 == 채팅
 === 1. 채팅방 생성
 .request
-include::{snippets}/chat-controller-test/success-create-chat-room-test/http-request.adoc[]
+include::{snippets}/chat-room-controller-test/success-create-chat-room-test/http-request.adoc[]
 
 .response
-include::{snippets}/chat-controller-test/success-create-chat-room-test/http-response.adoc[]
+include::{snippets}/chat-room-controller-test/success-create-chat-room-test/http-response.adoc[]
 
 
 === 2. 채팅방 검색
 .request
-include::{snippets}/chat-controller-test/success-search-chat-room-test/http-request.adoc[]
+include::{snippets}/chat-room-controller-test/success-search-chat-room-test/http-request.adoc[]
 
 .request field
 |===
@@ -33,15 +33,15 @@ include::{snippets}/chat-controller-test/success-search-chat-room-test/http-requ
 |===
 
 .response
-include::{snippets}/chat-controller-test/success-search-chat-room-test/http-response.adoc[]
+include::{snippets}/chat-room-controller-test/success-search-chat-room-test/http-response.adoc[]
 
 .response field
-include::{snippets}/chat-controller-test/success-search-chat-room-test/response-fields.adoc[]
+include::{snippets}/chat-room-controller-test/success-search-chat-room-test/response-fields.adoc[]
 
 
 === 3. 전체 채팅방 읽기
 .request
-include::{snippets}/chat-controller-test/success-read-chat-room-test/http-request.adoc[]
+include::{snippets}/chat-room-controller-test/success-read-chat-room-test/http-request.adoc[]
 
 .request field
 |===
@@ -50,8 +50,8 @@ include::{snippets}/chat-controller-test/success-read-chat-room-test/http-reques
 |===
 
 .response
-include::{snippets}/chat-controller-test/success-read-chat-room-test/http-response.adoc[]
+include::{snippets}/chat-room-controller-test/success-read-chat-room-test/http-response.adoc[]
 
 .response field
-include::{snippets}/chat-controller-test/success-read-chat-room-test/response-fields.adoc[]
+include::{snippets}/chat-room-controller-test/success-read-chat-room-test/response-fields.adoc[]
 
