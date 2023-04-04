@@ -51,8 +51,7 @@ tasks.named('asciidoctor') {
 
 tasks.named('bootJar') {
     dependsOn asciidoctor
-    copy {
-        from asciidoctor.outputDir
-        into "src/main/resources/static/docs"
+    from("${asciidoctor.outputDir}") {
+        into "static/docs"
     }
 }
