@@ -1,39 +1,29 @@
 package zerobase.bud.chat.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import zerobase.bud.chat.dto.CreateChatRoomRequest;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import zerobase.bud.chat.dto.ChatDto;
+import zerobase.bud.chat.dto.ChatMessageRequest;
 import zerobase.bud.chat.service.ChatService;
 
 import javax.validation.Valid;
-import java.net.URI;
 
-@Slf4j
 @RequiredArgsConstructor
 @RestController
 public class ChatController {
 
     private final ChatService chatService;
 
-    //TODO: member 추가
-    @PostMapping("/chatroom")
-    private ResponseEntity createChatRoom(
-            @RequestBody @Valid CreateChatRoomRequest request) {
-        Long id = chatService.createChatRoom(request.getTitle());
-        return ResponseEntity.created(URI.create("/chat/" + id)).build();
-    }
+    private final SimpMessagingTemplate messagingTemplate;
 
-    @GetMapping("/chatroom/search")
-    private ResponseEntity searchChatRoom(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(chatService.searchChatRoom(keyword, page));
-    }
+    @MessageMapping("/message")
+    public void chatting(@RequestBody @Valid ChatMessageRequest request) {
+        ChatDto chat = chatService.chatting(
+                request.getMessage(), request.getChatroomId(), request.getSenderId());
 
-    @GetMapping("/chatroom")
-    private ResponseEntity readChatRoom(@RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(chatService.getChatRoom(page));
+        messagingTemplate.convertAndSend("/chatroom/" + request.getChatroomId(), chat);
     }
 }
