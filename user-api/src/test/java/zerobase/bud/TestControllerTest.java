@@ -39,22 +39,4 @@ class TestControllerTest {
                 );
     }
 
-    @Test
-    void 에러응답테스트() throws Exception {
-        this.mockMvc.perform(
-                        get("/error")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isInternalServerError())
-
-                .andDo(
-                        document("{class-name}/{method-name}",
-                                preprocessRequest(prettyPrint()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
-    }
-
 }

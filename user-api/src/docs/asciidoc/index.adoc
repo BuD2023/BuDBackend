@@ -55,3 +55,23 @@ include::{snippets}/chat-room-controller-test/success-read-chat-room-test/http-r
 .response field
 include::{snippets}/chat-room-controller-test/success-read-chat-room-test/response-fields.adoc[]
 
+
+=== 4. 채팅방 입장
+.request
+----
+ws://localhost:8080/ws
+/chatroom/1
+----
+
+=== 5. 채팅 전송
+.request
+----
+ws://localhost:8080/ws
+/chat/message
+
+{
+    "senderId" : 1,
+    "chatroomId" : 1,
+    "message" : "hihello!"
+}
+----
