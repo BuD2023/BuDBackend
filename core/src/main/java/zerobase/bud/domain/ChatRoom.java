@@ -33,4 +33,8 @@ public class ChatRoom extends BaseEntity {
     private String description;
 
     //TODO: 멤버 추가
+
+    public void addNumberOfMembers() {
+        numberOfMembers += 1;
+    }
 }

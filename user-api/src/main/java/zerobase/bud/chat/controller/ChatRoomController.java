@@ -23,18 +23,29 @@ public class ChatRoomController {
             @RequestBody @Valid CreateChatRoomRequest request) {
         Long id = chatRoomService
                 .createChatRoom(request.getTitle(), request.getDescription(), request.getHashTag());
-        return ResponseEntity.created(URI.create("/chat/" + id)).build();
+        return ResponseEntity.created(URI.create("/chatroom/" + id)).build();
     }
 
     @GetMapping("/chatroom/search")
     private ResponseEntity searchChatRoom(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(chatRoomService.searchChatRoom(keyword, page));
+        return ResponseEntity.ok(chatRoomService.searchChatRooms(keyword, page));
     }
 
     @GetMapping("/chatroom")
-    private ResponseEntity readChatRoom(@RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(chatRoomService.getChatRoom(page));
+    private ResponseEntity readChatRooms(@RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(chatRoomService.readChatRooms(page));
+    }
+
+    @GetMapping("/chatroom/{chatroomId}")
+    private ResponseEntity readChatRoom(@PathVariable Long chatroomId){
+        return ResponseEntity.ok(chatRoomService.readChatRoom(chatroomId));
+    }
+
+    @GetMapping("/chatroom/{chatroomId}/chat")
+    private ResponseEntity readChats(@PathVariable Long chatroomId,
+                                     @RequestParam(defaultValue = "0") int page){
+        return ResponseEntity.ok(chatRoomService.readChats(chatroomId, page));
     }
 }
