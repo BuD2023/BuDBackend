@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.github.domain.CommitHistory;
 import zerobase.bud.github.domain.GithubInfo;
@@ -26,6 +27,7 @@ import zerobase.bud.github.repository.CommitHistoryRepository;
 import zerobase.bud.github.repository.GithubInfoRepository;
 
 @ExtendWith(MockitoExtension.class)
+@AutoConfigureRestDocs
 class GithubApiTest {
 
     @Mock

@@ -2,6 +2,10 @@ package zerobase.bud.github.controller;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -13,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -23,6 +28,7 @@ import zerobase.bud.github.service.GithubApi;
 import zerobase.bud.github.service.GithubService;
 
 @WebMvcTest(GithubController.class)
+@AutoConfigureRestDocs
 class GithubControllerTest {
 
     @MockBean
@@ -51,7 +57,12 @@ class GithubControllerTest {
         mockMvc.perform(post("/home/github")
                 .contentType(MediaType.APPLICATION_JSON))
             .andDo(print())
-            .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()))
+            );
     }
 
     @Test
@@ -80,7 +91,12 @@ class GithubControllerTest {
             .andExpect(jsonPath("$.todayCommitCount").value(1))
             .andExpect(jsonPath("$.thisWeekCommitCount").value(3))
             .andExpect(jsonPath("$.consecutiveCommitDays").value(2))
-            .andExpect(jsonPath("$.commits[0].commitCount").value(1));
+            .andExpect(jsonPath("$.commits[0].commitCount").value(1))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()))
+            );
     }
 
 
