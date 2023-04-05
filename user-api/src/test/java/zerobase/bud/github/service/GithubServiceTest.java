@@ -2,12 +2,14 @@ package zerobase.bud.github.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -42,20 +44,11 @@ class GithubServiceTest {
     void success_getCommitInfo() {
         //given
         given(githubInfoRepository.findByEmail(anyString()))
-            .willReturn(Optional.ofNullable(GithubInfo.builder()
-                .id(1L)
-                .accessToken("accessToken")
-                .email("abcd@naver.com")
-                .userName("userName")
-                .build()));
+            .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(commitHistoryRepository
             .findAllByGithubInfoIdOrderByCommitDateDesc(anyLong()))
-            .willReturn(List.of(CommitHistory.builder()
-                .commitDate(LocalDate.now())
-                .consecutiveCommitDays(1L)
-                .commitCount(3L)
-                .build()));
+            .willReturn(List.of(getCommitHistory()));
         //when
         CommitHistoryInfo info = githubService.getCommitInfo(
             "abcd@naver.com");
@@ -68,16 +61,29 @@ class GithubServiceTest {
         assertEquals(3, info.getCommits().get(0).getCommitCount());
     }
 
+    private static CommitHistory getCommitHistory() {
+        return CommitHistory.builder()
+            .commitDate(LocalDate.now())
+            .consecutiveCommitDays(1L)
+            .commitCount(3L)
+            .build();
+    }
+
+    private static GithubInfo getGithubInfo() {
+        return GithubInfo.builder()
+            .id(1L)
+            .accessToken("accessToken")
+            .email("abcd@naver.com")
+            .userName("userName")
+            .createdAt(LocalDateTime.now())
+            .build();
+    }
+
     @Test
     void success_getCommitInfo_empty() {
         //given
         given(githubInfoRepository.findByEmail(anyString()))
-            .willReturn(Optional.ofNullable(GithubInfo.builder()
-                .id(1L)
-                .accessToken("accessToken")
-                .email("abcd@naver.com")
-                .userName("userName")
-                .build()));
+            .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(commitHistoryRepository
             .findAllByGithubInfoIdOrderByCommitDateDesc(anyLong()))
@@ -108,15 +114,38 @@ class GithubServiceTest {
     }
 
     @Test
-    void saveCommitInfoFromLastCommitDate() {
+    void success_saveCommitInfoFromLastCommitDate() {
         //given
+        given(githubInfoRepository.findByEmail(anyString()))
+            .willReturn(Optional.ofNullable(getGithubInfo()));
+
         given(githubApi.saveCommitInfoFromLastCommitDate(anyString(),
-            anyString()))
+            anyString(), any(), any()))
             .willReturn("success");
+
+        given(
+            commitHistoryRepository.findFirstByGithubInfoIdOrderByCommitDateDesc(
+                anyLong()))
+            .willReturn(Optional.ofNullable(getCommitHistory()));
         //when
         String user = githubService.saveCommitInfoFromLastCommitDate(
             "email@naver.com", "user");
         //then
         assertEquals("success", user);
+    }
+
+    @Test
+    @DisplayName("NOT_REGISTERED_MEMBER_saveCommitInfoFromLastCommitDate")
+    void NOT_REGISTERED_MEMBER_saveCommitInfoFromLastCommitDate() {
+        //given
+        given(githubInfoRepository.findByEmail(anyString()))
+            .willReturn(Optional.empty());
+
+        //when
+        BudException budException = assertThrows(BudException.class,
+            () -> githubService.saveCommitInfoFromLastCommitDate(
+                "email@naver.com", "user"));
+        //then
+        assertEquals(NOT_REGISTERED_MEMBER, budException.getErrorCode());
     }
 }

@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,11 +25,8 @@ public class CommitHistory extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //    @Column(unique = true)
-    private Long githubInfoId;
-
-    //@OneToOne
-    private Long memberId;
+    @ManyToOne
+    private GithubInfo githubInfo;
 
     private long commitCount;
 

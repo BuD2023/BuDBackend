@@ -43,13 +43,7 @@ class GithubApiTest {
     void success_saveCommitInfoFromLastCommitDate() {
         //given
         given(githubInfoRepository.findByEmail(anyString()))
-            .willReturn(Optional.ofNullable(GithubInfo.builder()
-                .id(1L)
-                .accessToken("<RealAccessToken>")
-                .userName("<RealName>")
-                .email("<RealEmail>")
-                .createdAt(LocalDateTime.now())
-                .build()));
+            .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(commitHistoryRepository
             .findFirstByGithubInfoIdOrderByCommitDateDesc(anyLong()))
@@ -62,7 +56,7 @@ class GithubApiTest {
 
         //when
         String email = githubApi.saveCommitInfoFromLastCommitDate(
-            "abcd@naver.com", "Ggyumalang");
+            "<fakeEmail>", "<RealUsername>", getGithubInfo(), LocalDate.now());
         //then
         assertEquals("abcd@naver.com", email);
     }
@@ -77,7 +71,8 @@ class GithubApiTest {
         //when
         BudException budException = assertThrows(BudException.class,
             () -> githubApi.saveCommitInfoFromLastCommitDate(
-                "abcd@naver.com", "abcd"));
+                "<fakeEmail>", "<fakeUsername>", getGithubInfo(),
+                LocalDate.now()));
         //then
         assertEquals(NOT_REGISTERED_MEMBER, budException.getErrorCode());
     }
@@ -96,7 +91,8 @@ class GithubApiTest {
         //when
         BudException budException = assertThrows(BudException.class,
             () -> githubApi.saveCommitInfoFromLastCommitDate(
-                "abcd@naver.com", "abcd"));
+                "<fakeEmail>", "<fakeUsername>", getGithubInfo(),
+                LocalDate.now()));
         //then
         assertEquals(FAILED_CONNECT_GITHUB, budException.getErrorCode());
     }
@@ -106,27 +102,31 @@ class GithubApiTest {
     void FAILED_GET_COMMIT_INFO_saveCommitInfoFromLastCommitDate() {
         //given
         given(githubInfoRepository.findByEmail(anyString()))
-            .willReturn(Optional.ofNullable(GithubInfo.builder()
-                .id(1L)
-                .accessToken("<RealAccessToken>")
-                .userName("<RealName>")
-                .email("<RealEmail>")
-                .createdAt(LocalDateTime.now())
-                .build()));
+            .willReturn(Optional.ofNullable(getGithubInfo()));
 
         //when
         BudException budException = assertThrows(BudException.class,
             () -> githubApi.saveCommitInfoFromLastCommitDate(
-                "<fakeEmail>", "<fakeUsername>"));
+                "<fakeEmail>", "<fakeUsername>", getGithubInfo(),
+                LocalDate.now()));
         //then
         assertEquals(FAILED_GET_COMMIT_INFO, budException.getErrorCode());
+    }
+
+    private static GithubInfo getGithubInfo() {
+        return GithubInfo.builder()
+            .id(1L)
+            .accessToken("<RealAccessToken>")
+            .userName("<RealName>")
+            .email("<RealEmail>")
+            .createdAt(LocalDateTime.now())
+            .build();
     }
 
     private static CommitHistory getCommitHistory() {
         return CommitHistory.builder()
             .id(1L)
-            .memberId(1L)
-            .githubInfoId(1L)
+            .githubInfo(getGithubInfo())
             .commitDate(LocalDate.now())
             .commitCount(3L)
             .consecutiveCommitDays(2L)
