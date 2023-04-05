@@ -55,3 +55,23 @@ include::{snippets}/chat-controller-test/success-read-chat-room-test/http-respon
 .response field
 include::{snippets}/chat-controller-test/success-read-chat-room-test/response-fields.adoc[]
 
+== 깃헙 API
+=== 1. 커밋 정보 가져오기
+.request
+include::{snippets}/github-controller-test/success_get-commit-info/http-request.adoc[]
+
+.response
+include::{snippets}/github-controller-test/success_get-commit-info/http-response.adoc[]
+
+.response field
+include::{snippets}/github-controller-test/success_get-commit-info/response-body.adoc[]
+
+=== 2. 커밋 정보 저장하기
+.request
+include::{snippets}/github-controller-test/success_save-commit-info-from-last-commit-date/http-request.adoc[]
+
+.response
+include::{snippets}/github-controller-test/success_save-commit-info-from-last-commit-date/http-response.adoc[]
+
+.response field
+include::{snippets}/github-controller-test/success_save-commit-info-from-last-commit-date/response-body.adoc[]
