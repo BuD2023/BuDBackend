@@ -18,6 +18,7 @@ import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.CreateChatRoomRequest;
 import zerobase.bud.chat.service.ChatRoomService;
+import zerobase.bud.common.util.TimeUtil;
 import zerobase.bud.type.ChatType;
 
 import java.time.LocalDateTime;
@@ -269,19 +270,19 @@ class ChatRoomControllerTest {
                 ChatDto.builder()
                         .chatId(1L)
                         .chatType(ChatType.MESSAGE)
-                        .createdAt(LocalDateTime.now())
+                        .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .message("어쩌구저쩌구~")
                         .build(),
                 ChatDto.builder()
                         .chatId(2L)
                         .chatType(ChatType.IMAGE)
-                        .createdAt(LocalDateTime.now())
+                        .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .imageUrl("/s3/fdsa.jpg")
                         .build(),
                 ChatDto.builder()
                         .chatId(3L)
                         .chatType(ChatType.MESSAGE)
-                        .createdAt(LocalDateTime.now())
+                        .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .message("아그랬구나아하")
                         .build()
         );

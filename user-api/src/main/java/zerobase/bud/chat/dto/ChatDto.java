@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import zerobase.bud.common.util.TimeUtil;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.type.ChatType;
 
@@ -19,7 +20,7 @@ public class ChatDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
     private ChatType chatType;
-    private LocalDateTime createdAt;
+    private String createdAt;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String imageUrl;
 
@@ -27,7 +28,7 @@ public class ChatDto {
         return ChatDto.builder()
                 .chatId(chat.getId())
                 .chatType(chat.getType())
-                .createdAt(chat.getCreatedAt())
+                .createdAt(TimeUtil.caculateTerm(chat.getCreatedAt()))
                 .message(chat.getMessage())
                 .build();
     }

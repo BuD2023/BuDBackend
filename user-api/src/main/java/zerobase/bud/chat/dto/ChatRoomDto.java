@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import zerobase.bud.common.util.TimeUtil;
 import zerobase.bud.domain.ChatRoom;
 
 import java.time.LocalDateTime;

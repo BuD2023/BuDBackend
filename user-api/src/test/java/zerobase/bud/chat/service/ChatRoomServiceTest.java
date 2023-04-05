@@ -105,6 +105,7 @@ class ChatRoomServiceTest {
                         .title("임의의타이틀")
                         .numberOfMembers(1)
                         .description("임의의 첫번째 설명")
+                        .createdAt(LocalDateTime.now())
                         .hashTag("해시태그")
                         .status(ChatRoomStatus.ACTIVE)
                         .build(),
@@ -114,6 +115,7 @@ class ChatRoomServiceTest {
                         .title("임의의두번째타이틀")
                         .numberOfMembers(5)
                         .description("임의의 설명")
+                        .createdAt(LocalDateTime.now())
                         .hashTag("해시태그#해시")
                         .status(ChatRoomStatus.ACTIVE)
                         .build(),
@@ -123,6 +125,7 @@ class ChatRoomServiceTest {
                         .title("임의의세번째타이틀")
                         .numberOfMembers(6)
                         .description("임의의 설명")
+                        .createdAt(LocalDateTime.now())
                         .hashTag("해시태그#해시")
                         .status(ChatRoomStatus.ACTIVE)
                         .build()
@@ -153,6 +156,7 @@ class ChatRoomServiceTest {
                         .numberOfMembers(1)
                         .description("임의의 첫번째 설명")
                         .hashTag("해시태그#해시")
+                        .createdAt(LocalDateTime.now())
                         .status(ChatRoomStatus.ACTIVE)
                         .build(),
                 ChatRoom.builder()
@@ -161,6 +165,7 @@ class ChatRoomServiceTest {
                         .description("임의의설명")
                         .hashTag("해시태그")
                         .numberOfMembers(5)
+                        .createdAt(LocalDateTime.now())
                         .status(ChatRoomStatus.ACTIVE)
                         .build(),
                 ChatRoom.builder()
@@ -169,6 +174,7 @@ class ChatRoomServiceTest {
                         .description("임의의설명")
                         .hashTag("해시태그")
                         .numberOfMembers(6)
+                        .createdAt(LocalDateTime.now())
                         .status(ChatRoomStatus.ACTIVE)
                         .build()
         );
@@ -200,6 +206,7 @@ class ChatRoomServiceTest {
                                 .description("임의의 첫번째 설명")
                                 .hashTag("해시태그#해시")
                                 .status(ChatRoomStatus.ACTIVE)
+                                .createdAt(LocalDateTime.now())
                                 .build())
                 );
         //when
