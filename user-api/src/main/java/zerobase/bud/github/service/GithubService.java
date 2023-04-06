@@ -78,9 +78,25 @@ public class GithubService {
             .build();
     }
 
-    public String saveCommitInfoFromLastCommitDate(String email,
-        String userName) {
-        return githubApi.saveCommitInfoFromLastCommitDate(email, userName);
+    public String saveCommitInfoFromLastCommitDate(
+        String email
+        , String userName
+    ) {
+        GithubInfo githubInfo = githubInfoRepository.findByEmail(email)
+            .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
+
+        return githubApi.saveCommitInfoFromLastCommitDate(
+            email, userName, githubInfo, getLastCommitDate(githubInfo)
+        );
+    }
+
+    private LocalDate getLastCommitDate(GithubInfo githubInfo) {
+        return commitHistoryRepository.findFirstByGithubInfoIdOrderByCommitDateDesc(
+                githubInfo.getId())
+            .stream()
+            .map(CommitHistory::getCommitDate)
+            .findFirst()
+            .orElse(githubInfo.getCreatedAt().toLocalDate());
     }
 
 
@@ -113,5 +129,4 @@ public class GithubService {
         }
         return thisWeekCommitCount;
     }
-
 }

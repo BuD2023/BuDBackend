@@ -2,7 +2,6 @@ package zerobase.bud.github.service;
 
 import static zerobase.bud.common.type.ErrorCode.FAILED_CONNECT_GITHUB;
 import static zerobase.bud.common.type.ErrorCode.FAILED_GET_COMMIT_INFO;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -48,23 +47,26 @@ public class GithubApi {
     public String saveCommitInfoFromLastCommitDate(
         String email
         , String userName
+        , GithubInfo githubInfo
+        , LocalDate lastCommitDate
     ) {
 
-        GithubInfo githubInfo = githubInfoRepository.findByEmail(email)
-            .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
+        log.info(
+            "start saveCommitInfoFromLastCommitDate... " + LocalDateTime.now()
+        );
 
         connectGithub(githubInfo.getAccessToken());
 
         log.info("success to connect");
 
         Map<LocalDate, Long> commitDateCountMap = new HashMap<>();
-        LocalDate lastCommitDate = getLastCommitDate(githubInfo);
 
         getCommitInfoFromGithub(userName, commitDateCountMap, lastCommitDate);
 
         saveCommitHistory(githubInfo, commitDateCountMap);
 
-        log.info("success to get commitInfo... " + LocalDateTime.now());
+        log.info("complete saveCommitInfoFromLastCommitDate... "
+            + LocalDateTime.now());
 
         return email;
     }
@@ -147,22 +149,12 @@ public class GithubApi {
         }
     }
 
-    private LocalDate getLastCommitDate(GithubInfo githubInfo) {
-        return commitHistoryRepository.findFirstByGithubInfoIdOrderByCommitDateDesc(
-                githubInfo.getId())
-            .stream()
-            .map(CommitHistory::getCommitDate)
-            .findFirst()
-            .orElse(githubInfo.getCreatedAt().toLocalDate());
-    }
-
     private void saveCommitHistory(
         GithubInfo githubInfo
         , Entry<LocalDate, Long> entry
     ) {
         commitHistoryRepository.save(CommitHistory.builder()
-            .githubInfoId(githubInfo.getId())
-            .memberId(githubInfo.getMemberId())
+            .githubInfo(githubInfo)
             .commitDate(entry.getKey())
             .commitCount(entry.getValue())
             .consecutiveCommitDays(
