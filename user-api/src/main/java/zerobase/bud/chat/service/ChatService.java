@@ -25,7 +25,6 @@ public class ChatService {
     public ChatDto chatting(String message, Long roomId, Long senderId) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(roomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(ErrorCode.CHATROOM_NOT_FOUND));
-        chatRoom.addNumberOfMembers();
         return ChatDto.from(
                 chatRepository.save(
                         Chat.builder()
