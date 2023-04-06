@@ -37,7 +37,7 @@ public class Member implements UserDetails {
     private String job;
 
     @Enumerated(EnumType.STRING)
-    MemberStatus status;
+    private MemberStatus status;
     private String introduceMessage;
 
     private String oAuthAccessToken;
