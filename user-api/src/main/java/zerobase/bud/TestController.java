@@ -12,9 +12,4 @@ public class TestController {
     public ResponseEntity greeting() {
         return ResponseEntity.ok(Collections.singletonMap("message", "Hello, World"));
     }
-
-    @GetMapping("/error")
-    public void error() {
-        throw new RuntimeException("error occured");
-    }
 }
