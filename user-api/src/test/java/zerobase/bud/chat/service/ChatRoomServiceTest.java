@@ -15,10 +15,12 @@ import zerobase.bud.common.exception.ChatRoomException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.domain.ChatRoom;
+import zerobase.bud.domain.Member;
 import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.type.ChatRoomStatus;
 import zerobase.bud.type.ChatType;
+import zerobase.bud.type.MemberStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,6 +46,17 @@ class ChatRoomServiceTest {
     @InjectMocks
     private ChatRoomService chatRoomService;
 
+    Member member = Member.builder()
+            .id(1L)
+            .createdAt(LocalDateTime.now())
+            .status(MemberStatus.VERIFIED)
+            .email("abcde@gmail.com")
+            .profileImg("abcde.jpg")
+            .nickname("안뇽")
+            .job("시스템프로그래머")
+            .oAuthAccessToken("tokenvalue")
+            .build();
+
     @Test
     @DisplayName("채팅룸 생성 성공")
     void successCreateChatRoomTest() {
@@ -60,7 +73,7 @@ class ChatRoomServiceTest {
         //when
         ArgumentCaptor<ChatRoom> captor = ArgumentCaptor.forClass(ChatRoom.class);
         Long result = chatRoomService
-                .createChatRoom("챗지비티그거진짜어쩌구", "챗지비티그거진짜나쁘네", hashStr);
+                .createChatRoom("챗지비티그거진짜어쩌구", "챗지비티그거진짜나쁘네", hashStr, member);
         //then
         verify(chatRoomRepository, times(1)).save(captor.capture());
         assertEquals("챗지비티그거진짜어쩌구", captor.getValue().getTitle());
@@ -85,7 +98,7 @@ class ChatRoomServiceTest {
         //when
         ArgumentCaptor<ChatRoom> captor = ArgumentCaptor.forClass(ChatRoom.class);
         Long result = chatRoomService
-                .createChatRoom("챗지비티그거진짜어쩌구", "챗지비티그거진짜나쁘네", hashStr);
+                .createChatRoom("챗지비티그거진짜어쩌구", "챗지비티그거진짜나쁘네", hashStr, member);
         //then
         verify(chatRoomRepository, times(1)).save(captor.capture());
         assertEquals("챗지비티그거진짜어쩌구", captor.getValue().getTitle());
@@ -103,30 +116,30 @@ class ChatRoomServiceTest {
                 ChatRoom.builder()
                         .id(1L)
                         .title("임의의타이틀")
-                        .numberOfMembers(1)
                         .description("임의의 첫번째 설명")
                         .createdAt(LocalDateTime.now())
                         .hashTag("해시태그")
+                        .member(member)
                         .status(ChatRoomStatus.ACTIVE)
                         .build(),
 
                 ChatRoom.builder()
                         .id(2L)
                         .title("임의의두번째타이틀")
-                        .numberOfMembers(5)
                         .description("임의의 설명")
                         .createdAt(LocalDateTime.now())
                         .hashTag("해시태그#해시")
+                        .member(member)
                         .status(ChatRoomStatus.ACTIVE)
                         .build(),
 
                 ChatRoom.builder()
                         .id(3L)
                         .title("임의의세번째타이틀")
-                        .numberOfMembers(6)
                         .description("임의의 설명")
                         .createdAt(LocalDateTime.now())
                         .hashTag("해시태그#해시")
+                        .member(member)
                         .status(ChatRoomStatus.ACTIVE)
                         .build()
         );
@@ -140,9 +153,10 @@ class ChatRoomServiceTest {
         assertEquals(3, chatRoomDtos.getContent().size());
         assertEquals(1L, chatRoomDtos.getContent().get(0).getChatRoomId());
         assertEquals("임의의타이틀", chatRoomDtos.getContent().get(0).getTitle());
-        assertEquals(1, chatRoomDtos.getContent().get(0).getNumberOfMembers());
         assertEquals("임의의 첫번째 설명", chatRoomDtos.getContent().get(0).getDescription());
         assertEquals("해시태그", chatRoomDtos.getContent().get(0).getHashTags().get(0));
+        assertEquals("안뇽", chatRoomDtos.getContent().get(0).getHostName());
+        assertEquals(1L, chatRoomDtos.getContent().get(0).getHostId());
     }
 
     @Test
@@ -153,29 +167,29 @@ class ChatRoomServiceTest {
                 ChatRoom.builder()
                         .id(1L)
                         .title("임의의타이틀")
-                        .numberOfMembers(1)
                         .description("임의의 첫번째 설명")
                         .hashTag("해시태그#해시")
                         .createdAt(LocalDateTime.now())
                         .status(ChatRoomStatus.ACTIVE)
+                        .member(member)
                         .build(),
                 ChatRoom.builder()
                         .id(2L)
                         .title("임의의두번째타이틀")
                         .description("임의의설명")
                         .hashTag("해시태그")
-                        .numberOfMembers(5)
                         .createdAt(LocalDateTime.now())
                         .status(ChatRoomStatus.ACTIVE)
+                        .member(member)
                         .build(),
                 ChatRoom.builder()
                         .id(3L)
                         .title("임의의세번째타이틀")
                         .description("임의의설명")
                         .hashTag("해시태그")
-                        .numberOfMembers(6)
                         .createdAt(LocalDateTime.now())
                         .status(ChatRoomStatus.ACTIVE)
+                        .member(member)
                         .build()
         );
 
@@ -188,9 +202,10 @@ class ChatRoomServiceTest {
         assertEquals(3, chatRoomDtos.getContent().size());
         assertEquals(2L, chatRoomDtos.getContent().get(1).getChatRoomId());
         assertEquals("임의의두번째타이틀", chatRoomDtos.getContent().get(1).getTitle());
-        assertEquals(5, chatRoomDtos.getContent().get(1).getNumberOfMembers());
         assertEquals("임의의 첫번째 설명", chatRoomDtos.getContent().get(0).getDescription());
         assertEquals("해시태그", chatRoomDtos.getContent().get(0).getHashTags().get(0));
+        assertEquals("안뇽", chatRoomDtos.getContent().get(0).getHostName());
+        assertEquals(1L, chatRoomDtos.getContent().get(0).getHostId());
     }
 
     @Test
@@ -202,10 +217,10 @@ class ChatRoomServiceTest {
                         Optional.of(ChatRoom.builder()
                                 .id(1L)
                                 .title("임의의타이틀")
-                                .numberOfMembers(1)
                                 .description("임의의 첫번째 설명")
                                 .hashTag("해시태그#해시")
                                 .status(ChatRoomStatus.ACTIVE)
+                                .member(member)
                                 .createdAt(LocalDateTime.now())
                                 .build())
                 );
@@ -214,9 +229,9 @@ class ChatRoomServiceTest {
         //then
         assertEquals(1L, dto.getChatRoomId());
         assertEquals("임의의타이틀", dto.getTitle());
-        assertEquals(1, dto.getNumberOfMembers());
         assertEquals("임의의 첫번째 설명", dto.getDescription());
         assertEquals("해시태그", dto.getHashTags().get(0));
+        assertEquals("안뇽", dto.getHostName());
     }
 
     @Test
@@ -226,7 +241,6 @@ class ChatRoomServiceTest {
         ChatRoom chatRoom = ChatRoom.builder()
                 .id(1L)
                 .title("임의의타이틀")
-                .numberOfMembers(1)
                 .description("임의의 첫번째 설명")
                 .hashTag("해시태그#해시")
                 .status(ChatRoomStatus.ACTIVE)
@@ -238,11 +252,13 @@ class ChatRoomServiceTest {
                         .id(1L)
                         .createdAt(LocalDateTime.now())
                         .message("이것은메세지")
+                        .member(member)
                         .type(ChatType.MESSAGE).build(),
                 Chat.builder()
                         .chatRoom(chatRoom)
                         .id(2L)
                         .createdAt(LocalDateTime.now())
+                        .member(member)
                         .message("이것은두번째메세지")
                         .type(ChatType.MESSAGE).build()
         );
@@ -257,6 +273,8 @@ class ChatRoomServiceTest {
         assertEquals(1L, dtos.getContent().get(0).getChatId());
         assertEquals("이것은메세지", dtos.getContent().get(0).getMessage());
         assertEquals(ChatType.MESSAGE, dtos.getContent().get(0).getChatType());
+        assertEquals(1L, dtos.getContent().get(0).getUserId());
+        assertEquals("안뇽", dtos.getContent().get(0).getUserName());
     }
 
     @Test

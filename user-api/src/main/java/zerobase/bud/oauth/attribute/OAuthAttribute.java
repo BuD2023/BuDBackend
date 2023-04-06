@@ -2,8 +2,8 @@ package zerobase.bud.oauth.attribute;
 
 import lombok.Builder;
 import lombok.Getter;
-import zerobase.bud.member.domain.Member;
-import zerobase.bud.member.domain.MemberStatus;
+import zerobase.bud.domain.Member;
+import zerobase.bud.type.MemberStatus;
 
 import java.time.LocalDateTime;
 import java.util.Map;

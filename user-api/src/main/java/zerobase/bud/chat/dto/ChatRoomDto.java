@@ -24,12 +24,16 @@ public class ChatRoomDto {
     private String description;
     private List<String> hashTags;
     private LocalDateTime createdAt;
+    private String hostName;
+    private String hostProfileUrl;
+    private Long hostId;
 
     public static ChatRoomDto from(ChatRoom chatRoom) {
         return ChatRoomDto.builder()
                 .chatRoomId(chatRoom.getId())
                 .title(chatRoom.getTitle())
-                .numberOfMembers(chatRoom.getNumberOfMembers())
+                .hostName(chatRoom.getMember().getNickname())
+                .hostProfileUrl(chatRoom.getMember().getProfileImg())
                 .description(chatRoom.getDescription())
                 .hashTags(
                         Arrays.stream(chatRoom.getHashTag().split("#"))
@@ -37,6 +41,7 @@ public class ChatRoomDto {
                                 .collect(Collectors.toList())
                 )
                 .createdAt(chatRoom.getCreatedAt())
+                .hostId(chatRoom.getMember().getId())
                 .build();
     }
 }
