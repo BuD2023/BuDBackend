@@ -17,16 +17,16 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.news.domain.News;
+import zerobase.bud.domain.News;
 import zerobase.bud.news.dto.NewsDto;
 import zerobase.bud.news.dto.SearchNaverNewsApi;
-import zerobase.bud.news.repository.NewsRepository;
+import zerobase.bud.repository.NewsRepository;
 
 import java.io.IOException;
 import java.util.*;
 
-import static zerobase.bud.common.type.ErrorCode.ELEMENT_NOT_EXIST;
-import static zerobase.bud.common.type.ErrorCode.URL_ILLEGAL_ARGUMENT;
+import static zerobase.bud.news.type.Constants.*;
+import static zerobase.bud.common.type.ErrorCode.*;
 
 @Slf4j
 @Service
@@ -42,26 +42,16 @@ public class NaverNewsApi {
     @Transactional
     @Scheduled(cron = "0 0 0/1 * * *")
     public void saveNaverNews() {
-        String[] keywords = {
-                "자바", "자바스크립트", "파이썬",
-                "알고리즘", "코딩테스트", "개발", "개발자",
-                "인공지능", "안드로이드", "아이폰", "프론트엔드", "백엔드",
-                "웹개발", "퍼블리셔", "웹퍼블리셔", "데이터분석",
-                "전산", "정보보안", "떠오르는 개발", "C언어"
-        };
-
-        String[] sorts = {"date", "sim"};
-
-        for (String keyword : keywords) {
-            for (String sort : sorts) {
+        for (String keyword : NAVER_NEWS_API_KEYWORDS) {
+            for (String sort : NAVER_NEWS_API_SORT) {
                 SearchNaverNewsApi.Request params = new SearchNaverNewsApi
-                        .Request(keyword, 50, 1, sort);
+                        .Request(keyword, RESULT_COUNT, 1, sort);
 
                 List<SearchNaverNewsApi.Response> newsFromApi
                         = getNaverNewsFromApi(params);
 
                 for (SearchNaverNewsApi.Response news : newsFromApi) {
-                    if (!news.getLink().contains("n.news.naver.com")) {
+                    if (!news.getLink().contains(PARSING_POSSIBLE_DOMAIN)) {
                         continue;
                     }
 
@@ -73,11 +63,13 @@ public class NaverNewsApi {
 
     private List<SearchNaverNewsApi.Response> getNaverNewsFromApi(
             SearchNaverNewsApi.Request params) {
-        String apiURL = "https://openapi.naver.com/v1/search/news.json?" + params.urlConvert();    // JSON 결과
+        String apiURL = NAVER_NEWS_API_BASIC_URL + params.urlConvert();
 
         Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("X-Naver-Client-Id", naverClientId);
-        requestHeaders.put("X-Naver-Client-Secret", naverClientSecret);
+
+        requestHeaders.put(NAVER_CLIENT_ID_KEY, naverClientId);
+        requestHeaders.put(NAVER_CLIENT_SECRET_KEY, naverClientSecret);
+
         String responseBody = HttpService.get(apiURL, requestHeaders);
 
         return parseNaverNewsApi(responseBody);
@@ -94,7 +86,7 @@ public class NaverNewsApi {
             throw new RuntimeException(e);
         }
 
-        JSONArray newsItemsArray = (JSONArray) jsonObject.get("items");
+        JSONArray newsItemsArray = (JSONArray) jsonObject.get(NAVER_NEWS_ITEMS);
 
         List<SearchNaverNewsApi.Response> list = new ArrayList<>();
 
@@ -107,8 +99,7 @@ public class NaverNewsApi {
 
     private void saveNaverNewsDetail(SearchNaverNewsApi.Response response,
                                      String keyword) {
-        Optional<News> optionalNews
-                = newsRepository.findByLink(response.getLink());
+        Optional<News> optionalNews = newsRepository.findByLink(response.getLink());
 
         if (optionalNews.isPresent()) {
             addKeyword(optionalNews.get(), keyword);
@@ -118,9 +109,8 @@ public class NaverNewsApi {
         NewsDto newsDto;
 
         try {
-            newsDto = parseNaverNews(response, keyword);;
+            newsDto = parseNaverNews(response, keyword);
         } catch (BudException e) {
-            //로그
             log.error("{} is occurred ", e.getMessage());
             return;
         }
@@ -149,7 +139,8 @@ public class NaverNewsApi {
 
         List<String> newsKeywords = gson.fromJson(
                 news.getKeywords(),
-                new TypeToken<List<String>>() {}.getType()
+                new TypeToken<List<String>>() {
+                }.getType()
         );
 
         newsKeywords.add(keyword);
@@ -161,34 +152,35 @@ public class NaverNewsApi {
                                    String keyword) throws BudException {
         Document document = getNaverNewsDocument(response.getLink());
 
-        Element content = getElementsExceptSizeZero(document, "div#ct").first();
+        Element content = getElementsExceptSizeZero(document, CONTENT_SELECTOR)
+                .first();
 
-        Elements journalistNameEle = document.select("span.byline_s");
+        Elements journalistEle = document.select(JOURNALIST_SELECTOR);
 
         List<String> journalistOriginalNames = new ArrayList<>();
         List<String> journalistNames = new ArrayList<>();
 
         setJournalistNamesAndOriginalNames(
-                journalistNameEle,
+                journalistEle,
                 journalistOriginalNames,
                 journalistNames
         );
 
-        Element companyLogoImg = getElementsExceptSizeZero(content, "img.media_end_head_top_logo_img")
-                .first();
+        Element companyLogoImg = getElementsExceptSizeZero(content,
+                COMPANY_LOGO_IMG_SELECTOR).first();
 
-        String company = getData(companyLogoImg, "title");
+        String company = getData(companyLogoImg, COMPANY_TITLE_ATTR_KEY);
 
         Element mainImg = content != null
-                ? content.select("#img1").first()
+                ? content.select(FIRST_IMG_SELECTOR).first()
                 : null;
 
         String mainImgUrl = mainImg != null
-                ? mainImg.attr("data-src")
+                ? mainImg.attr(FIRST_IMG_ATTR_KEY)
                 : "";
 
-        Element articleEle = getElementsExceptSizeZero(content, "#newsct_article")
-                .first();
+        Element articleEle = getElementsExceptSizeZero(content,
+                ARTICLE_SELECTOR).first();
 
         Gson gson = new Gson();
 
@@ -254,9 +246,14 @@ public class NaverNewsApi {
 
     private void validateElementExist(Element element, String key) {
         if (element == null) {
-            BudException exception = new BudException(ELEMENT_NOT_EXIST);
-            exception.setMessage(exception.getMessage() + key);
-            throw exception;
+            StringBuilder message = new StringBuilder()
+                    .append(ELEMENT_NOT_EXIST)
+                    .append("(")
+                    .append(key)
+                    .append(")");
+
+            throw new BudException(ELEMENT_NOT_EXIST, ELEMENT_NOT_EXIST +
+                    message.toString());
         }
     }
 }

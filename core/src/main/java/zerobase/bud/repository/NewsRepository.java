@@ -1,9 +1,9 @@
-package zerobase.bud.news.repository;
+package zerobase.bud.repository;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import zerobase.bud.news.domain.News;
+import zerobase.bud.domain.News;
 
 import java.time.LocalDateTime;
 import java.util.List;

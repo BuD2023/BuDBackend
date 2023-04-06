@@ -13,16 +13,16 @@ public class SearchAllNews {
     @Setter
     @AllArgsConstructor
     public static class Request {
-        String keyword;
+        private String keyword;
         @Nullable
-        int size;
+        private int size;
         @Nullable
-        int page;
-        NewsSortType sort;
+        private int page;
+        private NewsSortType sort;
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        LocalDate startDate;
+        private LocalDate startDate;
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        LocalDate endDate;
+        private LocalDate endDate;
 
         public int getSize() {
             return this.size == 0 ? 10 : this.size;
@@ -59,13 +59,13 @@ public class SearchAllNews {
         private LocalDateTime registeredAt;
         private String title;
         private String link;
-        String summaryContent;
-        String mainImgUrl;
-        String company;
-        String journalistOriginalNames;
-        String journalistNames;
-        String keywords;
-        long hitCount;
+        private String summaryContent;
+        private String mainImgUrl;
+        private String company;
+        private String journalistOriginalNames;
+        private String journalistNames;
+        private String keywords;
+        private long hitCount;
 
         public static Response from(NewsDto newsDto) {
             return Response.builder()

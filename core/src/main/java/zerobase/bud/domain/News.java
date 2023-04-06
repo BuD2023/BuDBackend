@@ -1,4 +1,4 @@
-package zerobase.bud.news.domain;
+package zerobase.bud.domain;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;

@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
-
     CHATROOM_NOT_FOUND("해당 채팅방 정보가 없습니다."),
     FAILED_GET_COMMIT_INFO("커밋 정보를 가져오는 데 실패했습니다."),
     FAILED_CONNECT_GITHUB("깃헙과 연결에 실패했습니다."),
@@ -18,8 +17,13 @@ public enum ErrorCode {
     NEWS_ID_NOT_EXCEED_MIN_VALUE("뉴스 고유 아이디가 최소값을 넘지 못했습니다."),
     NEWS_NOT_FOUND("요청하신 뉴스 데이터가 존재하지 않습니다."),
     NEWS_DATE_TYPE_UN_MATCH("날짜 형식이 올바르지 않습니다. (올바른 형식: yyyy-MM-dd)"),
+    ALREADY_STORED_DATA("이미 저장된 데이터 입니다."),
+    DATA_TYPE_UN_MATCH("데이터 형식이 올바르지 않습니다."),
 
-    DATA_TYPE_UN_MATCH("데이터 형식이 올바르지 않습니다.")
+    HTTP_REQUEST_RESPONSE_FAIL("HTTP 요청과 응답이 실패했습니다."),
+    INVALID_API_URL_ADDRESS("잘못된 API URL입니다."),
+    HTTP_CONNECT_FAIL("HTTP 연결이 실패했습니다"),
+    API_RESPONSE_READ_FAIL("API 응답을 읽는데 실패했습니다."),
     ;
     private final String description;
 }
