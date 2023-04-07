@@ -41,13 +41,11 @@ public class WebSocketHandler implements ChannelInterceptor {
                     .build());
 
         } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
-            Optional<ChatRoomSession> optionalSession =
-                    chatRoomSessionRepository.findBySessionId(accessor.getSessionId());
-            if (optionalSession.isPresent()) {
-                ChatRoomSession session = optionalSession.get();
-                session.setDelete();
-                chatRoomSessionRepository.save(session);
-            }
+            chatRoomSessionRepository.findBySessionId(accessor.getSessionId())
+                    .ifPresent(chatRoomSession -> {
+                        chatRoomSession.setDelete();
+                        chatRoomSessionRepository.save(chatRoomSession);
+                    });
         }
 
         return message;
