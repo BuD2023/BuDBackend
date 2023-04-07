@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import zerobase.bud.domain.BaseEntity;
-import zerobase.bud.github.domain.Member;
+import zerobase.bud.domain.Member;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 
@@ -36,13 +36,13 @@ public class Post extends BaseEntity {
 
     private String content;
 
-    private int commentCount;
+    private long commentCount;
 
-    private int likeCount;
+    private long likeCount;
 
-    private int scrapCount;
+    private long scrapCount;
 
-    private int hitCount;
+    private long hitCount;
 
     @Enumerated(EnumType.STRING)
     private PostStatus postStatus;

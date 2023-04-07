@@ -80,13 +80,12 @@ public class GithubService {
 
     public String saveCommitInfoFromLastCommitDate(
         String email
-        , String userName
     ) {
         GithubInfo githubInfo = githubInfoRepository.findByEmail(email)
             .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
 
         return githubApi.saveCommitInfoFromLastCommitDate(
-            email, userName, githubInfo, getLastCommitDate(githubInfo)
+            githubInfo, getLastCommitDate(githubInfo)
         );
     }
 

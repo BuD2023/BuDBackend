@@ -35,9 +35,7 @@ public class GetCommitInfoScheduler {
                 .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
 
             githubApi.saveCommitInfoFromLastCommitDate(
-                info.getEmail()
-                , info.getUserName()
-                , githubInfo
+                githubInfo
                 , LocalDate.now().minusDays(1)
             );
         }

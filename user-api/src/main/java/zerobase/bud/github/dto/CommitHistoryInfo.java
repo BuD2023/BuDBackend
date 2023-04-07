@@ -16,10 +16,10 @@ public class CommitHistoryInfo {
 
     String nickName;
     String level;
-    Long totalCommitCount;
-    Long todayCommitCount;
-    Long thisWeekCommitCount;
-    Long consecutiveCommitDays;
+    long totalCommitCount;
+    long todayCommitCount;
+    long thisWeekCommitCount;
+    long consecutiveCommitDays;
     List<CommitCountByDate> commits;
 
 }
