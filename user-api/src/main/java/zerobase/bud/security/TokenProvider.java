@@ -12,14 +12,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import zerobase.bud.common.dto.JwtDto;
 import zerobase.bud.domain.Member;
-import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.member.service.MemberService;
+import zerobase.bud.repository.MemberRepository;
 
 import java.util.Date;
 import java.util.Optional;
+
+import static zerobase.bud.common.util.Constant.TOKEN_PREFIX;
 
 @Slf4j
 @Component
@@ -36,7 +39,7 @@ public class TokenProvider {
 
     public JwtDto generateToken(String userId) {
         Optional<Member> optionalReader = memberRepository.findByUserId(userId);
-        if(!optionalReader.isPresent()) {
+        if (!optionalReader.isPresent()) {
             log.info("존재하지 않는 사용자입니다.");
             return null;
         }
@@ -89,7 +92,7 @@ public class TokenProvider {
     }
 
     public boolean validateToken(String token) {
-        if(!StringUtils.hasText(token)) return false;
+        if (!StringUtils.hasText(token)) return false;
 
         Claims claims = this.parseClaims(token);
         return !claims.getExpiration().before(new Date());
@@ -101,5 +104,13 @@ public class TokenProvider {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    public String parseRawToken(String rawToken) {
+        if (!ObjectUtils.isEmpty(rawToken) && rawToken.startsWith(TOKEN_PREFIX)) {
+            String token = rawToken.substring(TOKEN_PREFIX.length());
+            return getUserId(token);
+        }
+        return null;
     }
 }

@@ -28,6 +28,9 @@ public class ChatRoomSession extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private SessionStatus status;
 
+    @Builder.Default
+    private Boolean isOwner = false;
+
     public void setDelete(){
         this.status = SessionStatus.DELETED;
     }

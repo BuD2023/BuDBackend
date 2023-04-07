@@ -31,7 +31,6 @@ import zerobase.bud.chat.dto.CreateChatRoomRequest;
 import zerobase.bud.chat.service.ChatRoomService;
 import zerobase.bud.common.util.TimeUtil;
 import zerobase.bud.domain.Member;
-import zerobase.bud.security.JwtAuthenticationFilter;
 import zerobase.bud.security.TokenProvider;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.MemberStatus;
@@ -79,7 +78,7 @@ class ChatRoomControllerTest {
     @Value("${develop.server.port}")
     private int port;
 
-    private static String token = "임의의accesstoken";
+    private static String token = "Bearer tokenValue";
 
     @BeforeEach
     void init(WebApplicationContext context, RestDocumentationContextProvider contextProvider) {
@@ -125,6 +124,7 @@ class ChatRoomControllerTest {
                                         .title("챗지비티는 거짓말쟁이")
                                         .description("챗지비티와 인공지능")
                                         .hashTag(Arrays.asList("인공지능", "챗지비티", "ai"))
+                                        .build()
                         ))
                 )
                 .andExpect(status().isCreated())
@@ -150,6 +150,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(2)
+                        .hostId(1L)
+                        .hostProfileUrl("/image.jpg")
+                        .hostName("ㅇㅅ")
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(2L)
@@ -158,6 +161,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("주니어", "웤라이프", "프론트엔드"))
                         .numberOfMembers(12)
+                        .hostId(3L)
+                        .hostProfileUrl("/image.jpg")
+                        .hostName("땡땡")
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(1L)
@@ -166,6 +172,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(4)
+                        .hostId(4L)
+                        .hostProfileUrl("/image.jpg")
+                        .hostName("어쩌구")
                         .build()
         );
 
@@ -224,6 +233,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(2)
+                        .hostId(2L)
+                        .hostProfileUrl("/image.jpg")
+                        .hostName("ㅇㅅ")
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(2L)
@@ -232,6 +244,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("주니어", "웤라이프", "프론트엔드"))
                         .numberOfMembers(12)
+                        .hostId(1L)
+                        .hostProfileUrl("/image.jpg")
+                        .hostName("어쩌구")
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(1L)
@@ -240,6 +255,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(4)
+                        .hostId(5L)
+                        .hostProfileUrl("/image.jpg")
+                        .hostName("ㅋㅋ")
                         .build()
         );
 
@@ -337,18 +355,27 @@ class ChatRoomControllerTest {
                         .chatType(ChatType.MESSAGE)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .message("어쩌구저쩌구~")
+                        .userProfileUrl("/image.jpg")
+                        .userName("닉넴")
+                        .userId(1L)
                         .build(),
                 ChatDto.builder()
                         .chatId(2L)
                         .chatType(ChatType.IMAGE)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .imageUrl("/s3/fdsa.jpg")
+                        .userProfileUrl("/image.jpg")
+                        .userName("닉넴")
+                        .userId(1L)
                         .build(),
                 ChatDto.builder()
                         .chatId(3L)
                         .chatType(ChatType.MESSAGE)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .message("아그랬구나아하")
+                        .userProfileUrl("/image.jpg")
+                        .userName("닉넴")
+                        .userId(1L)
                         .build()
         );
         given(chatRoomService.readChats(anyLong(), anyInt()))
