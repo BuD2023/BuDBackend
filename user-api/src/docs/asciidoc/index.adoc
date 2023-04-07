@@ -12,7 +12,7 @@ include::{snippets}/chat-room-controller-test/success-create-chat-room-test/http
 
 === 2. 채팅방 검색
 .request
-include::{snippets}/chat-room-controller-test/success-search-chat-room-test/http-request.adoc[]
+include::{snippets}/chat-room-controller-test/success-search-chat-rooms-test/http-request.adoc[]
 
 .request field
 |===
@@ -132,3 +132,14 @@ include::{snippets}/github-controller-test/success_save-commit-info-from-last-co
 
 .response field
 include::{snippets}/github-controller-test/success_save-commit-info-from-last-commit-date/response-body.adoc[]
+
+== 게시물 API
+=== 1. 게시글 생성
+.request
+include::{snippets}/post-controller-test/create-post/http-request.adoc[]
+
+.response
+include::{snippets}/post-controller-test/create-post/http-response.adoc[]
+
+.response field
+include::{snippets}/post-controller-test/create-post/response-body.adoc[]
