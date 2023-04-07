@@ -16,6 +16,8 @@ import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.repository.ChatRoomSessionRepository;
 import zerobase.bud.security.TokenProvider;
 
+import java.util.List;
+
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
 
@@ -54,7 +56,17 @@ public class WebSocketHandler implements ChannelInterceptor {
             chatRoomSessionRepository.findBySessionId(accessor.getSessionId())
                     .ifPresent(chatRoomSession -> {
                         chatRoomSession.setDelete();
+
+                        if (chatRoomSession.getIsOwner()) {
+                            ChatRoom chatRoom = chatRoomSession.getChatRoom();
+                            chatRoom.setDelete();
+                            chatRoomRepository.save(chatRoom);
+                            List<ChatRoomSession> sessions = chatRoomSessionRepository.findByChatRoom(chatRoom);
+                            sessions.stream().forEach(session -> session.setDelete());
+                        }
+
                         chatRoomSessionRepository.save(chatRoomSession);
+
                     });
         }
 

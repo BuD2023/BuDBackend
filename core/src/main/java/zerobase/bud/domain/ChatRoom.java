@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import zerobase.bud.type.ChatRoomStatus;
+import zerobase.bud.type.SessionStatus;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -32,5 +33,9 @@ public class ChatRoom extends BaseEntity {
 
     @ManyToOne
     private Member member;
+
+    public void setDelete(){
+        this.status = ChatRoomStatus.DELETED;
+    }
 
 }
