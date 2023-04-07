@@ -1,4 +1,4 @@
-package zerobase.bud.member.domain;
+package zerobase.bud.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

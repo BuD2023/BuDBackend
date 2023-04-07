@@ -22,8 +22,6 @@ public class ChatRoom extends BaseEntity {
     @NotNull
     private String title;
 
-    private int numberOfMembers;
-
     @Enumerated(EnumType.STRING)
     private ChatRoomStatus status;
 
@@ -32,9 +30,7 @@ public class ChatRoom extends BaseEntity {
     @NotNull
     private String description;
 
-    //TODO: 멤버 추가
+    @ManyToOne
+    private Member member;
 
-    public void addNumberOfMembers() {
-        numberOfMembers += 1;
-    }
 }

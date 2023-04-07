@@ -28,5 +28,6 @@ public class Chat extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private ChatType type;
 
-    //TODO: member 추가
+    @ManyToOne
+    private Member member;
 }

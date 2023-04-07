@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import zerobase.bud.domain.BaseEntity;
+import zerobase.bud.domain.Member;
 
 @Getter
 @Setter

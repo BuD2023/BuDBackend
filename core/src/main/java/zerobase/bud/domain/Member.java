@@ -1,9 +1,10 @@
-package zerobase.bud.member.domain;
+package zerobase.bud.domain;
 
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import zerobase.bud.type.MemberStatus;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 public class Member implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
     @Column(unique = true)
     private String userId;
     private String email;
