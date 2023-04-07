@@ -74,7 +74,7 @@ class GithubServiceTest {
             .id(1L)
             .accessToken("accessToken")
             .email("abcd@naver.com")
-            .userName("userName")
+            .username("userName")
             .createdAt(LocalDateTime.now())
             .build();
     }
@@ -119,8 +119,7 @@ class GithubServiceTest {
         given(githubInfoRepository.findByEmail(anyString()))
             .willReturn(Optional.ofNullable(getGithubInfo()));
 
-        given(githubApi.saveCommitInfoFromLastCommitDate(anyString(),
-            anyString(), any(), any()))
+        given(githubApi.saveCommitInfoFromLastCommitDate(any(), any()))
             .willReturn("success");
 
         given(
@@ -129,7 +128,7 @@ class GithubServiceTest {
             .willReturn(Optional.ofNullable(getCommitHistory()));
         //when
         String user = githubService.saveCommitInfoFromLastCommitDate(
-            "email@naver.com", "user");
+            "email@naver.com");
         //then
         assertEquals("success", user);
     }
@@ -144,7 +143,7 @@ class GithubServiceTest {
         //when
         BudException budException = assertThrows(BudException.class,
             () -> githubService.saveCommitInfoFromLastCommitDate(
-                "email@naver.com", "user"));
+                "email@naver.com"));
         //then
         assertEquals(NOT_REGISTERED_MEMBER, budException.getErrorCode());
     }

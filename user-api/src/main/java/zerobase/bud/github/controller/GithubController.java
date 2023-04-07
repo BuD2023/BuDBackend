@@ -2,6 +2,8 @@ package zerobase.bud.github.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,10 +19,13 @@ public class GithubController {
     private final GithubService githubService;
 
     @PostMapping
-    public ResponseEntity<String> saveCommitInfoFromLastCommitDate() {
-
+    public ResponseEntity<String> saveCommitInfoFromLastCommitDate(
+        @AuthenticationPrincipal OAuth2User oAuth2User
+    ) {
         return ResponseEntity.ok(githubService.saveCommitInfoFromLastCommitDate(
-            "khg2154@naver.com", "Ggyumalang")
+//            oAuth2User.getAttribute("email")
+                "khg2154@naver.com"
+            )
         );
     }
 

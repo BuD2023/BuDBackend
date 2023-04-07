@@ -30,14 +30,11 @@ import zerobase.bud.common.exception.BudException;
 import zerobase.bud.github.domain.CommitHistory;
 import zerobase.bud.github.domain.GithubInfo;
 import zerobase.bud.github.repository.CommitHistoryRepository;
-import zerobase.bud.github.repository.GithubInfoRepository;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class GithubApi {
-
-    private final GithubInfoRepository githubInfoRepository;
 
     private final CommitHistoryRepository commitHistoryRepository;
 
@@ -45,9 +42,7 @@ public class GithubApi {
 
     @Transactional
     public String saveCommitInfoFromLastCommitDate(
-        String email
-        , String userName
-        , GithubInfo githubInfo
+        GithubInfo githubInfo
         , LocalDate lastCommitDate
     ) {
 
@@ -61,14 +56,14 @@ public class GithubApi {
 
         Map<LocalDate, Long> commitDateCountMap = new HashMap<>();
 
-        getCommitInfoFromGithub(userName, commitDateCountMap, lastCommitDate);
+        getCommitInfoFromGithub(githubInfo.getUsername(), commitDateCountMap, lastCommitDate);
 
         saveCommitHistory(githubInfo, commitDateCountMap);
 
         log.info("complete saveCommitInfoFromLastCommitDate... "
             + LocalDateTime.now());
 
-        return email;
+        return githubInfo.getEmail();
     }
 
     private void saveCommitHistory(
@@ -100,14 +95,14 @@ public class GithubApi {
     }
 
     private void getCommitInfoFromGithub(
-        String userName
+        String username
         , Map<LocalDate, Long> commitDateCountMap
         , LocalDate lastCommitDate
     ) {
         try {
-            GHUser user = github.getUser(userName);
+            GHUser user = github.getUser(username);
             log.info(
-                userName + " 님의 CommitLog를 가져옵니다... " + LocalDateTime.now()
+                username + " 님의 CommitLog를 가져옵니다... " + LocalDateTime.now()
             );
 
             List<GHRepository> repositories = user.listRepositories().toList();
@@ -115,7 +110,7 @@ public class GithubApi {
             for (GHRepository repository : repositories) {
                 GHCommitQueryBuilder commitQueryBuilder = repository.queryCommits();
 
-                commitQueryBuilder.author(userName);
+                commitQueryBuilder.author(username);
                 commitQueryBuilder.since(Date.valueOf(lastCommitDate));
 
                 List<GHCommit> commits = commitQueryBuilder.list().toList();

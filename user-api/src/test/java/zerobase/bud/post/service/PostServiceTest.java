@@ -149,7 +149,7 @@ class PostServiceTest {
             .id(1L)
             .accessToken("accessToken")
             .email("abcd@naver.com")
-            .userName("userName")
+            .username("userName")
             .build();
     }
 
