@@ -5,11 +5,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.domain.News;
+import zerobase.bud.news.domain.News;
 import zerobase.bud.news.dto.NewsDto;
 import zerobase.bud.news.dto.SearchAllNews;
 import zerobase.bud.news.type.NewsSortType;
-import zerobase.bud.repository.NewsRepository;
+import zerobase.bud.news.repository.NewsRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -54,7 +54,7 @@ public class NewsService {
                     pageRequest, startDate, endDate
             );
         } else if (request.ckSort(NewsSortType.DATE)) {
-            newsList = newsRepository.findAllByTitleNotContainingAndRegisteredAtIsBetweenOrderByRegisteredAtDesc(
+            newsList = newsRepository.findAllByTitleContainingAndRegisteredAtIsBetweenOrderByRegisteredAtDesc(
                     pageRequest, keyword, startDate, endDate
             );
         } else {
