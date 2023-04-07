@@ -1,33 +1,34 @@
 package zerobase.bud.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import zerobase.bud.type.ChatType;
+import zerobase.bud.type.SessionStatus;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 @SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-public class Chat extends BaseEntity{
+public class ChatRoomSession extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    private String message;
+    private String sessionId;
 
-    @ManyToOne(fetch = FetchType.LAZY) // chatRoom이 필요하면 쿼리 나가기
+    @ManyToOne
     private ChatRoom chatRoom;
 
     @Enumerated(EnumType.STRING)
-    private ChatType type;
+    private SessionStatus status;
 
-    @ManyToOne
-    private Member member;
+    public void setDelete(){
+        this.status = SessionStatus.DELETED;
+    }
 }

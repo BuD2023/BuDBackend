@@ -23,6 +23,9 @@ public class ChatDto {
     private String createdAt;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String imageUrl;
+    private String userProfileUrl;
+    private String userName;
+    private Long userId;
 
     public static ChatDto from(Chat chat) {
         return ChatDto.builder()
@@ -30,6 +33,9 @@ public class ChatDto {
                 .chatType(chat.getType())
                 .createdAt(TimeUtil.caculateTerm(chat.getCreatedAt()))
                 .message(chat.getMessage())
+                .userName(chat.getMember().getNickname())
+                .userProfileUrl(chat.getMember().getProfileImg())
+                .userId(chat.getId())
                 .build();
     }
 }

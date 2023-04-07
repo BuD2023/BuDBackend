@@ -14,8 +14,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import zerobase.bud.common.dto.JwtDto;
-import zerobase.bud.member.domain.Member;
-import zerobase.bud.member.repository.MemberRepository;
+import zerobase.bud.domain.Member;
+import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.member.service.MemberService;
 
 import java.util.Date;

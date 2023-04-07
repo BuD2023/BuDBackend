@@ -9,8 +9,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import zerobase.bud.member.domain.Member;
-import zerobase.bud.member.repository.MemberRepository;
+import zerobase.bud.domain.Member;
+import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.oauth.attribute.OAuthAttribute;
 
 import java.util.Collections;

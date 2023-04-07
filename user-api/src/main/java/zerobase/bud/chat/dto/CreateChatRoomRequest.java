@@ -23,5 +23,6 @@ public class CreateChatRoomRequest {
     @Size(min = 1, max = 255)
     private String description;
 
+    @Builder.Default
     private List<String> hashTag = new ArrayList<>();
 }
