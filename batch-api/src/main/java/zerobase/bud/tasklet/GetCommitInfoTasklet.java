@@ -34,7 +34,7 @@ public class GetCommitInfoTasklet {
 
             githubApi.saveCommitInfoFromLastCommitDate(
                 githubInfo
-                , LocalDate.now().minusDays(15)
+                , LocalDate.now().minusDays(1)
             );
         }
 
