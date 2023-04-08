@@ -24,6 +24,6 @@ public class ChatController {
         ChatDto chat = chatService.chatting(
                 request.getMessage(), request.getChatroomId(), request.getSenderId());
 
-        messagingTemplate.convertAndSend("/chatroom/" + request.getChatroomId(), chat);
+        messagingTemplate.convertAndSend("/chatrooms/" + request.getChatroomId(), chat);
     }
 }

@@ -95,14 +95,14 @@ include::{snippets}/chat-room-controller-test/success-read-chats-test/response-f
 .STOMP
 ----
 ws://34.64.224.24:8080/ws
-/chatroom/1
+/chatrooms/1
 ----
 
 === 7. 웹소켓 pub
 .STOMP
 ----
 ws://34.64.224.24:8080/ws
-/chat/message
+/chats/message
 
 {
     "senderId" : 1,

@@ -14,13 +14,13 @@ import org.springframework.stereotype.Component;
 import zerobase.bud.common.exception.ChatRoomException;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
-import zerobase.bud.common.util.Constant;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.ChatRoomSession;
 import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.security.TokenProvider;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
+import static zerobase.bud.common.util.Constant.SESSION;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
 
 @Slf4j
@@ -55,7 +55,7 @@ public class WebSocketHandler implements ChannelInterceptor {
         } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
             String sessionId = accessor.getSessionId();
             HashOperations<String, String, ChatRoomSession> hashOperations = redisTemplate.opsForHash();
-            ChatRoomSession session = hashOperations.get(Constant.SESSION, sessionId);
+            ChatRoomSession session = hashOperations.get(SESSION, sessionId);
 
             try {
                 ChatRoom chatRoom = getChatRoom(session.getChatroomId());
@@ -66,7 +66,7 @@ public class WebSocketHandler implements ChannelInterceptor {
             } catch (ChatRoomException | NullPointerException e) {
                 log.error("{}", e.getMessage());
             } finally {
-                hashOperations.delete(Constant.SESSION, sessionId);
+                hashOperations.delete(SESSION, sessionId);
             }
 
         }
@@ -82,7 +82,7 @@ public class WebSocketHandler implements ChannelInterceptor {
                 .userId(userId)
                 .build();
 
-        hashOperations.put(Constant.SESSION, sessionId, session);
+        hashOperations.put(SESSION, sessionId, session);
     }
 
     private Long getChatroomIdFromDestination(String destination) {

@@ -116,7 +116,7 @@ class ChatRoomControllerTest {
         given(chatRoomService.createChatRoom(anyString(), anyString(), any(), any())).willReturn(1L);
         //when
         //then
-        this.mockMvc.perform(post("/chatroom")
+        this.mockMvc.perform(post("/chatrooms")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -181,7 +181,7 @@ class ChatRoomControllerTest {
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
-        this.mockMvc.perform(get("/chatroom/search")
+        this.mockMvc.perform(get("/chatrooms/search")
                         .param("keyword", "word")
                         .param("page", "0")
                         .header(HttpHeaders.AUTHORIZATION, token)
@@ -264,7 +264,7 @@ class ChatRoomControllerTest {
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
-        this.mockMvc.perform(get("/chatroom")
+        this.mockMvc.perform(get("/chatrooms")
                         .param("page", "0")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
@@ -321,7 +321,7 @@ class ChatRoomControllerTest {
                 );
         //when
         //then
-        this.mockMvc.perform(get("/chatroom/{chatroomId}", 32L)
+        this.mockMvc.perform(get("/chatrooms/{chatroomId}", 32L)
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -384,7 +384,7 @@ class ChatRoomControllerTest {
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
-        this.mockMvc.perform(get("/chatroom/{chatroomId}/chat", 32L)
+        this.mockMvc.perform(get("/chatrooms/{chatroomId}/chats", 32L)
                         .param("page", "0")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
