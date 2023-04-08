@@ -1,7 +1,7 @@
 package zerobase.bud.news.dto;
 
 import lombok.*;
-import zerobase.bud.domain.News;
+import zerobase.bud.news.domain.News;
 
 import java.time.LocalDateTime;
 

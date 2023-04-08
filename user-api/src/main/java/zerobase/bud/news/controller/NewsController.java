@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import zerobase.bud.news.dto.DetailNewsResponse;
+import zerobase.bud.news.dto.NewsDto;
 import zerobase.bud.news.dto.SearchAllNews;
 import zerobase.bud.news.service.NewsService;
 
@@ -29,10 +29,9 @@ public class NewsController {
     }
 
     @GetMapping("/news/detail/{newsId}")
-    public ResponseEntity<DetailNewsResponse> getNewsDetail(
+    public ResponseEntity<NewsDto> getNewsDetail(
             @PathVariable("newsId") long id) {
 
-        return ResponseEntity.ok(
-                DetailNewsResponse.from(newsService.getNewsDetail(id)));
+        return ResponseEntity.ok(newsService.getNewsDetail(id));
     }
 }

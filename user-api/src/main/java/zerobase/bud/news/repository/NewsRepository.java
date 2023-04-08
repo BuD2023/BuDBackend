@@ -1,9 +1,9 @@
-package zerobase.bud.repository;
+package zerobase.bud.news.repository;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import zerobase.bud.domain.News;
+import zerobase.bud.news.domain.News;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,7 +32,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
             LocalDateTime endDate
     );
 
-    List<News> findAllByTitleNotContainingAndRegisteredAtIsBetweenOrderByRegisteredAtDesc(
+    List<News> findAllByTitleContainingAndRegisteredAtIsBetweenOrderByRegisteredAtDesc(
             PageRequest pageRequest,
             String title,
             LocalDateTime startDate,
