@@ -4,31 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-import zerobase.bud.type.SessionStatus;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
+import javax.persistence.Column;
+import java.io.Serializable;
 
 @Getter
-@SuperBuilder
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class ChatRoomSession extends BaseEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class ChatRoomSession implements Serializable {
+    @Column
+    private String userId;
 
-    private String sessionId;
-
-    @ManyToOne
-    private ChatRoom chatRoom;
-
-    @Enumerated(EnumType.STRING)
-    private SessionStatus status;
-
-    public void setDelete(){
-        this.status = SessionStatus.DELETED;
-    }
+    @Column
+    private Long chatroomId;
 }
