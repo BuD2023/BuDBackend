@@ -11,7 +11,7 @@ public class TimeUtil {
     private static final int MIN = 60;
     private static final int HOUR = 24;
     private static final int DAY = 30;
-    private static final int MONTH = 60;
+    private static final int MONTH = 12;
 
     public static String caculateTerm(LocalDateTime date) {
         long term = Duration.between(date, LocalDateTime.now()).getSeconds();
@@ -26,7 +26,7 @@ public class TimeUtil {
         } else if ((term /= DAY) < MONTH) {
             return term + "달 전";
         } else {
-            return term/MONTH + "년 전";
+            return term / MONTH + "년 전";
         }
     }
 }
