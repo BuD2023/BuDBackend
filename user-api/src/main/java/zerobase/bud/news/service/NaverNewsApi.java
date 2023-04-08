@@ -17,10 +17,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.domain.News;
+import zerobase.bud.news.domain.News;
 import zerobase.bud.news.dto.NewsDto;
 import zerobase.bud.news.dto.SearchNaverNewsApi;
-import zerobase.bud.repository.NewsRepository;
+import zerobase.bud.news.repository.NewsRepository;
 
 import java.io.IOException;
 import java.util.*;
@@ -40,7 +40,7 @@ public class NaverNewsApi {
     private final NewsRepository newsRepository;
 
     @Transactional
-    @Scheduled(cron = "0 0 0/1 * * *")
+    @Scheduled(cron = "0 0 0/12 * * *")
     public void saveNaverNews() {
         for (String keyword : NAVER_NEWS_API_KEYWORDS) {
             for (String sort : NAVER_NEWS_API_SORT) {
