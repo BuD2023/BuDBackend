@@ -13,12 +13,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.github.domain.CommitHistory;
-import zerobase.bud.github.domain.GithubInfo;
+import zerobase.bud.domain.CommitHistory;
+import zerobase.bud.domain.GithubInfo;
 import zerobase.bud.github.dto.CommitCountByDate;
 import zerobase.bud.github.dto.CommitHistoryInfo;
-import zerobase.bud.github.repository.CommitHistoryRepository;
-import zerobase.bud.github.repository.GithubInfoRepository;
+import zerobase.bud.repository.CommitHistoryRepository;
+import zerobase.bud.repository.GithubInfoRepository;
+import zerobase.bud.service.GithubApi;
 
 @Slf4j
 @RequiredArgsConstructor

@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,9 +42,9 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.domain.Member;
 import zerobase.bud.github.dto.CommitCountByDate;
 import zerobase.bud.github.dto.CommitHistoryInfo;
-import zerobase.bud.github.service.GithubApi;
 import zerobase.bud.github.service.GithubService;
 import zerobase.bud.security.TokenProvider;
+import zerobase.bud.service.GithubApi;
 import zerobase.bud.type.MemberStatus;
 
 @ExtendWith({RestDocumentationExtension.class})
@@ -66,7 +67,7 @@ class GithubControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private static String token = "token";
+    private static final String token = "token";
 
     @BeforeEach
     void init(
@@ -95,7 +96,7 @@ class GithubControllerTest {
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
             member, "",
-            List.of(MemberStatus.VERIFIED.getKey()).stream().map(
+            Stream.of(MemberStatus.VERIFIED.getKey()).map(
                     SimpleGrantedAuthority::new)
                 .collect(Collectors.toList()));
 

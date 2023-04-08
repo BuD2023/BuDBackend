@@ -19,11 +19,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.github.domain.CommitHistory;
-import zerobase.bud.github.domain.GithubInfo;
+import zerobase.bud.domain.CommitHistory;
+import zerobase.bud.domain.GithubInfo;
 import zerobase.bud.github.dto.CommitHistoryInfo;
-import zerobase.bud.github.repository.CommitHistoryRepository;
-import zerobase.bud.github.repository.GithubInfoRepository;
+import zerobase.bud.repository.CommitHistoryRepository;
+import zerobase.bud.repository.GithubInfoRepository;
+import zerobase.bud.service.GithubApi;
 
 @ExtendWith(MockitoExtension.class)
 class GithubServiceTest {
