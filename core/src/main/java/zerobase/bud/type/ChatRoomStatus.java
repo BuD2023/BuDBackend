@@ -1,7 +1,7 @@
 package zerobase.bud.type;
 
 public enum ChatRoomStatus {
-    UNACTIVE,
+    INACTIVE,
     DELETED,
     ACTIVE
     ;

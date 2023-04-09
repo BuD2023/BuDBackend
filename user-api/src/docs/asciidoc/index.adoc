@@ -1,17 +1,6 @@
 = Getting Started With Spring REST Docs
 :toc:
 
-== 큰분류
-=== 1. 소분류
-.request
-include::{snippets}/test-controller-test/테스트/http-request.adoc[]
-
-.response
-include::{snippets}/test-controller-test/테스트/http-response.adoc[]
-
-As you can see the format is very simple, and in fact you always get the same message.
-
-
 == 채팅
 === 1. 채팅방 생성
 .request
@@ -23,7 +12,7 @@ include::{snippets}/chat-room-controller-test/success-create-chat-room-test/http
 
 === 2. 채팅방 검색
 .request
-include::{snippets}/chat-room-controller-test/success-search-chat-room-test/http-request.adoc[]
+include::{snippets}/chat-room-controller-test/success-search-chat-rooms-test/http-request.adoc[]
 
 .request field
 |===
@@ -181,3 +170,15 @@ include::{snippets}/news-controller-test/success_search-news-detail/http-respons
 
 .response field
 include::{snippets}/news-controller-test/success_search-news-detail/response-body.adoc[]
+
+== 게시물 API
+=== 1. 게시글 생성
+.request
+include::{snippets}/post-controller-test/create-post/http-request.adoc[]
+
+.response
+include::{snippets}/post-controller-test/create-post/http-response.adoc[]
+
+.response field
+include::{snippets}/post-controller-test/create-post/response-body.adoc[]
+

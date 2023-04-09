@@ -10,6 +10,7 @@ import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.common.exception.ChatRoomException;
 import zerobase.bud.domain.ChatRoom;
+import zerobase.bud.domain.Member;
 import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
 
@@ -30,7 +31,7 @@ public class ChatRoomService {
     private final ChatRepository chatRepository;
 
     @Transactional
-    public Long createChatRoom(String title, String description, List<String> hashTag) {
+    public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
 
         String hastStr = String.join("#", hashTag);
 
@@ -40,6 +41,7 @@ public class ChatRoomService {
                         .status(ACTIVE)
                         .hashTag(hastStr)
                         .description(description)
+                        .member(member)
                         .build()).getId();
     }
 

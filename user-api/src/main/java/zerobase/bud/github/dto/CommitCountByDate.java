@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import zerobase.bud.github.domain.CommitHistory;
+import zerobase.bud.domain.CommitHistory;
 
 @Getter
 @Setter

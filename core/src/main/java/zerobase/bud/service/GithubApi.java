@@ -1,8 +1,7 @@
-package zerobase.bud.github.service;
+package zerobase.bud.service;
 
-import static zerobase.bud.common.type.ErrorCode.FAILED_CONNECT_GITHUB;
-import static zerobase.bud.common.type.ErrorCode.FAILED_GET_COMMIT_INFO;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
+import static zerobase.bud.type.ErrorCode.FAILED_CONNECT_GITHUB;
+import static zerobase.bud.type.ErrorCode.FAILED_GET_COMMIT_INFO;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -27,18 +26,15 @@ import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zerobase.bud.common.exception.BudException;
-import zerobase.bud.github.domain.CommitHistory;
-import zerobase.bud.github.domain.GithubInfo;
-import zerobase.bud.github.repository.CommitHistoryRepository;
-import zerobase.bud.github.repository.GithubInfoRepository;
+import zerobase.bud.domain.CommitHistory;
+import zerobase.bud.domain.GithubInfo;
+import zerobase.bud.exception.BudException;
+import zerobase.bud.repository.CommitHistoryRepository;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class GithubApi {
-
-    private final GithubInfoRepository githubInfoRepository;
 
     private final CommitHistoryRepository commitHistoryRepository;
 
@@ -46,27 +42,29 @@ public class GithubApi {
 
     @Transactional
     public String saveCommitInfoFromLastCommitDate(
-        String email
-        , String userName
+        GithubInfo githubInfo
+        , LocalDate lastCommitDate
     ) {
 
-        GithubInfo githubInfo = githubInfoRepository.findByEmail(email)
-            .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
+        log.info(
+            "start saveCommitInfoFromLastCommitDate... " + LocalDateTime.now()
+        );
 
         connectGithub(githubInfo.getAccessToken());
 
         log.info("success to connect");
 
         Map<LocalDate, Long> commitDateCountMap = new HashMap<>();
-        LocalDate lastCommitDate = getLastCommitDate(githubInfo);
 
-        getCommitInfoFromGithub(userName, commitDateCountMap, lastCommitDate);
+        getCommitInfoFromGithub(githubInfo.getUsername(), commitDateCountMap,
+            lastCommitDate);
 
         saveCommitHistory(githubInfo, commitDateCountMap);
 
-        log.info("success to get commitInfo... " + LocalDateTime.now());
+        log.info("complete saveCommitInfoFromLastCommitDate... "
+            + LocalDateTime.now());
 
-        return email;
+        return githubInfo.getEmail();
     }
 
     private void saveCommitHistory(
@@ -98,14 +96,14 @@ public class GithubApi {
     }
 
     private void getCommitInfoFromGithub(
-        String userName
+        String username
         , Map<LocalDate, Long> commitDateCountMap
         , LocalDate lastCommitDate
     ) {
         try {
-            GHUser user = github.getUser(userName);
+            GHUser user = github.getUser(username);
             log.info(
-                userName + " 님의 CommitLog를 가져옵니다... " + LocalDateTime.now()
+                username + " 님의 CommitLog를 가져옵니다... " + LocalDateTime.now()
             );
 
             List<GHRepository> repositories = user.listRepositories().toList();
@@ -113,7 +111,7 @@ public class GithubApi {
             for (GHRepository repository : repositories) {
                 GHCommitQueryBuilder commitQueryBuilder = repository.queryCommits();
 
-                commitQueryBuilder.author(userName);
+                commitQueryBuilder.author(username);
                 commitQueryBuilder.since(Date.valueOf(lastCommitDate));
 
                 List<GHCommit> commits = commitQueryBuilder.list().toList();
@@ -147,22 +145,12 @@ public class GithubApi {
         }
     }
 
-    private LocalDate getLastCommitDate(GithubInfo githubInfo) {
-        return commitHistoryRepository.findFirstByGithubInfoIdOrderByCommitDateDesc(
-                githubInfo.getId())
-            .stream()
-            .map(CommitHistory::getCommitDate)
-            .findFirst()
-            .orElse(githubInfo.getCreatedAt().toLocalDate());
-    }
-
     private void saveCommitHistory(
         GithubInfo githubInfo
         , Entry<LocalDate, Long> entry
     ) {
         commitHistoryRepository.save(CommitHistory.builder()
-            .githubInfoId(githubInfo.getId())
-            .memberId(githubInfo.getMemberId())
+            .githubInfo(githubInfo)
             .commitDate(entry.getKey())
             .commitCount(entry.getValue())
             .consecutiveCommitDays(

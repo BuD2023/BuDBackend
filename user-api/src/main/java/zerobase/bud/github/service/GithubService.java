@@ -13,12 +13,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.github.domain.CommitHistory;
-import zerobase.bud.github.domain.GithubInfo;
+import zerobase.bud.domain.CommitHistory;
+import zerobase.bud.domain.GithubInfo;
 import zerobase.bud.github.dto.CommitCountByDate;
 import zerobase.bud.github.dto.CommitHistoryInfo;
-import zerobase.bud.github.repository.CommitHistoryRepository;
-import zerobase.bud.github.repository.GithubInfoRepository;
+import zerobase.bud.repository.CommitHistoryRepository;
+import zerobase.bud.repository.GithubInfoRepository;
+import zerobase.bud.service.GithubApi;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -78,9 +79,24 @@ public class GithubService {
             .build();
     }
 
-    public String saveCommitInfoFromLastCommitDate(String email,
-        String userName) {
-        return githubApi.saveCommitInfoFromLastCommitDate(email, userName);
+    public String saveCommitInfoFromLastCommitDate(
+        String email
+    ) {
+        GithubInfo githubInfo = githubInfoRepository.findByEmail(email)
+            .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
+
+        return githubApi.saveCommitInfoFromLastCommitDate(
+            githubInfo, getLastCommitDate(githubInfo)
+        );
+    }
+
+    private LocalDate getLastCommitDate(GithubInfo githubInfo) {
+        return commitHistoryRepository.findFirstByGithubInfoIdOrderByCommitDateDesc(
+                githubInfo.getId())
+            .stream()
+            .map(CommitHistory::getCommitDate)
+            .findFirst()
+            .orElse(githubInfo.getCreatedAt().toLocalDate());
     }
 
 
@@ -113,5 +129,4 @@ public class GithubService {
         }
         return thisWeekCommitCount;
     }
-
 }

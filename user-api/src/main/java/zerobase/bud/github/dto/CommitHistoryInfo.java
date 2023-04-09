@@ -14,10 +14,12 @@ import lombok.Setter;
 @Builder
 public class CommitHistoryInfo {
 
-    Long totalCommitCount;
-    Long todayCommitCount;
-    Long thisWeekCommitCount;
-    Long consecutiveCommitDays;
+    String nickName;
+    String level;
+    long totalCommitCount;
+    long todayCommitCount;
+    long thisWeekCommitCount;
+    long consecutiveCommitDays;
     List<CommitCountByDate> commits;
 
 }

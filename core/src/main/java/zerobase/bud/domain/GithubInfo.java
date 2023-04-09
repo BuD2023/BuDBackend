@@ -1,16 +1,16 @@
-package zerobase.bud.github.domain;
+package zerobase.bud.domain;
 
-import java.time.LocalDate;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import zerobase.bud.domain.BaseEntity;
 
 @Getter
 @Setter
@@ -18,22 +18,19 @@ import zerobase.bud.domain.BaseEntity;
 @AllArgsConstructor
 @SuperBuilder
 @Entity
-public class CommitHistory extends BaseEntity {
+public class GithubInfo extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //    @Column(unique = true)
-    private Long githubInfoId;
+    @OneToOne
+    private Member member;
 
-    //@OneToOne
-    private Long memberId;
+    @Column(unique = true)
+    private String email;
 
-    private long commitCount;
+    private String username;
 
-    private long consecutiveCommitDays;
-
-    private LocalDate commitDate;
-
+    private String accessToken;
 }
