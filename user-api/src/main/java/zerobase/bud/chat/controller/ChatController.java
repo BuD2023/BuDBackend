@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import zerobase.bud.chat.dto.ChatDto;
+import zerobase.bud.chat.dto.ChatImageRequest;
 import zerobase.bud.chat.dto.ChatMessageRequest;
 import zerobase.bud.chat.service.ChatService;
 
