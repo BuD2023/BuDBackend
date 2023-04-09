@@ -1,30 +1,28 @@
-package zerobase.bud.github.scheduler;
+package zerobase.bud.tasklet;
 
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
+import static zerobase.bud.type.ErrorCode.NOT_REGISTERED_MEMBER;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import zerobase.bud.common.exception.BudException;
-import zerobase.bud.github.domain.GithubInfo;
-import zerobase.bud.github.repository.GithubInfoRepository;
-import zerobase.bud.github.service.GithubApi;
+import zerobase.bud.domain.GithubInfo;
+import zerobase.bud.exception.BudException;
+import zerobase.bud.repository.GithubInfoRepository;
+import zerobase.bud.service.GithubApi;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class GetCommitInfoScheduler {
+public class GetCommitInfoTasklet {
 
     private final GithubInfoRepository githubInfoRepository;
     private final GithubApi githubApi;
 
-    @Scheduled(cron = "0 5 0 * * *")
-    public void getCommitInfoScheduling() {
-        log.info("start getCommitInfoScheduling..." + LocalDateTime.now());
+    public void getCommitInfo() {
+        log.info("start getCommitInfo..." + LocalDateTime.now());
 
         List<GithubInfo> githubInfoList = githubInfoRepository.findAll();
 
@@ -40,6 +38,6 @@ public class GetCommitInfoScheduler {
             );
         }
 
-        log.info("complete getCommitInfoScheduling..." + LocalDateTime.now());
+        log.info("complete getCommitInfo..." + LocalDateTime.now());
     }
 }
