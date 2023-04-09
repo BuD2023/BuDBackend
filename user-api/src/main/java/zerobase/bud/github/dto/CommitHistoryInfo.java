@@ -15,8 +15,8 @@ import lombok.Setter;
 public class CommitHistoryInfo {
 
     String nickName;
-    String level;
-    long totalCommitCount;
+    String levelCode;
+    long remainCommitCountNextLevel;
     long todayCommitCount;
     long thisWeekCommitCount;
     long consecutiveCommitDays;
