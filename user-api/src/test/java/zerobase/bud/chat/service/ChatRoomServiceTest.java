@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.common.exception.ChatRoomException;
@@ -42,6 +44,12 @@ class ChatRoomServiceTest {
 
     @Mock
     private ChatRepository chatRepository;
+
+    @Mock
+    private RedisTemplate<String, ?> redisTemplate;
+
+    @Mock
+    private ValueOperations valueOperations;
 
     @InjectMocks
     private ChatRoomService chatRoomService;
@@ -147,6 +155,11 @@ class ChatRoomServiceTest {
         given(chatRoomRepository
                 .findAllByTitleContainingIgnoreCaseAndStatus(anyString(), any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
+
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get("CHATROOM1")).willReturn(2L);
+        given(valueOperations.get("CHATROOM2")).willReturn(3L);
+        given(valueOperations.get("CHATROOM3")).willReturn(3L);
         //when
         Slice<ChatRoomDto> chatRoomDtos = chatRoomService.searchChatRooms("키워드", 0);
         //then
@@ -196,6 +209,12 @@ class ChatRoomServiceTest {
         given(chatRoomRepository
                 .findAllByStatus(any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
+
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get("CHATROOM1")).willReturn(2L);
+        given(valueOperations.get("CHATROOM2")).willReturn(3L);
+        given(valueOperations.get("CHATROOM3")).willReturn(3L);
+
         //when
         Slice<ChatRoomDto> chatRoomDtos = chatRoomService.readChatRooms(0);
         //then
@@ -224,6 +243,9 @@ class ChatRoomServiceTest {
                                 .createdAt(LocalDateTime.now())
                                 .build())
                 );
+
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get("CHATROOM123")).willReturn(2L);
         //when
         ChatRoomDto dto = chatRoomService.readChatRoom(123L);
         //then

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -20,6 +21,7 @@ import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.security.TokenProvider;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
+import static zerobase.bud.common.util.Constant.CHATROOM;
 import static zerobase.bud.common.util.Constant.SESSION;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
 
@@ -46,11 +48,12 @@ public class WebSocketHandler implements ChannelInterceptor {
             }
 
             String userId = tokenProvider.getUserIdInRawToken(rawToken);
-
             Long chatroomId = getChatroomIdFromDestination(accessor.getDestination());
             String sessionId = accessor.getSessionId();
+
             ChatRoom chatRoom = getChatRoom(chatroomId);
 
+            addSessionCount(chatroomId);
             saveSession(chatRoom, userId, sessionId);
         } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
             String sessionId = accessor.getSessionId();
@@ -59,6 +62,8 @@ public class WebSocketHandler implements ChannelInterceptor {
 
             try {
                 ChatRoom chatRoom = getChatRoom(session.getChatroomId());
+                minusSessionCount(chatRoom.getId());
+
                 if (chatRoom.getMember().getUserId().equals(session.getUserId())) {
                     chatRoom.delete();
                     chatRoomRepository.save(chatRoom);
@@ -76,13 +81,22 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private void saveSession(ChatRoom chatRoom, String userId, String sessionId) {
         HashOperations<String, String, ChatRoomSession> hashOperations = redisTemplate.opsForHash();
-
         ChatRoomSession session = ChatRoomSession.builder()
                 .chatroomId(chatRoom.getId())
                 .userId(userId)
                 .build();
-
         hashOperations.put(SESSION, sessionId, session);
+    }
+
+    private void addSessionCount(Long chatroomId) {
+        ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
+        valueOperations.setIfAbsent(CHATROOM + chatroomId, 0L);
+        valueOperations.increment(CHATROOM + chatroomId);
+    }
+
+    private void minusSessionCount(Long chatroomId) {
+        ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
+        valueOperations.decrement(CHATROOM + chatroomId);
     }
 
     private Long getChatroomIdFromDestination(String destination) {

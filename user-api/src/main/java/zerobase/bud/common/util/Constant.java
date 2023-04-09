@@ -6,5 +6,7 @@ public abstract class Constant {
 
     public static final String TOKEN_PREFIX = "Bearer ";
 
-    public static final String SESSION = "SESSION";
+    public static final String SESSION = "CHATROOM_SESSION";
+
+    public static final String CHATROOM = "CHATROOM";
 }
