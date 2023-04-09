@@ -1,7 +1,7 @@
-package zerobase.bud.github.service;
+package zerobase.bud.service;
 
-import static zerobase.bud.common.type.ErrorCode.FAILED_CONNECT_GITHUB;
-import static zerobase.bud.common.type.ErrorCode.FAILED_GET_COMMIT_INFO;
+import static zerobase.bud.type.ErrorCode.FAILED_CONNECT_GITHUB;
+import static zerobase.bud.type.ErrorCode.FAILED_GET_COMMIT_INFO;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -26,10 +26,10 @@ import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zerobase.bud.common.exception.BudException;
-import zerobase.bud.github.domain.CommitHistory;
-import zerobase.bud.github.domain.GithubInfo;
-import zerobase.bud.github.repository.CommitHistoryRepository;
+import zerobase.bud.domain.CommitHistory;
+import zerobase.bud.domain.GithubInfo;
+import zerobase.bud.exception.BudException;
+import zerobase.bud.repository.CommitHistoryRepository;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -56,7 +56,8 @@ public class GithubApi {
 
         Map<LocalDate, Long> commitDateCountMap = new HashMap<>();
 
-        getCommitInfoFromGithub(githubInfo.getUsername(), commitDateCountMap, lastCommitDate);
+        getCommitInfoFromGithub(githubInfo.getUsername(), commitDateCountMap,
+            lastCommitDate);
 
         saveCommitHistory(githubInfo, commitDateCountMap);
 
