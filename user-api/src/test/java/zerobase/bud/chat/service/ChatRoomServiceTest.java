@@ -157,9 +157,9 @@ class ChatRoomServiceTest {
                 .willReturn(new SliceImpl<>(chatRooms));
 
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get("CHATROOM1")).willReturn(2L);
-        given(valueOperations.get("CHATROOM2")).willReturn(3L);
-        given(valueOperations.get("CHATROOM3")).willReturn(3L);
+        given(valueOperations.get("CHATROOM1")).willReturn(2);
+        given(valueOperations.get("CHATROOM2")).willReturn(3);
+        given(valueOperations.get("CHATROOM3")).willReturn(3);
         //when
         Slice<ChatRoomDto> chatRoomDtos = chatRoomService.searchChatRooms("키워드", 0);
         //then
@@ -211,9 +211,9 @@ class ChatRoomServiceTest {
                 .willReturn(new SliceImpl<>(chatRooms));
 
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get("CHATROOM1")).willReturn(2L);
-        given(valueOperations.get("CHATROOM2")).willReturn(3L);
-        given(valueOperations.get("CHATROOM3")).willReturn(3L);
+        given(valueOperations.get("CHATROOM1")).willReturn(2);
+        given(valueOperations.get("CHATROOM2")).willReturn(3);
+        given(valueOperations.get("CHATROOM3")).willReturn(3);
 
         //when
         Slice<ChatRoomDto> chatRoomDtos = chatRoomService.readChatRooms(0);
@@ -245,7 +245,7 @@ class ChatRoomServiceTest {
                 );
 
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get("CHATROOM123")).willReturn(2L);
+        given(valueOperations.get("CHATROOM123")).willReturn(2);
         //when
         ChatRoomDto dto = chatRoomService.readChatRoom(123L);
         //then

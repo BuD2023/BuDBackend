@@ -53,7 +53,7 @@ public class ChatRoomService {
     @Transactional(readOnly = true)
     public Slice<ChatRoomDto> searchChatRooms(String keyword, int page) {
 
-        ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
+        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 
         return chatRoomRepository
                 .findAllByTitleContainingIgnoreCaseAndStatus(keyword, ACTIVE,
@@ -66,7 +66,7 @@ public class ChatRoomService {
     @Transactional(readOnly = true)
     public Slice<ChatRoomDto> readChatRooms(int page) {
 
-        ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
+        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 
         return chatRoomRepository.findAllByStatus(ACTIVE,
                         PageRequest.of(page, CHATROOM_SIZE_PER_PAGE))
@@ -78,7 +78,7 @@ public class ChatRoomService {
     @Transactional(readOnly = true)
     public ChatRoomDto readChatRoom(Long chatroomId) {
 
-        ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
+        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 
         return ChatRoomDto.of(
                 chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
@@ -87,8 +87,8 @@ public class ChatRoomService {
         );
     }
 
-    private Long getNumberOfMembers(Long chatroomId, ValueOperations<String, Long> valueOperations) {
-        return Optional.ofNullable(valueOperations.get(CHATROOM + chatroomId)).orElse(1L);
+    private Integer getNumberOfMembers(Long chatroomId, ValueOperations<String, Integer> valueOperations) {
+        return Optional.ofNullable(valueOperations.get(CHATROOM + chatroomId)).orElse(1);
     }
 
     @Transactional(readOnly = true)

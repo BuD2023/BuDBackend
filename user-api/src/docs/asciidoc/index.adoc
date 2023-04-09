@@ -96,6 +96,7 @@ include::{snippets}/chat-room-controller-test/success-read-chats-test/response-f
 ----
 ws://34.64.224.24:8080/ws
 /chatrooms/1
+Authorization: Bearer accestokenvlaue
 ----
 
 === 7. 웹소켓 pub
@@ -103,6 +104,7 @@ ws://34.64.224.24:8080/ws
 ----
 ws://34.64.224.24:8080/ws
 /chats/message
+Authorization: Bearer accestokenvlaue
 
 {
     "senderId" : 1,

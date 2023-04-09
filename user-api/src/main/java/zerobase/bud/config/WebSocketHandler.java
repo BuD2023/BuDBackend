@@ -89,13 +89,13 @@ public class WebSocketHandler implements ChannelInterceptor {
     }
 
     private void addSessionCount(Long chatroomId) {
-        ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
-        valueOperations.setIfAbsent(CHATROOM + chatroomId, 0L);
+        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
+        valueOperations.setIfAbsent(CHATROOM + chatroomId, 0);
         valueOperations.increment(CHATROOM + chatroomId);
     }
 
     private void minusSessionCount(Long chatroomId) {
-        ValueOperations<String, Long> valueOperations = redisTemplate.opsForValue();
+        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
         valueOperations.decrement(CHATROOM + chatroomId);
     }
 
