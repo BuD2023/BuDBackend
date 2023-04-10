@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.chat.dto.ChatDto;
@@ -15,6 +17,7 @@ import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
 import static zerobase.bud.common.util.Constant.*;
@@ -29,6 +32,8 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
 
     private final ChatRepository chatRepository;
+
+    private final RedisTemplate redisTemplate;
 
     @Transactional
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
@@ -47,25 +52,43 @@ public class ChatRoomService {
 
     @Transactional(readOnly = true)
     public Slice<ChatRoomDto> searchChatRooms(String keyword, int page) {
+
+        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
+
         return chatRoomRepository
                 .findAllByTitleContainingIgnoreCaseAndStatus(keyword, ACTIVE,
                         PageRequest.of(page, CHATROOM_SIZE_PER_PAGE))
-                .map(ChatRoomDto::from);
+                .map(chatRoom -> ChatRoomDto.of(chatRoom,
+                        getNumberOfMembers(chatRoom.getId(), valueOperations)
+                ));
     }
 
     @Transactional(readOnly = true)
     public Slice<ChatRoomDto> readChatRooms(int page) {
+
+        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
+
         return chatRoomRepository.findAllByStatus(ACTIVE,
                         PageRequest.of(page, CHATROOM_SIZE_PER_PAGE))
-                .map(ChatRoomDto::from);
+                .map(chatRoom -> ChatRoomDto.of(chatRoom,
+                        getNumberOfMembers(chatRoom.getId(), valueOperations)
+                ));
     }
 
     @Transactional(readOnly = true)
     public ChatRoomDto readChatRoom(Long chatroomId) {
-        return ChatRoomDto.from(
+
+        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
+
+        return ChatRoomDto.of(
                 chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
-                        .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND))
+                        .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND)),
+                getNumberOfMembers(chatroomId, valueOperations)
         );
+    }
+
+    private Integer getNumberOfMembers(Long chatroomId, ValueOperations<String, Integer> valueOperations) {
+        return Optional.ofNullable(valueOperations.get(CHATROOM + chatroomId)).orElse(1);
     }
 
     @Transactional(readOnly = true)

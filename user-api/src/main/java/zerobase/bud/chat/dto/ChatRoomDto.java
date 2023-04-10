@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import zerobase.bud.common.util.TimeUtil;
 import zerobase.bud.domain.ChatRoom;
 
 import java.time.LocalDateTime;
@@ -28,7 +27,7 @@ public class ChatRoomDto {
     private String hostProfileUrl;
     private Long hostId;
 
-    public static ChatRoomDto from(ChatRoom chatRoom) {
+    public static ChatRoomDto of(ChatRoom chatRoom, Integer numberOfMembers) {
         return ChatRoomDto.builder()
                 .chatRoomId(chatRoom.getId())
                 .title(chatRoom.getTitle())
@@ -41,6 +40,7 @@ public class ChatRoomDto {
                                 .collect(Collectors.toList())
                 )
                 .createdAt(chatRoom.getCreatedAt())
+                .numberOfMembers(numberOfMembers)
                 .hostId(chatRoom.getMember().getId())
                 .build();
     }
