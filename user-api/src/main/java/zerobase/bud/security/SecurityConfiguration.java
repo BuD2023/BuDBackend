@@ -28,10 +28,7 @@ public class SecurityConfiguration {
                 .authorizeRequests()
                 .antMatchers("/**", "/h2-console/**").permitAll()
                 .anyRequest().authenticated()
-                .and()
-                .csrf()
-                .ignoringAntMatchers("/h2-console/**").disable()
-                .httpBasic()
+
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.NEVER)
