@@ -112,7 +112,7 @@ class UserControllerTest {
         given(userService.follow(anyLong(), any())).willReturn(1L);
         //when
         //then
-        this.mockMvc.perform(post("/users/{userId}", 1L)
+        this.mockMvc.perform(post("/users/{userId}/follows", 1L)
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())

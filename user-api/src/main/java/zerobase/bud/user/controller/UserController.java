@@ -20,7 +20,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/users/{userId}")
+    @PostMapping("/users/{userId}/follows")
     private ResponseEntity follow(@PathVariable Long userId,
                                   @AuthenticationPrincipal Member member){
         userService.follow(userId, member);
