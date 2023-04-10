@@ -9,10 +9,13 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.user.domain.Follow;
+import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.repository.FollowRepository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -65,5 +68,45 @@ public class UserService {
         Long numberOfPosts = postRepository.countByMember(member);
 
         return UserDto.of(member, numberOfFollowers, numberOfFollows, numberOfPosts);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FollowDto> readMyFollowings(Member member) {
+        return followRepository.findByMember(member)
+                .map(follow -> FollowDto.of(follow.getTarget()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<FollowDto> readMyFollowers(Member member) {
+        return followRepository.findByTarget(member)
+                .map(follow -> FollowDto.of(follow.getMember()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<FollowDto> readFollowings(Long userId, Member reader) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberException(ErrorCode.USER_NOT_FOUND));
+
+        return followRepository.findByMember(member)
+                .map(follow -> toFollowDto(reader, follow))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<FollowDto> readFollowers(Long userId, Member reader) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberException(ErrorCode.USER_NOT_FOUND));
+
+        return followRepository.findByTarget(member)
+                .map(follow -> toFollowDto(reader, follow))
+                .collect(Collectors.toList());
+    }
+
+    private FollowDto toFollowDto(Member reader, Follow follow) {
+        Member target = follow.getTarget();
+        return FollowDto.of(target, reader.equals(target),
+                followRepository.existsByTargetAndMember(target, reader));
     }
 }

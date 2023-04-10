@@ -28,6 +28,7 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.security.TokenProvider;
 import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.controller.UserController;
+import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.service.UserService;
 
@@ -227,6 +228,258 @@ class UserControllerTest {
                                                 .description("회원의 레벨"),
                                         fieldWithPath("profileUrl").type(JsonFieldType.STRING)
                                                 .description("회원의 프로필 url")
+                                )
+                        )
+                );
+    }
+
+    @Test
+    @DisplayName("유저의 팔로우 리스트 조회 성공")
+    void successReadMyFollowingsTest() throws Exception {
+        //given
+        List<FollowDto> dtos = List.of(
+                FollowDto.builder()
+                        .id(1L)
+                        .userId("haden")
+                        .nickName("닉넴")
+                        .description("안뇽이건한줄소개")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(true)
+                        .build(),
+                FollowDto.builder()
+                        .id(2L)
+                        .userId("thddd")
+                        .nickName("사과")
+                        .description("안녕하세요 ~~~ 저는")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(true)
+                        .build(),
+                FollowDto.builder()
+                        .id(3L)
+                        .userId("agvdg")
+                        .nickName("알수없음")
+                        .description("안뇽이건한줄소개")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(true)
+                        .build()
+        );
+
+        given(userService.readMyFollowings(any())).willReturn(dtos);
+        //when
+        //then
+        this.mockMvc.perform(get("/users/follows")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                relaxedResponseFields(
+                                        fieldWithPath("[].userId").type(JsonFieldType.STRING)
+                                                .description("깃허브 유저 아이디"),
+                                        fieldWithPath("[].id").type(JsonFieldType.NUMBER)
+                                                .description("회원 고유값"),
+                                        fieldWithPath("[].description").type(JsonFieldType.STRING)
+                                                .description("한줄 소개"),
+                                        fieldWithPath("[].nickName").type(JsonFieldType.STRING)
+                                                .description("회원의 닉네임"),
+                                        fieldWithPath("[].profileUrl").type(JsonFieldType.STRING)
+                                                .description("회원의 프로필 url"),
+                                        fieldWithPath("[].isFollowing").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 회원이 팔로잉하고 있는 사람인지")
+                                )
+                        )
+                );
+    }
+
+    @Test
+    @DisplayName("회원 팔로우 리스트 조회 성공")
+    void successReadFollowingsTest() throws Exception {
+        //given
+        List<FollowDto> dtos = List.of(
+                FollowDto.builder()
+                        .id(1L)
+                        .userId("haden")
+                        .nickName("닉넴")
+                        .description("안뇽이건한줄소개")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(false)
+                        .isReader(false)
+                        .build(),
+                FollowDto.builder()
+                        .id(2L)
+                        .userId("thddd")
+                        .nickName("사과")
+                        .description("안녕하세요 ~~~ 저는")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(false)
+                        .isReader(true)
+                        .build(),
+                FollowDto.builder()
+                        .id(3L)
+                        .userId("agvdg")
+                        .nickName("알수없음")
+                        .description("안뇽이건한줄소개")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(false)
+                        .isReader(false)
+                        .build()
+        );
+
+        given(userService.readFollowings(anyLong(), any())).willReturn(dtos);
+        //when
+        //then
+        this.mockMvc.perform(get("/users/{userId}/follows",1L)
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                relaxedResponseFields(
+                                        fieldWithPath("[].userId").type(JsonFieldType.STRING)
+                                                .description("깃허브 유저 아이디"),
+                                        fieldWithPath("[].id").type(JsonFieldType.NUMBER)
+                                                .description("회원 고유값"),
+                                        fieldWithPath("[].description").type(JsonFieldType.STRING)
+                                                .description("한줄 소개"),
+                                        fieldWithPath("[].nickName").type(JsonFieldType.STRING)
+                                                .description("회원의 닉네임"),
+                                        fieldWithPath("[].profileUrl").type(JsonFieldType.STRING)
+                                                .description("회원의 프로필 url"),
+                                        fieldWithPath("[].isFollowing").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 회원이 팔로잉하고 있는 사람인지"),
+                                        fieldWithPath("[].isReader").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 사람의 프로필인지")
+                                )
+                        )
+                );
+    }
+
+    @Test
+    @DisplayName("유저의 팔로워 리스트 조회 성공")
+    void successReadMyFollowersTest() throws Exception {
+        //given
+        List<FollowDto> dtos = List.of(
+                FollowDto.builder()
+                        .id(1L)
+                        .userId("haden")
+                        .nickName("닉넴")
+                        .description("안뇽이건한줄소개")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(false)
+                        .build(),
+                FollowDto.builder()
+                        .id(2L)
+                        .userId("thddd")
+                        .nickName("사과")
+                        .description("안녕하세요 ~~~ 저는")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(true)
+                        .build(),
+                FollowDto.builder()
+                        .id(3L)
+                        .userId("agvdg")
+                        .nickName("알수없음")
+                        .description("안뇽이건한줄소개")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(false)
+                        .build()
+        );
+        given(userService.readMyFollowers(any())).willReturn(dtos);
+        //when
+        //then
+        this.mockMvc.perform(get("/users/followers")
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                relaxedResponseFields(
+                                        fieldWithPath("[].userId").type(JsonFieldType.STRING)
+                                                .description("깃허브 유저 아이디"),
+                                        fieldWithPath("[].id").type(JsonFieldType.NUMBER)
+                                                .description("회원 고유값"),
+                                        fieldWithPath("[].description").type(JsonFieldType.STRING)
+                                                .description("한줄 소개"),
+                                        fieldWithPath("[].nickName").type(JsonFieldType.STRING)
+                                                .description("회원의 닉네임"),
+                                        fieldWithPath("[].profileUrl").type(JsonFieldType.STRING)
+                                                .description("회원의 프로필 url"),
+                                        fieldWithPath("[].isFollowing").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 회원이 팔로잉하고 있는 사람인지")
+                                )
+                        )
+                );
+    }
+
+    @Test
+    @DisplayName("회원의 팔로워 리스트 조회 성공")
+    void successReadFollowersTest() throws Exception {
+        //given
+        List<FollowDto> dtos = List.of(
+                FollowDto.builder()
+                        .id(1L)
+                        .userId("haden")
+                        .nickName("닉넴")
+                        .description("안뇽이건한줄소개")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(false)
+                        .isReader(true)
+                        .build(),
+                FollowDto.builder()
+                        .id(2L)
+                        .userId("thddd")
+                        .nickName("사과")
+                        .description("안녕하세요 ~~~ 저는")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(false)
+                        .isReader(false)
+                        .build(),
+                FollowDto.builder()
+                        .id(3L)
+                        .userId("agvdg")
+                        .nickName("알수없음")
+                        .description("안뇽이건한줄소개")
+                        .profileUrl("affd.jpg")
+                        .isFollowing(true)
+                        .isReader(false)
+                        .build()
+        );
+        given(userService.readFollowers(anyLong(), any())).willReturn(dtos);
+        //when
+        //then
+        this.mockMvc.perform(get("/users/{userId}/followers",1L)
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                relaxedResponseFields(
+                                        fieldWithPath("[].userId").type(JsonFieldType.STRING)
+                                                .description("깃허브 유저 아이디"),
+                                        fieldWithPath("[].id").type(JsonFieldType.NUMBER)
+                                                .description("회원 고유값"),
+                                        fieldWithPath("[].description").type(JsonFieldType.STRING)
+                                                .description("한줄 소개"),
+                                        fieldWithPath("[].nickName").type(JsonFieldType.STRING)
+                                                .description("회원의 닉네임"),
+                                        fieldWithPath("[].profileUrl").type(JsonFieldType.STRING)
+                                                .description("회원의 프로필 url"),
+                                        fieldWithPath("[].isFollowing").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 회원이 팔로잉하고 있는 사람인지"),
+                                        fieldWithPath("[].isReader").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 사람의 프로필인지")
                                 )
                         )
                 );

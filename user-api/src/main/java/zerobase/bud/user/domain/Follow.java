@@ -23,7 +23,7 @@ public class Follow extends BaseEntity {
     @ManyToOne
     private Member target;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
 
 }

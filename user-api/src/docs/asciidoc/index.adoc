@@ -230,3 +230,70 @@ include::{snippets}/user-controller-test/success-read-my-profile-test/http-respo
 
 .response field
 include::{snippets}/user-controller-test/success-read-my-profile-test/response-fields.adoc[]
+
+
+=== 4. 유저의 팔로우 리스트 조회
+.request
+include::{snippets}/user-controller-test/success-read-followings-test/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|userId|Number|Y|path variable, 대상 유저의 아이디
+|===
+
+.response
+include::{snippets}/user-controller-test/success-read-followings-test/http-response.adoc[]
+
+.response field
+include::{snippets}/user-controller-test/success-read-followings-test/response-fields.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|USER_NOT_FOUND|해당 유저가 없습니다.
+|===
+
+=== 5. 유저의 팔로워 리스트 조회
+.request
+include::{snippets}/user-controller-test/success-read-followers-test/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|userId|Number|Y|path variable, 대상 유저의 아이디
+|===
+
+.response
+include::{snippets}/user-controller-test/success-read-followers-test/http-response.adoc[]
+
+.response field
+include::{snippets}/user-controller-test/success-read-followers-test/response-fields.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|USER_NOT_FOUND|해당 유저가 없습니다.
+|===
+
+=== 6. 나의 팔로우 리스트 조회
+.request
+include::{snippets}/user-controller-test/success-read-my-followings-test/http-request.adoc[]
+
+.response
+include::{snippets}/user-controller-test/success-read-my-followings-test/http-response.adoc[]
+
+.response field
+include::{snippets}/user-controller-test/success-read-my-followings-test/response-fields.adoc[]
+
+
+=== 7. 나의 팔로워 리스트 조회
+.request
+include::{snippets}/user-controller-test/success-read-my-followers-test/http-request.adoc[]
+
+.response
+include::{snippets}/user-controller-test/success-read-my-followers-test/http-response.adoc[]
+
+.response field
+include::{snippets}/user-controller-test/success-read-my-followers-test/response-fields.adoc[]
+
