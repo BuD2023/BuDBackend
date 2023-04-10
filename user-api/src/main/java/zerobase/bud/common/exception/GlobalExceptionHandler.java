@@ -36,6 +36,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(MemberException.class)
+    public ResponseEntity<ErrorResponse> handleMemberException(MemberException e) {
+        log.error("{} is occurred", e.getErrorCode());
+        return ResponseEntity.badRequest().body(
+                ErrorResponse.builder()
+                        .errorCode(e.getErrorCode())
+                        .message(e.getMessage())
+                        .build()
+        );
+    }
+
     @ExceptionHandler(ChatRoomException.class)
     public ResponseEntity<ErrorResponse> handleChatRoomException(ChatRoomException e) {
         log.error("{} is occurred", e.getErrorCode());
