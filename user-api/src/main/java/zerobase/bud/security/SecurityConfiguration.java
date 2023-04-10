@@ -8,7 +8,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import zerobase.bud.oauth.service.CustomOAuth2UserService;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -19,29 +25,85 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
-                .cors().disable()
-                .headers()
-                .frameOptions()
-                .disable()
+                .cors().configurationSource(corsConfigurationSource())
                 .and()
 
-                .httpBasic().disable()
                 .authorizeRequests()
                 .antMatchers("/**", "/h2-console/**").permitAll()
                 .anyRequest().authenticated()
-
                 .and()
+
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.NEVER)
                 .and()
+
                 .logout()
                 .logoutSuccessUrl("/")
                 .and()
+
                 .oauth2Login()
                 .defaultSuccessUrl("/login/oauth2")
                 .userInfoEndpoint()
                 .userService(customOAuth2UserService);
+
+
+        http.
+                httpBasic().disable()
+                .csrf().disable()
+                .headers().frameOptions().disable();
+
+
+//        http
+//                .csrf().disable()
+//                .cors().disable()
+//                .headers()
+//                .frameOptions()
+//                .disable()
+//                .and()
+//
+//                .httpBasic().disable()
+//                .authorizeRequests()
+//                .antMatchers("/**", "/h2-console/**").permitAll()
+//                .anyRequest().authenticated()
+//
+//                .and()
+//                .sessionManagement()
+//                .sessionCreationPolicy(SessionCreationPolicy.NEVER)
+//                .and()
+//                .logout()
+//                .logoutSuccessUrl("/")
+//                .and()
+//                .oauth2Login()
+//                .defaultSuccessUrl("/login/oauth2")
+//                .userInfoEndpoint()
+//                .userService(customOAuth2UserService);
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(Arrays.asList(
+                "http://localhost:8080",
+                "http://localhost:5173",
+                "https://mlf.vercel.app",
+                "https://stately-yeot-007fa8.netlify.app"
+        ));
+        config.setAllowedMethods(Arrays.asList(
+                HttpMethod.GET.name(),
+                HttpMethod.POST.name(),
+                HttpMethod.DELETE.name(),
+                HttpMethod.PUT.name(),
+                HttpMethod.HEAD.name(),
+                HttpMethod.OPTIONS.name()
+        ));
+        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setExposedHeaders(Arrays.asList("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
