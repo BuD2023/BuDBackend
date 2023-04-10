@@ -18,18 +18,17 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf().disable()
+                .httpBasic()
+                .and()
                 .headers()
-                .frameOptions()
-                .disable()
+                .frameOptions().disable()
                 .and()
                     .authorizeRequests()
                         .antMatchers("/**", "/h2-console/**").permitAll()
                             .anyRequest().authenticated()
                 .and()
-                    .csrf()
-                        .ignoringAntMatchers("/h2-console/**").disable()
-                            .httpBasic()
-                .and()
+                    .csrf().ignoringAntMatchers("/h2-console/**").disable()
                     .sessionManagement()
                         .sessionCreationPolicy(SessionCreationPolicy.NEVER)
                 .and()
