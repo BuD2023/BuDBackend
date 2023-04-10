@@ -28,6 +28,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.error(request.getHeader(TOKEN_HEADER));
         String token = this.resolveTokenFromRequest(request);
         log.error("doFilterInternal" + token);
+        log.error(request.getRequestURI());
+        log.error(request.getMethod());
 
         if(StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
             log.error("validate");
