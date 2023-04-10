@@ -1,6 +1,5 @@
 package zerobase.bud.post.controller;
 
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.service.PostService;
+
+import javax.validation.Valid;
 
 @Slf4j
 @RestController
@@ -21,14 +22,12 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<String> createPost(
-        @RequestBody @Valid CreatePost.Request request
+            @RequestBody @Valid CreatePost.Request request
     ) {
-        log.error("post start");
-        String sting = postService.createPost(
+
+        return ResponseEntity.ok(postService.createPost(
                 "khg2154@naver.com"
                 , request
-        );
-        log.error("post end");
-        return ResponseEntity.ok(sting);
+        ));
     }
 }

@@ -22,14 +22,12 @@ public class GithubController {
 
     @PostMapping
     public ResponseEntity<String> saveCommitInfoFromLastCommitDate(
-        @AuthenticationPrincipal OAuth2User oAuth2User
+            @AuthenticationPrincipal OAuth2User oAuth2User
     ) {
-        log.error("github start");
-        String str = githubService.saveCommitInfoFromLastCommitDate(
+
+        return ResponseEntity.ok(githubService.saveCommitInfoFromLastCommitDate(
 //            oAuth2User.getAttribute("email")
-                "khg2154@naver.com");
-        log.error("github end");
-        return ResponseEntity.ok(str
+                        "khg2154@naver.com")
         );
     }
 

@@ -6,7 +6,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import zerobase.bud.domain.Member;
 import zerobase.bud.repository.MemberRepository;
 
 @Slf4j
@@ -14,13 +13,10 @@ import zerobase.bud.repository.MemberRepository;
 @RequiredArgsConstructor
 public class MemberService implements UserDetailsService {
     private final MemberRepository memberRepository;
+
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-        log.error("loadUserByUsername");
-        Member member = memberRepository.findByUserId(userId)
+        return memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 이메일입니다."));
-        log.error(member.getEmail());
-        log.error(member.getUserId());
-        return member;
     }
 }
