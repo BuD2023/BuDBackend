@@ -20,33 +20,33 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     //TODO: member 추가
-    @PostMapping("/chatroom")
+    @PostMapping("/chatrooms")
     private ResponseEntity createChatRoom(
             @RequestBody @Valid CreateChatRoomRequest request,
             @AuthenticationPrincipal Member member) {
         Long id = chatRoomService
                 .createChatRoom(request.getTitle(), request.getDescription(), request.getHashTag(), member);
-        return ResponseEntity.created(URI.create("/chatroom/" + id)).build();
+        return ResponseEntity.created(URI.create("/chatrooms/" + id)).build();
     }
 
-    @GetMapping("/chatroom/search")
+    @GetMapping("/chatrooms/search")
     private ResponseEntity searchChatRoom(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(chatRoomService.searchChatRooms(keyword, page));
     }
 
-    @GetMapping("/chatroom")
+    @GetMapping("/chatrooms")
     private ResponseEntity readChatRooms(@RequestParam(defaultValue = "0") int page) {
         return ResponseEntity.ok(chatRoomService.readChatRooms(page));
     }
 
-    @GetMapping("/chatroom/{chatroomId}")
+    @GetMapping("/chatrooms/{chatroomId}")
     private ResponseEntity readChatRoom(@PathVariable Long chatroomId){
         return ResponseEntity.ok(chatRoomService.readChatRoom(chatroomId));
     }
 
-    @GetMapping("/chatroom/{chatroomId}/chat")
+    @GetMapping("/chatrooms/{chatroomId}/chats")
     private ResponseEntity readChats(@PathVariable Long chatroomId,
                                      @RequestParam(defaultValue = "0") int page){
         return ResponseEntity.ok(chatRoomService.readChats(chatroomId, page));

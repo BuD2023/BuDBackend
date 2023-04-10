@@ -1,20 +1,39 @@
 package zerobase.bud.news.service;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.common.exception.BudException;
+import zerobase.bud.domain.Member;
 import zerobase.bud.news.domain.News;
 import zerobase.bud.news.dto.NewsDto;
 import zerobase.bud.news.dto.SearchAllNews;
 import zerobase.bud.news.repository.NewsRepository;
 import zerobase.bud.news.type.NewsSortType;
+import zerobase.bud.repository.GithubInfoRepository;
+import zerobase.bud.security.TokenProvider;
+import zerobase.bud.type.MemberStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,22 +42,71 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static zerobase.bud.common.type.ErrorCode.NEWS_ID_NOT_EXCEED_MIN_VALUE;
 import static zerobase.bud.common.type.ErrorCode.NEWS_NOT_FOUND;
 
+@ExtendWith({RestDocumentationExtension.class})
 @WebMvcTest(MockitoExtension.class)
 public class NewsServiceTest {
+
     @Mock
     private NewsRepository newsRepository;
 
     @InjectMocks
     private NewsService newsService;
+
+    @MockBean
+    private TokenProvider tokenProvider;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @BeforeEach
+    void init(
+            WebApplicationContext context,
+            RestDocumentationContextProvider contextProvider) {
+
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(documentationConfiguration(contextProvider))
+                .addFilters(new CharacterEncodingFilter("UTF-8", true))
+                .alwaysDo(print())
+                .build();
+
+        Member member = Member.builder()
+                .id(1L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .email("email@naver.com")
+                .profileImg("abcde.jpg")
+                .nickname("엄탱")
+                .job("백")
+                .oAuthAccessToken("token")
+                .build();
+
+        this.objectMapper.setVisibility(PropertyAccessor.FIELD,
+                JsonAutoDetect.Visibility.ANY);
+
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(member, "",
+                        List.of(MemberStatus.VERIFIED.getKey()).stream().map(
+                                        SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList()));
+
+        given(this.tokenProvider.getAuthentication("token"))
+                .willReturn(authentication);
+    }
 
     @Test
     @DisplayName("뉴스 상세 정보 검색 성공")
@@ -156,7 +224,7 @@ public class NewsServiceTest {
 
     @Test
     @DisplayName("뉴스 검색 실패 - 뉴스 고유 아이디 0이하")
-    void failGetNewsIdZero(){
+    void failGetNewsIdZero() {
         //given
         //when
         BudException budException = assertThrows(BudException.class,
@@ -167,7 +235,7 @@ public class NewsServiceTest {
 
     @Test
     @DisplayName("뉴스 검색 실패 - 뉴스 고유 아이디 매칭 데이터 없음")
-    void failGetNewsIdNoMatching(){
+    void failGetNewsIdNoMatching() {
         //given
         //when
         BudException budException = assertThrows(BudException.class,

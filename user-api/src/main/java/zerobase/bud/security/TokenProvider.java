@@ -12,14 +12,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import zerobase.bud.common.dto.JwtDto;
+import zerobase.bud.common.util.Constant;
 import zerobase.bud.domain.Member;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.member.service.MemberService;
 
 import java.util.Date;
 import java.util.Optional;
+
+import static zerobase.bud.common.util.Constant.TOKEN_PREFIX;
 
 @Slf4j
 @Component
@@ -48,7 +52,6 @@ public class TokenProvider {
     public JwtDto generateToken(OAuth2User oAuth2User) {
         String userId = oAuth2User.getAttribute("login");
         String role = oAuth2User.getAuthorities().toString();
-
         return setJwtDto(userId, role);
     }
 
@@ -101,5 +104,21 @@ public class TokenProvider {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    public String getUserIdInRawToken(String rawToken) {
+        if (!ObjectUtils.isEmpty(rawToken) && rawToken.startsWith(TOKEN_PREFIX)) {
+            String token = rawToken.substring(TOKEN_PREFIX.length());
+            return getUserId(token);
+        }
+        return null;
+    }
+
+    public boolean validateRawToken(String rawToken) {
+        if (!ObjectUtils.isEmpty(rawToken) && rawToken.startsWith(TOKEN_PREFIX)) {
+            String token = rawToken.substring(TOKEN_PREFIX.length());
+            return validateToken(token);
+        }
+        return false;
     }
 }

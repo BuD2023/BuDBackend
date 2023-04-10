@@ -94,20 +94,33 @@ include::{snippets}/chat-room-controller-test/success-read-chats-test/response-f
 === 6. 웹소켓 sub
 .STOMP
 ----
-ws://34.64.224.24:8080/ws
-/chatroom/1
+http://34.64.224.24:8080/ws
+/chatrooms/1
+Authorization: Bearer accestokenvlaue
 ----
 
 === 7. 웹소켓 pub
 .STOMP
 ----
-ws://34.64.224.24:8080/ws
-/chat/message
+http://34.64.224.24:8080/ws
+/chats/message
+Authorization: Bearer accestokenvlaue
 
 {
     "senderId" : 1,
     "chatroomId" : 1,
     "message" : "hihello!"
+}
+----
+----
+{
+"chatId": 24,
+"message": "안녕이건스톰프메세지!",
+"chatType": "MESSAGE",
+"createdAt": "0초 전",
+"userProfileUrl": null,
+"userName": "haden",
+"userId": 24
 }
 ----
 

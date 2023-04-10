@@ -33,4 +33,7 @@ public class ChatRoom extends BaseEntity {
     @ManyToOne
     private Member member;
 
+    public void delete(){
+        status = ChatRoomStatus.DELETED;
+    }
 }

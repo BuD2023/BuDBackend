@@ -8,15 +8,15 @@ import lombok.Getter;
 public enum ErrorCode {
 
     USER_NOT_FOUND("해당 유저가 없습니다."),
-
     CANNOT_FOLLOW_YOURSELF("자기 자신을 팔로우할 수 없습니다."),
+    WEB_SOCKET_ERROR("웹 소켓 연결에 오류가 발생했습니다."),
     CHATROOM_NOT_FOUND("해당 채팅방 정보가 없습니다."),
     WRONG_REQUEST_TYPE_ERROR("잘못된 요청 타입입니다."),
     FAILED_GET_COMMIT_INFO("커밋 정보를 가져오는 데 실패했습니다."),
     FAILED_CONNECT_GITHUB("깃헙과 연결에 실패했습니다."),
     NOT_REGISTERED_MEMBER("등록되지 않은 회원입니다."),
+    INVALID_TOKEN("토큰이 유효하지 않습니다."),
     INTERNAL_ERROR("내부 서버 오류가 발생했습니다."),
-
     ELEMENT_NOT_EXIST("데이터가 존재하지 않는 문서입니다."),
     URL_ILLEGAL_ARGUMENT("잘못된 URL 형식입니다."),
     NEWS_ID_NOT_EXCEED_MIN_VALUE("뉴스 고유 아이디가 최소값을 넘지 못했습니다."),
