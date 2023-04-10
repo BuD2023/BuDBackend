@@ -33,10 +33,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.error("doFilterInternal" + token);
         log.error(request.getRequestURI());
         log.error(request.getMethod());
-        ServletInputStream inputStream = request.getInputStream();
-        String messageBody = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
-        log.error(messageBody);
-
         if(StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
             log.error("validate");
             Authentication auth = this.tokenProvider.getAuthentication(token);

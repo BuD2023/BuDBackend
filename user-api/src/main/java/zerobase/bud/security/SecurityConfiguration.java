@@ -12,7 +12,7 @@ import zerobase.bud.oauth.service.CustomOAuth2UserService;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 public class SecurityConfiguration {
     private final CustomOAuth2UserService customOAuth2UserService;
 
