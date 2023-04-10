@@ -31,6 +31,10 @@ public class UserService {
         Member targetMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(ErrorCode.USER_NOT_FOUND));
 
+        if(member.equals(targetMember)){
+            throw new MemberException(ErrorCode.CANNOT_FOLLOW_YOURSELF);
+        }
+
         Optional<Follow> optionalFollow =
                 followRepository.findByTargetAndAndMember(targetMember, member);
 

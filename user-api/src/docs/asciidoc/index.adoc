@@ -219,6 +219,7 @@ include::{snippets}/user-controller-test/success-read-profile-test/response-fiel
 |===
 |status|ErrorCode|message
 |400|USER_NOT_FOUND|해당 유저가 없습니다.
+|400|CANNOT_FOLLOW_YOURSELF|자기 자신을 팔로우할 수 없습니다."
 |===
 
 === 3. 나의 프로필 조회
