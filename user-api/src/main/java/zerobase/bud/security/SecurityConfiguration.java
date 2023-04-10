@@ -19,14 +19,20 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)
-
+                .headers()
+                .frameOptions()
+                .disable()
                 .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.OPTIONS, "/**", "/h2-console/**").permitAll()
+                .antMatchers("/**", "/h2-console/**").permitAll()
                 .anyRequest().authenticated()
-
+                .and()
+                .csrf()
+                .ignoringAntMatchers("/h2-console/**").disable()
+                .httpBasic()
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.NEVER)
                 .and()
                 .logout()
                 .logoutSuccessUrl("/")
@@ -35,32 +41,6 @@ public class SecurityConfiguration {
                 .defaultSuccessUrl("/login/oauth2")
                 .userInfoEndpoint()
                 .userService(customOAuth2UserService);
-
-                /*
-        http
-                .csrf().disable()
-                .httpBasic()
-                .and()
-                .headers()
-                .frameOptions().disable()
-                .and()
-                    .authorizeRequests()
-                        .antMatchers("/**", "/h2-console/**").permitAll()
-                            .anyRequest().authenticated()
-                .and()
-                    .csrf().ignoringAntMatchers("/h2-console/**").disable()
-                    .sessionManagement()
-                        .sessionCreationPolicy(SessionCreationPolicy.NEVER)
-                .and()
-                    .logout()
-                        .logoutSuccessUrl("/")
-                .and()
-                    .oauth2Login()
-                        .defaultSuccessUrl("/login/oauth2")
-                            .userInfoEndpoint()
-                                .userService(customOAuth2UserService);
-
-                 */
         return http.build();
     }
 }
