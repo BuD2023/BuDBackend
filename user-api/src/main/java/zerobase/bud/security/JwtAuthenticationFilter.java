@@ -40,7 +40,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
             log.error("validate");
             Authentication auth = this.tokenProvider.getAuthentication(token);
+            log.error("Authentication");
             SecurityContextHolder.getContext().setAuthentication(auth);
+            log.error("SecurityContextHolder");
         }
         log.error("StringUtils");
         filterChain.doFilter(request, response);

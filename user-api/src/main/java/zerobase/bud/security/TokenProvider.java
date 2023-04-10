@@ -85,6 +85,8 @@ public class TokenProvider {
         log.error("getAuthentication");
         UserDetails userDetails = memberService.loadUserByUsername(this.getUserId(token));
         log.error("getAuthentication loadUserByUsername");
+        log.error(userDetails.getUsername());
+        log.error(userDetails.getAuthorities().toString());
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
