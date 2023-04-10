@@ -20,7 +20,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .cors().disable() //여기 추가
+                .cors().and()//여기 추가
                 .headers()
                 .frameOptions()
                 .disable()

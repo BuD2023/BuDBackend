@@ -14,8 +14,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins("https://mlf.vercel.app/")
                 .allowedOrigins("http://localhost:8080/")
                 .allowedOrigins("http://localhost:5173/")
-                .allowedMethods("GET", "POST", "DELETE", "PUT", "HEAD")
+                .allowedMethods("GET", "POST", "DELETE", "PUT", "HEAD", "OPTIONS")
                 .exposedHeaders("Authorization")
-                .allowCredentials(false);
+                .allowCredentials(true);
     }
 }
