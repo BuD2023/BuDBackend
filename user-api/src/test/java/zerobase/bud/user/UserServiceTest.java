@@ -10,9 +10,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.domain.Follow;
+import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.repository.FollowRepository;
 import zerobase.bud.user.service.UserService;
 
@@ -36,6 +38,9 @@ class UserServiceTest {
     @Mock
     private FollowRepository followRepository;
 
+    @Mock
+    private PostRepository postRepository;
+
     @InjectMocks
     private UserService userService;
 
@@ -44,6 +49,8 @@ class UserServiceTest {
             .createdAt(LocalDateTime.now())
             .status(MemberStatus.VERIFIED)
             .email("abcde@gmail.com")
+            .introduceMessage("안녕나는나는")
+            .level("식씩한사람")
             .profileImg("abcde.jpg")
             .nickname("안뇽")
             .job("시스템프로그래머")
@@ -131,9 +138,75 @@ class UserServiceTest {
                 .willReturn(Optional.empty());
         //when
         MemberException exception = assertThrows(MemberException.class,
-                ()-> userService.follow(23L, member));
+                () -> userService.follow(23L, member));
         //then
         assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("회원 프로필 조회 성공")
+    void successReadProfileTest() {
+        //given
+        Member targetMember = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .introduceMessage("안녕하세요 저는 어쩌구저쩌구")
+                .level("식씩한세싹")
+                .profileImg("ddddd.jpg")
+                .nickname("하이")
+                .build();
+
+
+        given(memberRepository.findById(anyLong()))
+                .willReturn(Optional.of(targetMember));
+
+        given(followRepository.countByMember(any())).willReturn(3L);
+        given(followRepository.countByTarget(any())).willReturn(0L);
+        given(postRepository.countByMember(any())).willReturn(23L);
+        given(followRepository.existsByTargetAndMember(any(), any())).willReturn(true);
+        //when
+        UserDto dto = userService.readProfile(12L, member);
+        //then
+        assertEquals(true, dto.getIsFollowing());
+        assertEquals(false, dto.getIsReader());
+        assertEquals(23L, dto.getNumberOfPosts());
+        assertEquals(0L, dto.getNumberOfFollowers());
+        assertEquals(3L, dto.getNumberOfFollows());
+        assertEquals("하이", dto.getNickName());
+        assertEquals("안녕하세요 저는 어쩌구저쩌구", dto.getDescription());
+        assertEquals("ddddd.jpg", dto.getProfileUrl());
+    }
+
+    @Test
+    @DisplayName("회원의 프로필 조회 실패 - 타겟 유저 없음")
+    void failReadProfileTest() {
+        //given
+        given(memberRepository.findById(anyLong()))
+                .willReturn(Optional.empty());
+        //when
+        MemberException exception = assertThrows(MemberException.class,
+                () -> userService.readProfile(23L, member));
+        //then
+        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("회원 프로필 조회 성공")
+    void successReadMyProfileTest() {
+        //given
+        given(followRepository.countByMember(any())).willReturn(3L);
+        given(followRepository.countByTarget(any())).willReturn(0L);
+        given(postRepository.countByMember(any())).willReturn(23L);
+        //when
+        UserDto dto = userService.readMyProfile(member);
+        //then
+        assertEquals(23L, dto.getNumberOfPosts());
+        assertEquals(0L, dto.getNumberOfFollowers());
+        assertEquals(3L, dto.getNumberOfFollows());
+        assertEquals("안뇽", dto.getNickName());
+        assertEquals("안녕나는나는", dto.getDescription());
+        assertEquals("abcde.jpg", dto.getProfileUrl());
     }
 
 }

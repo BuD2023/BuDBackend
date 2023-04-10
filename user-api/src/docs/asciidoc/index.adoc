@@ -198,3 +198,35 @@ include::{snippets}/user-controller-test/success-follow-test/http-request.adoc[]
 .response
 include::{snippets}/user-controller-test/success-follow-test/http-response.adoc[]
 
+
+=== 2. 유저의 프로필 조회
+.request
+include::{snippets}/user-controller-test/success-read-profile-test/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|userId|Number|Y|path variable, 대상 유저의 아이디
+|===
+
+.response
+include::{snippets}/user-controller-test/success-read-profile-test/http-response.adoc[]
+
+.response field
+include::{snippets}/user-controller-test/success-read-profile-test/response-fields.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|USER_NOT_FOUND|해당 유저가 없습니다.
+|===
+
+=== 3. 나의 프로필 조회
+.request
+include::{snippets}/user-controller-test/success-read-my-profile-test/http-request.adoc[]
+
+.response
+include::{snippets}/user-controller-test/success-read-my-profile-test/http-response.adoc[]
+
+.response field
+include::{snippets}/user-controller-test/success-read-my-profile-test/response-fields.adoc[]

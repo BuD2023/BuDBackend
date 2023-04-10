@@ -6,8 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.user.domain.Follow;
+import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.repository.FollowRepository;
 
 import java.util.Optional;
@@ -18,6 +20,8 @@ public class UserService {
     private final FollowRepository followRepository;
 
     private final MemberRepository memberRepository;
+
+    private final PostRepository postRepository;
 
     @Transactional
     public Long follow(Long memberId, Member member) {
@@ -37,5 +41,29 @@ public class UserService {
             );
         }
         return targetMember.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public UserDto readProfile(Long userId, Member member) {
+        Member targetMember = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberException(ErrorCode.USER_NOT_FOUND));
+
+        Long numberOfFollowers = followRepository.countByTarget(member);
+        Long numberOfFollows = followRepository.countByMember(member);
+        Long numberOfPosts = postRepository.countByMember(member);
+        boolean isReader = member.equals(targetMember);
+        boolean isFollowing = followRepository.existsByTargetAndMember(targetMember, member);
+
+        return UserDto.of(targetMember, isReader, isFollowing,
+                numberOfFollowers, numberOfFollows, numberOfPosts);
+    }
+
+    @Transactional(readOnly = true)
+    public UserDto readMyProfile(Member member) {
+        Long numberOfFollowers = followRepository.countByTarget(member);
+        Long numberOfFollows = followRepository.countByMember(member);
+        Long numberOfPosts = postRepository.countByMember(member);
+
+        return UserDto.of(member, numberOfFollowers, numberOfFollows, numberOfPosts);
     }
 }
