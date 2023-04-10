@@ -46,9 +46,11 @@ public class TokenProvider {
     }
 
     public JwtDto generateToken(OAuth2User oAuth2User) {
+        log.error("generateToken");
         String userId = oAuth2User.getAttribute("login");
+        log.error("userId");
         String role = oAuth2User.getAuthorities().toString();
-
+        log.error("role");
         return setJwtDto(userId, role);
     }
 
@@ -80,7 +82,9 @@ public class TokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
+        log.error("getAuthentication");
         UserDetails userDetails = memberService.loadUserByUsername(this.getUserId(token));
+        log.error("getAuthentication loadUserByUsername");
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 

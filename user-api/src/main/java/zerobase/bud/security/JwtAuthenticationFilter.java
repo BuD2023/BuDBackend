@@ -37,9 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String messageBody = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
         log.error(messageBody);
 
-        System.out.println("Http Body = " + messageBody);
-        System.out.println("Http Body Length = " + request.getContentLength());
-
         if(StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
             log.error("validate");
             Authentication auth = this.tokenProvider.getAuthentication(token);
