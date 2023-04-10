@@ -1,6 +1,7 @@
 package zerobase.bud.security;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -23,12 +25,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        log.error(request.getHeader(TOKEN_HEADER));
         String token = this.resolveTokenFromRequest(request);
+        log.error("doFilterInternal" + token);
 
         if(StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
+            log.error("validate");
             Authentication auth = this.tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
+        log.error("StringUtils");
         filterChain.doFilter(request, response);
     }
 
