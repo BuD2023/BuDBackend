@@ -6,14 +6,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component
@@ -30,9 +33,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.error("doFilterInternal" + token);
         log.error(request.getRequestURI());
         log.error(request.getMethod());
-        log.error(request.getParameter("title"));
-        log.error(request.getParameter("content"));
-        log.error(request.getParameter("postType"));
+        ServletInputStream inputStream = request.getInputStream();
+        String messageBody = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
+        log.error(messageBody);
+
+        System.out.println("Http Body = " + messageBody);
+        System.out.println("Http Body Length = " + request.getContentLength());
 
         if(StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
             log.error("validate");
