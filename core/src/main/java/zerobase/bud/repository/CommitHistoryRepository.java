@@ -17,6 +17,6 @@ public interface CommitHistoryRepository extends
     Optional<CommitHistory> findByGithubInfoIdAndCommitDate(Long githubId,
         LocalDate commitDate);
 
-    List<CommitHistory> findAllByGithubInfoIdOrderByCommitDateDesc(
-        Long githubId);
+    List<CommitHistory> findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(
+        Long id, LocalDate minusWeeks, LocalDate now);
 }
