@@ -136,28 +136,7 @@ include::{snippets}/github-controller-test/success_save-commit-info-from-last-co
 == 뉴스 API
 === 1. 뉴스 상세 내용 가져오기
 .request
-include::{snippets}/news-controller-test/success_search-news/http-request.adoc[]
-
-.request field
-|===
-|필드명|타입|필수여부|설명|기본값
-|keyword|String|N||뉴스 검색 키워드|null
-|size|Number|N|요청 데이터 개수|10
-|page|Number|N|요청 데이터 개수|0
-|sort|String|N|정렬기준(HIT or DATE)|HIT
-|startDate|LocalDate(ISO.DATE)|N||-999999999-01-01
-|endDate|LocalDate(ISO.DATE)|N||현재
-|===
-
-.response
-include::{snippets}/news-controller-test/success_search-news/http-response.adoc[]
-
-.response field
-include::{snippets}/news-controller-test/success_search-news/response-body.adoc[]
-
-=== 1. 뉴스 리스트 가져오기
-.request
-include::{snippets}/news-controller-test/success_search-news-detail/http-request.adoc[]
+include::{snippets}/news-controller-test/success-search-news-detail/http-request.adoc[]
 
 .request field
 |===
@@ -166,10 +145,31 @@ include::{snippets}/news-controller-test/success_search-news-detail/http-request
 |===
 
 .response
-include::{snippets}/news-controller-test/success_search-news-detail/http-response.adoc[]
+include::{snippets}/news-controller-test/success-search-news-detail/http-response.adoc[]
 
 .response field
-include::{snippets}/news-controller-test/success_search-news-detail/response-body.adoc[]
+include::{snippets}/news-controller-test/success-search-news-detail/response-body.adoc[]
+
+=== 1. 뉴스 리스트 가져오기
+.request
+include::{snippets}/news-controller-test/success-search-news/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명|기본값
+|size|Number|N|요청 데이터 개수|10
+|keyword|String|N|뉴스 검색 키워드|null
+|page|Number|N|요청 데이터 개수|0
+|sort|String|N|정렬기준(HIT or DATE)|HIT
+|startDate|LocalDate(ISO.DATE)|N||-999999999-01-01
+|endDate|LocalDate(ISO.DATE)|N||현재
+|===
+
+.response
+include::{snippets}/news-controller-test/success-search-news/http-response.adoc[]
+
+.response field
+include::{snippets}/news-controller-test/success-search-news/response-body.adoc[]
 
 == 게시물 API
 === 1. 게시글 생성
