@@ -72,7 +72,7 @@ public class ChatRoomService {
         ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 
         return chatRoomRepository.findAllByStatus(ACTIVE,
-                        PageRequest.of(page, CHATROOM_SIZE_PER_PAGE))
+                        PageRequest.of(page, size))
                 .map(chatRoom -> ChatRoomDto.of(chatRoom,
                         getNumberOfMembers(chatRoom.getId(), valueOperations)
                 ));
@@ -95,12 +95,12 @@ public class ChatRoomService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<ChatDto> readChats(Long chatroomId, int page) {
+    public Slice<ChatDto> readChats(Long chatroomId, int page, int size) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
 
         return chatRepository.findAllByChatRoomOrderByCreatedAtDesc(chatRoom,
-                        PageRequest.of(page, CHAT_SIZE_PER_PAGE))
+                        PageRequest.of(page, size))
                 .map(ChatDto::from);
     }
 }

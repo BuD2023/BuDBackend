@@ -382,12 +382,13 @@ class ChatRoomControllerTest {
                         .userProfileUrl("/image.jpg")
                         .build()
         );
-        given(chatRoomService.readChats(anyLong(), anyInt()))
+        given(chatRoomService.readChats(anyLong(), anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatrooms/{chatroomId}/chats", 32L)
                         .param("page", "0")
+                        .param("size", "20")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
                 )

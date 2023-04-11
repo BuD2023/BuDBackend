@@ -51,7 +51,8 @@ public class ChatRoomController {
 
     @GetMapping("/chatrooms/{chatroomId}/chats")
     private ResponseEntity readChats(@PathVariable Long chatroomId,
-                                     @RequestParam(defaultValue = "0") int page){
-        return ResponseEntity.ok(chatRoomService.readChats(chatroomId, page));
+                                     @RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "10") int size){
+        return ResponseEntity.ok(chatRoomService.readChats(chatroomId, page, size));
     }
 }

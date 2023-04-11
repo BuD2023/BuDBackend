@@ -290,7 +290,7 @@ class ChatRoomServiceTest {
         given(chatRepository.findAllByChatRoomOrderByCreatedAtDesc(any(), any()))
                 .willReturn(new SliceImpl<>(chats));
         //when
-        Slice<ChatDto> dtos = chatRoomService.readChats(12L, 1);
+        Slice<ChatDto> dtos = chatRoomService.readChats(12L, 1, 15);
         //then
         assertEquals(1L, dtos.getContent().get(0).getChatId());
         assertEquals("이것은메세지", dtos.getContent().get(0).getMessage());
@@ -307,7 +307,7 @@ class ChatRoomServiceTest {
                 .willReturn(Optional.empty());
         //when
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-                () -> chatRoomService.readChats(12L, 1));
+                () -> chatRoomService.readChats(12L, 1, 10));
         //then
         assertEquals(ErrorCode.CHATROOM_NOT_FOUND, exception.getErrorCode());
     }
