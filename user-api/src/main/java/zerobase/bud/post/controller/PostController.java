@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -47,15 +46,13 @@ public class PostController {
         );
     }
 
-    @PutMapping
+    @PostMapping("/update")
     public ResponseEntity<String> updatePost(
         @RequestPart(value = IMAGES, required = false) List<MultipartFile> images,
-        @RequestPart(value = UPDATE_POST_REQUEST) @Valid UpdatePost.Request request,
-        @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token
+        @RequestPart(value = UPDATE_POST_REQUEST) @Valid UpdatePost.Request request
     ) {
         return ResponseEntity.ok(postService.updatePost(
-                tokenProvider.getUserId(token.substring(TOKEN_PREFIX.length()))
-                , images
+                images
                 , request
             )
         );

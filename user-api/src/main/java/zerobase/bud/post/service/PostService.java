@@ -61,13 +61,9 @@ public class PostService {
 
     @Transactional
     public String updatePost(
-        String userId
-        , List<MultipartFile> images
+        List<MultipartFile> images
         , UpdatePost.Request request
     ) {
-
-        GithubInfo githubInfo = githubInfoRepository.findByUserId(userId)
-            .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
 
         Post post = postRepository.findById(request.getPostId())
             .orElseThrow(() -> new BudException(NOT_FOUND_POST));
