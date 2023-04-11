@@ -3,10 +3,12 @@ package zerobase.bud.post.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 
@@ -28,6 +30,7 @@ import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.dto.CreatePost.Request;
+import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.post.repository.ImageRepository;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostType;
@@ -86,18 +89,8 @@ class PostServiceTest {
         assertEquals("health.jpg", imageCaptor.getValue().getImageUrl());
         assertEquals("title", imageCaptor.getValue().getPost().getTitle());
         assertEquals("content", imageCaptor.getValue().getPost().getContent());
-        assertEquals("abcd@naver.com", result);
+        assertEquals("t", result);
     }
-
-    private static List<MultipartFile> getMockMultipartFiles() {
-        List<MultipartFile> images = new ArrayList<>();
-        images.add(new MockMultipartFile("multipartFile",
-            "health.jpg",
-            "image/jpg",
-            "<<jpeg data>>".getBytes()));
-        return images;
-    }
-
     @Test
     void success_createPost() {
         //given 어떤 데이터가 주어졌을 때
@@ -125,7 +118,7 @@ class PostServiceTest {
         assertEquals("c", captor.getValue().getContent());
         assertEquals(ACTIVE, captor.getValue().getPostStatus());
         assertEquals(PostType.QNA, captor.getValue().getPostType());
-        assertEquals("abcd@naver.com", result);
+        assertEquals("t", result);
     }
 
     @Test
@@ -148,6 +141,61 @@ class PostServiceTest {
         assertEquals(NOT_REGISTERED_MEMBER, budException.getErrorCode());
     }
 
+    @Test
+    void success_updatePostWithImage() {
+        //given 어떤 데이터가 주어졌을 때
+        List<MultipartFile> images = getMockMultipartFiles();
+
+        given(postRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(getPost()));
+
+        given(imageRepository.save(any()))
+            .willReturn(Image.builder()
+                .post(getPost())
+                .imageUrl("updateImageUrl")
+                .build());
+
+        ArgumentCaptor<Image> imageCaptor = ArgumentCaptor.forClass(
+            Image.class);
+        //when 어떤 경우에
+        String result = postService.updatePost( images,
+            UpdatePost.Request.builder()
+                .postId(1L)
+                .title("t")
+                .content("c")
+                .postType(PostType.QNA)
+                .build());
+
+        //then 이런 결과가 나온다.
+        verify(imageRepository, times(1)).save(imageCaptor.capture());
+        assertEquals("health.jpg", imageCaptor.getValue().getImageUrl());
+        assertEquals("t", imageCaptor.getValue().getPost().getTitle());
+        assertEquals("c", imageCaptor.getValue().getPost().getContent());
+        assertEquals(PostType.QNA, imageCaptor.getValue().getPost().getPostType());
+        assertEquals("t", result);
+    }
+
+    @Test
+    @DisplayName("NOT_FOUND_POST_updatePost")
+    void NOT_FOUND_POST_updatePost() {
+        //given 어떤 데이터가 주어졌을 때
+        given(postRepository.findById(anyLong()))
+            .willReturn(Optional.empty());
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> postService.updatePost(getMockMultipartFiles(),
+                UpdatePost.Request.builder()
+                    .postId(1L)
+                    .title("t")
+                    .content("c")
+                    .postType(PostType.FEED)
+                    .build()));
+
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_FOUND_POST, budException.getErrorCode());
+    }
+
     private static Post getPost() {
         return Post.builder()
             .member(getGithubInfo().getMember())
@@ -166,5 +214,15 @@ class PostServiceTest {
             .username("userName")
             .build();
     }
+
+    private static List<MultipartFile> getMockMultipartFiles() {
+        List<MultipartFile> images = new ArrayList<>();
+        images.add(new MockMultipartFile("multipartFile",
+            "health.jpg",
+            "image/jpg",
+            "<<jpeg data>>".getBytes()));
+        return images;
+    }
+
 
 }

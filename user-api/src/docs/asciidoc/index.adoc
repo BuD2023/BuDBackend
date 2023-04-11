@@ -163,7 +163,7 @@ include::{snippets}/news-controller-test/success-search-news-detail/http-respons
 .response field
 include::{snippets}/news-controller-test/success-search-news-detail/response-body.adoc[]
 
-=== 1. 뉴스 리스트 가져오기
+=== 2. 뉴스 리스트 가져오기
 .request
 include::{snippets}/news-controller-test/success-search-news/http-request.adoc[]
 
@@ -187,13 +187,23 @@ include::{snippets}/news-controller-test/success-search-news/response-body.adoc[
 == 게시물 API
 === 1. 게시글 생성
 .request
-include::{snippets}/post-controller-test/create-post/http-request.adoc[]
+include::{snippets}/post-controller-test/success_create-post/http-request.adoc[]
 
 .response
-include::{snippets}/post-controller-test/create-post/http-response.adoc[]
+include::{snippets}/post-controller-test/success_create-post/http-response.adoc[]
 
 .response field
-include::{snippets}/post-controller-test/create-post/response-body.adoc[]
+include::{snippets}/post-controller-test/success_create-post/response-body.adoc[]
+
+=== 2. 게시글 수정
+.request
+include::{snippets}/post-controller-test/success_update-post/http-request.adoc[]
+
+.response
+include::{snippets}/post-controller-test/success_update-post/http-response.adoc[]
+
+.response field
+include::{snippets}/post-controller-test/success_update-post/response-body.adoc[]
 
 
 

@@ -14,6 +14,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import zerobase.bud.domain.BaseEntity;
 import zerobase.bud.domain.Member;
+import zerobase.bud.post.dto.UpdatePost.Request;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 
@@ -49,4 +50,10 @@ public class Post extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private PostType postType;
+
+    public void update(Request request) {
+        this.title = request.getTitle();
+        this.content = request.getContent();
+        this.postType = request.getPostType();
+    }
 }
