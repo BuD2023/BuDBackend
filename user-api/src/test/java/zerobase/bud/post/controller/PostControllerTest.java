@@ -28,7 +28,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import zerobase.bud.post.service.PostService;
-import zerobase.bud.security.TokenProvider;
+import zerobase.bud.jwt.TokenProvider;
 
 @WebMvcTest(PostController.class)
 @AutoConfigureRestDocs

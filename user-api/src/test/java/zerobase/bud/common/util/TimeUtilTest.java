@@ -2,6 +2,7 @@ package zerobase.bud.common.util;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import zerobase.bud.util.TimeUtil;
 
 import java.time.LocalDateTime;
 

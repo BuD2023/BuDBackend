@@ -10,7 +10,7 @@ import zerobase.bud.dto.ErrorResponse;
 
 @Slf4j
 @RestControllerAdvice
-public class CoreExceptionHandler {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(BudException.class)
     public ResponseEntity<ErrorResponse> handleBudException(BudException e) {

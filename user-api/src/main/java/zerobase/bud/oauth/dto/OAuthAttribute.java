@@ -1,4 +1,4 @@
-package zerobase.bud.oauth.attribute;
+package zerobase.bud.oauth.dto;
 
 import lombok.Builder;
 import lombok.Getter;

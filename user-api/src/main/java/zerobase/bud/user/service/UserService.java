@@ -29,9 +29,9 @@ public class UserService {
     @Transactional
     public Long follow(Long memberId, Member member) {
         Member targetMember = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        if(member.equals(targetMember)){
+        if (member.equals(targetMember)) {
             throw new MemberException(ErrorCode.CANNOT_FOLLOW_YOURSELF);
         }
 
@@ -53,7 +53,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserDto readProfile(Long userId, Member member) {
         Member targetMember = memberRepository.findById(userId)
-                .orElseThrow(() -> new MemberException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
         Long numberOfFollowers = followRepository.countByTarget(member);
         Long numberOfFollows = followRepository.countByMember(member);
@@ -91,7 +91,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<FollowDto> readFollowings(Long userId, Member reader) {
         Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new MemberException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
         return followRepository.findByMember(member)
                 .map(follow -> toFollowDto(reader, follow))
@@ -101,7 +101,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<FollowDto> readFollowers(Long userId, Member reader) {
         Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new MemberException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
         return followRepository.findByTarget(member)
                 .map(follow -> toFollowDto(reader, follow))

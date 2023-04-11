@@ -1,4 +1,4 @@
-package zerobase.bud.common.util;
+package zerobase.bud.util;
 
 import lombok.experimental.UtilityClass;
 

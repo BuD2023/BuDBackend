@@ -25,8 +25,10 @@ import zerobase.bud.news.repository.NewsRepository;
 import java.io.IOException;
 import java.util.*;
 
-import static zerobase.bud.news.type.Constants.*;
-import static zerobase.bud.common.type.ErrorCode.*;
+import static zerobase.bud.common.type.ErrorCode.ELEMENT_NOT_EXIST;
+import static zerobase.bud.common.type.ErrorCode.URL_ILLEGAL_ARGUMENT;
+import static zerobase.bud.common.util.Constants.*;
+
 
 @Slf4j
 @Service

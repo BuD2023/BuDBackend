@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.domain.Member;
-import zerobase.bud.security.TokenProvider;
+import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.controller.UserController;
 import zerobase.bud.user.dto.FollowDto;

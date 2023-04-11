@@ -27,11 +27,11 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
-import zerobase.bud.chat.dto.CreateChatRoomRequest;
+import zerobase.bud.chat.dto.CreateChatRoom;
 import zerobase.bud.chat.service.ChatRoomService;
-import zerobase.bud.common.util.TimeUtil;
+import zerobase.bud.util.TimeUtil;
 import zerobase.bud.domain.Member;
-import zerobase.bud.security.TokenProvider;
+import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.MemberStatus;
 
@@ -120,7 +120,7 @@ class ChatRoomControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                CreateChatRoomRequest.builder()
+                                CreateChatRoom.Request.builder()
                                         .title("챗지비티는 거짓말쟁이")
                                         .description("챗지비티와 인공지능")
                                         .hashTag(Arrays.asList("인공지능", "챗지비티", "ai"))

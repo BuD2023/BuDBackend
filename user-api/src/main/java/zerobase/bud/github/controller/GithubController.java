@@ -1,6 +1,6 @@
 package zerobase.bud.github.controller;
 
-import static zerobase.bud.common.util.Constant.TOKEN_PREFIX;
+import static zerobase.bud.common.util.Constants.TOKEN_PREFIX;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zerobase.bud.github.dto.CommitHistoryInfo;
 import zerobase.bud.github.service.GithubService;
-import zerobase.bud.security.TokenProvider;
+import zerobase.bud.jwt.TokenProvider;
 
 @RestController
 @RequiredArgsConstructor

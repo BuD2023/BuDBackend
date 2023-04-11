@@ -1,6 +1,6 @@
 package zerobase.bud.post.controller;
 
-import static zerobase.bud.common.util.Constant.TOKEN_PREFIX;
+import static zerobase.bud.common.util.Constants.TOKEN_PREFIX;
 
 import java.util.List;
 import javax.validation.Valid;
@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.post.service.PostService;
-import zerobase.bud.security.TokenProvider;
+import zerobase.bud.jwt.TokenProvider;
 
 @RestController
 @RequiredArgsConstructor

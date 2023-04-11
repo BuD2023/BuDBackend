@@ -13,7 +13,7 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSocketMessageBroker
-public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketHandler webSocketHandler;
 
     @Value("${develop.websocket.endpoint}")

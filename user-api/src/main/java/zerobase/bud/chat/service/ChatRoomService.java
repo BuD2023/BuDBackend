@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
-import static zerobase.bud.common.util.Constant.*;
+import static zerobase.bud.common.util.Constants.*;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
 
 

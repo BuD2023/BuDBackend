@@ -4,7 +4,7 @@ import static zerobase.bud.common.type.ErrorCode.INVALID_INITIAL_VALUE;
 import static zerobase.bud.common.type.ErrorCode.INVALID_TOTAL_COMMIT_COUNT;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_GITHUB_USER_ID;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
-import static zerobase.bud.common.util.Constant.MAXIMUM_LEVEL_CODE;
+import static zerobase.bud.common.util.Constants.MAXIMUM_LEVEL_CODE;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
