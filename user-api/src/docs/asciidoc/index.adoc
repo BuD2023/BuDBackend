@@ -205,6 +205,46 @@ include::{snippets}/post-controller-test/success_update-post/http-response.adoc[
 .response field
 include::{snippets}/post-controller-test/success_update-post/response-body.adoc[]
 
+=== 1. 게시글 목록 조회
+.request
+include::{snippets}/post-controller-test/success_search-posts/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명|기본값
+|keyword|String|N|게시글 검색 키워드|null
+|sort|String|N|정렬기준(HIT or LIKE or DATE)|DATE
+|order|String|N|정렬기준(ASC or DESC)|DESC
+|page|Number|N|요청 페이지 번호|0
+|size|Number|N|요청 데이터 개수|10
+|===
+
+.response
+include::{snippets}/post-controller-test/success_search-posts/http-response.adoc[]
+
+.response field
+include::{snippets}/post-controller-test/success_search-posts/response-body.adoc[]
+
+=== 2. 게시글 상세 조회
+.request
+include::{snippets}/post-controller-test/success_search-post/http-request.adoc[]
+
+.response
+include::{snippets}/post-controller-test/success_search-post/http-response.adoc[]
+
+.response field
+include::{snippets}/post-controller-test/success_search-post/response-body.adoc[]
+
+=== 2. 게시글 삭제
+.request
+include::{snippets}/post-controller-test/success_delete-post/http-request.adoc[]
+
+.response
+include::{snippets}/post-controller-test/success_delete-post/http-response.adoc[]
+
+.response field
+include::{snippets}/post-controller-test/success_delete-post/response-body.adoc[]
+
 
 
 == 유저
