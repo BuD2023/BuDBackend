@@ -124,6 +124,7 @@ class ChatRoomControllerTest {
                                         .title("챗지비티는 거짓말쟁이")
                                         .description("챗지비티와 인공지능")
                                         .hashTag(Arrays.asList("인공지능", "챗지비티", "ai"))
+                                        .build()
                         ))
                 )
                 .andExpect(status().isCreated())
