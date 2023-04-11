@@ -8,6 +8,5 @@ import zerobase.bud.domain.GithubInfo;
 @Repository
 public interface GithubInfoRepository extends JpaRepository<GithubInfo, Long> {
 
-    Optional<GithubInfo> findByEmail(String email);
-
+    Optional<GithubInfo> findByUserId(String userId);
 }

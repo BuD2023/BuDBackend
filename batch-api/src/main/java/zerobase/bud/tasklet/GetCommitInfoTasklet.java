@@ -28,8 +28,8 @@ public class GetCommitInfoTasklet {
 
         for (GithubInfo info : githubInfoList) {
 
-            GithubInfo githubInfo = githubInfoRepository.findByEmail(
-                    info.getEmail())
+            GithubInfo githubInfo = githubInfoRepository.findByUserId(
+                    info.getUserId())
                 .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
 
             githubApi.saveCommitInfoFromLastCommitDate(

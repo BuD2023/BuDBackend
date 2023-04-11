@@ -14,17 +14,15 @@ public class CreatePost {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class Request{
+    public static class Request {
+
+        @NotNull
+        private PostType postType;
 
         @NotBlank
         private String title;
 
         private String content;
-
-        private String imageUrl;
-
-        @NotNull
-        private PostType postType;
 
 
     }

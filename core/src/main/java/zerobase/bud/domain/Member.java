@@ -1,17 +1,27 @@
 package zerobase.bud.domain;
 
-import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import zerobase.bud.type.MemberStatus;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import zerobase.bud.type.MemberStatus;
 
 @Entity(name = "MEMBER")
 @Getter
@@ -20,6 +30,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 public class Member implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,10 +38,13 @@ public class Member implements UserDetails {
     private String userId;
     private String email;
 
+    @OneToOne
+    private Level level;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime modifiedAt;
-    private String level;
+
     private String nickname;
 
     private String profileImg;

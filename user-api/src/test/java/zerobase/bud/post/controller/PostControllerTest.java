@@ -4,46 +4,34 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.filter.CharacterEncodingFilter;
-import zerobase.bud.domain.Member;
-import zerobase.bud.post.dto.CreatePost;
+import zerobase.bud.post.dto.CreatePost.Request;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.security.TokenProvider;
-import zerobase.bud.type.MemberStatus;
 
-@ExtendWith({RestDocumentationExtension.class})
 @WebMvcTest(PostController.class)
 @AutoConfigureRestDocs
 class PostControllerTest {
@@ -60,57 +48,45 @@ class PostControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private static String token = "token";
-
-    @BeforeEach
-    void init(
-        WebApplicationContext context, RestDocumentationContextProvider contextProvider) {
-
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
-            .apply(documentationConfiguration(contextProvider))
-            .addFilters(new CharacterEncodingFilter("UTF-8", true))
-            .alwaysDo(print())
-            .build();
-
-        Member member = Member.builder()
-            .id(1L)
-            .createdAt(LocalDateTime.now())
-            .status(MemberStatus.VERIFIED)
-            .email("xxxx@naver.com")
-            .profileImg("abcde.jpg")
-            .nickname("nickname")
-            .job("Job")
-            .oAuthAccessToken("token")
-            .build();
-
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(member, "",
-            List.of(MemberStatus.VERIFIED.getKey()).stream().map(
-                    SimpleGrantedAuthority::new)
-                .collect(Collectors.toList()));
-
-        given(tokenProvider.getAuthentication("token")).willReturn(authentication);
-    }
+    private static final String TOKEN = "Bearer token";
 
     @Test
+    @WithMockUser
     void createPost() throws Exception {
         //given
-        given(postService.createPost(anyString(), any()))
+        Map<String, String> input = new HashMap<>();
+        input.put("postType", "QNA");
+        input.put("title", "게시글 제목 테스트");
+        input.put("content", "게시글 본문 테스트");
+
+        List<MockMultipartFile> images = new ArrayList<>();
+        images.add(new MockMultipartFile("multipartFile",
+            "health.jpg",
+            "image/jpg",
+            "<<jpeg data>>".getBytes()));
+
+        String contents = objectMapper.writeValueAsString(input);
+
+        given(tokenProvider.getUserId(anyString()))
+            .willReturn("value");
+
+        given(postService.createPost(anyString(), any(), any()))
             .willReturn("success");
         //when
         //then
-        mockMvc.perform(post("/community/post")
-                .header(HttpHeaders.AUTHORIZATION, token)
+        Request request = Request.builder()
+            .title("title")
+            .content("content")
+            .postType(PostType.FEED)
+            .build();
+        mockMvc.perform(multipart("/posts")
+                .file(images.get(0))
+                .file(new MockMultipartFile("createPostRequest", "",
+                    "application/json", contents.getBytes(
+                    StandardCharsets.UTF_8)))
+                .header("Authorization", TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(
-                    CreatePost.Request.builder()
-                        .title("title")
-                        .content("content")
-                        .postType(PostType.FEED)
-                        .imageUrl("imageUrl")
-                        .build()
-                )))
+                .with(csrf()))
             .andDo(print())
             .andExpect(status().isOk())
             .andDo(

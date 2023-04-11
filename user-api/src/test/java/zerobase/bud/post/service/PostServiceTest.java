@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,9 +20,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.GithubInfo;
-import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CreatePost;
@@ -28,6 +31,7 @@ import zerobase.bud.post.dto.CreatePost.Request;
 import zerobase.bud.post.repository.ImageRepository;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostType;
+import zerobase.bud.repository.GithubInfoRepository;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -47,7 +51,9 @@ class PostServiceTest {
     @Test
     void success_createPostWithImage() {
         //given 어떤 데이터가 주어졌을 때
-        given(githubInfoRepository.findByEmail(anyString()))
+        List<MultipartFile> images = getMockMultipartFiles();
+
+        given(githubInfoRepository.findByUserId(anyString()))
             .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(postRepository.save(any()))
@@ -63,11 +69,10 @@ class PostServiceTest {
         ArgumentCaptor<Image> imageCaptor = ArgumentCaptor.forClass(
             Image.class);
         //when 어떤 경우에
-        String result = postService.createPost("abcd@naver.com",
+        String result = postService.createPost("userId", images,
             CreatePost.Request.builder()
                 .title("t")
                 .content("c")
-                .imageUrl("i")
                 .postType(PostType.FEED)
                 .build());
 
@@ -78,16 +83,27 @@ class PostServiceTest {
         assertEquals("c", captor.getValue().getContent());
         assertEquals(ACTIVE, captor.getValue().getPostStatus());
         assertEquals(PostType.FEED, captor.getValue().getPostType());
-        assertEquals("i", imageCaptor.getValue().getImageUrl());
+        assertEquals("health.jpg", imageCaptor.getValue().getImageUrl());
         assertEquals("title", imageCaptor.getValue().getPost().getTitle());
         assertEquals("content", imageCaptor.getValue().getPost().getContent());
         assertEquals("abcd@naver.com", result);
     }
 
+    private static List<MultipartFile> getMockMultipartFiles() {
+        List<MultipartFile> images = new ArrayList<>();
+        images.add(new MockMultipartFile("multipartFile",
+            "health.jpg",
+            "image/jpg",
+            "<<jpeg data>>".getBytes()));
+        return images;
+    }
+
     @Test
     void success_createPost() {
         //given 어떤 데이터가 주어졌을 때
-        given(githubInfoRepository.findByEmail(anyString()))
+        List<MultipartFile> images = getMockMultipartFiles();
+
+        given(githubInfoRepository.findByUserId(anyString()))
             .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(postRepository.save(any()))
@@ -96,11 +112,10 @@ class PostServiceTest {
         ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
 
         //when 어떤 경우에
-        String result = postService.createPost("abcd@naver.com",
+        String result = postService.createPost("userId", images,
             CreatePost.Request.builder()
                 .title("t")
                 .content("c")
-                .imageUrl("")
                 .postType(PostType.QNA)
                 .build());
 
@@ -117,16 +132,15 @@ class PostServiceTest {
     @DisplayName("NOT_REGISTERED_MEMBER_createPost")
     void NOT_REGISTERED_MEMBER_createPost() {
         //given 어떤 데이터가 주어졌을 때
-        given(githubInfoRepository.findByEmail(anyString()))
+        given(githubInfoRepository.findByUserId(anyString()))
             .willReturn(Optional.empty());
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> postService.createPost("abcd@naver.com",
+            () -> postService.createPost("userId", getMockMultipartFiles(),
                 Request.builder()
                     .title("t")
                     .content("c")
-                    .imageUrl("i")
                     .postType(PostType.FEED)
                     .build()));
 
