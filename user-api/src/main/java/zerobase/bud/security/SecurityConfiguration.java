@@ -54,31 +54,6 @@ public class SecurityConfiguration {
                 .csrf().disable()
                 .headers().frameOptions().disable();
 
-
-//        http
-//                .csrf().disable()
-//                .cors().disable()
-//                .headers()
-//                .frameOptions()
-//                .disable()
-//                .and()
-//
-//                .httpBasic().disable()
-//                .authorizeRequests()
-//                .antMatchers("/**", "/h2-console/**").permitAll()
-//                .anyRequest().authenticated()
-//
-//                .and()
-//                .sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.NEVER)
-//                .and()
-//                .logout()
-//                .logoutSuccessUrl("/")
-//                .and()
-//                .oauth2Login()
-//                .defaultSuccessUrl("/login/oauth2")
-//                .userInfoEndpoint()
-//                .userService(customOAuth2UserService);
         return http.build();
     }
 
