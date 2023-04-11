@@ -19,6 +19,7 @@ include::{snippets}/chat-room-controller-test/success-search-chat-rooms-test/htt
 |필드명|타입|필수여부|설명
 |keyword|String|Y|
 |page|Number|N|page값 입력 안할시 0
+|size|Number|N|size값 입력 안할시 5
 |===
 
 .response
@@ -36,6 +37,7 @@ include::{snippets}/chat-room-controller-test/success-read-chat-rooms-test/http-
 |===
 |필드명|타입|필수여부|설명
 |page|Number|N|page값 입력 안할시 0
+|size|Number|N|size값 입력 안할시 5
 |===
 
 .response

@@ -51,20 +51,20 @@ public class ChatRoomService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<ChatRoomDto> searchChatRooms(String keyword, int page) {
+    public Slice<ChatRoomDto> searchChatRooms(String keyword, int page, int size) {
 
         ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 
         return chatRoomRepository
                 .findAllByTitleContainingIgnoreCaseAndStatus(keyword, ACTIVE,
-                        PageRequest.of(page, CHATROOM_SIZE_PER_PAGE))
+                        PageRequest.of(page, size))
                 .map(chatRoom -> ChatRoomDto.of(chatRoom,
                         getNumberOfMembers(chatRoom.getId(), valueOperations)
                 ));
     }
 
     @Transactional(readOnly = true)
-    public Slice<ChatRoomDto> readChatRooms(int page) {
+    public Slice<ChatRoomDto> readChatRooms(int page, int size) {
 
         ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 

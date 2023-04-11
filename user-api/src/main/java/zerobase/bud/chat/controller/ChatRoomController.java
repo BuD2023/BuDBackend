@@ -32,13 +32,16 @@ public class ChatRoomController {
     @GetMapping("/chatrooms/search")
     private ResponseEntity searchChatRoom(
             @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(chatRoomService.searchChatRooms(keyword, page));
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(chatRoomService.searchChatRooms(keyword, page, size));
     }
 
     @GetMapping("/chatrooms")
-    private ResponseEntity readChatRooms(@RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(chatRoomService.readChatRooms(page));
+    private ResponseEntity readChatRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(chatRoomService.readChatRooms(page, size));
     }
 
     @GetMapping("/chatrooms/{chatroomId}")

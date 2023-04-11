@@ -161,7 +161,7 @@ class ChatRoomServiceTest {
         given(valueOperations.get("CHATROOM2")).willReturn(3);
         given(valueOperations.get("CHATROOM3")).willReturn(3);
         //when
-        Slice<ChatRoomDto> chatRoomDtos = chatRoomService.searchChatRooms("키워드", 0);
+        Slice<ChatRoomDto> chatRoomDtos = chatRoomService.searchChatRooms("키워드", 0, 3);
         //then
         assertEquals(3, chatRoomDtos.getContent().size());
         assertEquals(1L, chatRoomDtos.getContent().get(0).getChatRoomId());
@@ -216,7 +216,7 @@ class ChatRoomServiceTest {
         given(valueOperations.get("CHATROOM3")).willReturn(3);
 
         //when
-        Slice<ChatRoomDto> chatRoomDtos = chatRoomService.readChatRooms(0);
+        Slice<ChatRoomDto> chatRoomDtos = chatRoomService.readChatRooms(0, 5);
         //then
         assertEquals(3, chatRoomDtos.getContent().size());
         assertEquals(2L, chatRoomDtos.getContent().get(1).getChatRoomId());

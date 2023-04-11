@@ -177,13 +177,14 @@ class ChatRoomControllerTest {
                         .build()
         );
 
-        given(chatRoomService.searchChatRooms(anyString(), anyInt()))
+        given(chatRoomService.searchChatRooms(anyString(), anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatrooms/search")
                         .param("keyword", "word")
                         .param("page", "0")
+                        .param("size", "5")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
                 )
@@ -260,12 +261,13 @@ class ChatRoomControllerTest {
                         .build()
         );
 
-        given(chatRoomService.readChatRooms(anyInt()))
+        given(chatRoomService.readChatRooms(anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatrooms")
                         .param("page", "0")
+                        .param("size", "4")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
                 )
