@@ -26,7 +26,6 @@ public enum ErrorCode {
     ALREADY_STORED_DATA("이미 저장된 데이터 입니다."),
     DATA_TYPE_UN_MATCH("데이터 형식이 올바르지 않습니다."),
     NOT_REGISTERED_GITHUB_USER_ID("등록되지 않은 깃헙 유저아이디입니다."),
-
     HTTP_REQUEST_RESPONSE_FAIL("HTTP 요청과 응답이 실패했습니다."),
     INVALID_API_URL_ADDRESS("잘못된 API URL입니다."),
     HTTP_CONNECT_FAIL("HTTP 연결이 실패했습니다"),
@@ -34,3 +33,4 @@ public enum ErrorCode {
     ;
     private final String description;
 }
+

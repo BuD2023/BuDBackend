@@ -31,7 +31,6 @@ import zerobase.bud.chat.dto.CreateChatRoomRequest;
 import zerobase.bud.chat.service.ChatRoomService;
 import zerobase.bud.common.util.TimeUtil;
 import zerobase.bud.domain.Member;
-import zerobase.bud.security.JwtAuthenticationFilter;
 import zerobase.bud.security.TokenProvider;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.MemberStatus;
@@ -117,7 +116,7 @@ class ChatRoomControllerTest {
         given(chatRoomService.createChatRoom(anyString(), anyString(), any(), any())).willReturn(1L);
         //when
         //then
-        this.mockMvc.perform(post("/chatroom")
+        this.mockMvc.perform(post("/chatrooms")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -150,6 +149,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(2)
+                        .hostName("안뇽")
+                        .hostProfileUrl("/image.jpg")
+                        .hostId(1L)
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(2L)
@@ -158,6 +160,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("주니어", "웤라이프", "프론트엔드"))
                         .numberOfMembers(12)
+                        .hostName("페리에")
+                        .hostProfileUrl("/image.jpg")
+                        .hostId(2L)
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(1L)
@@ -166,6 +171,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(4)
+                        .hostName("라임")
+                        .hostProfileUrl("/image.jpg")
+                        .hostId(3L)
                         .build()
         );
 
@@ -173,7 +181,7 @@ class ChatRoomControllerTest {
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
-        this.mockMvc.perform(get("/chatroom/search")
+        this.mockMvc.perform(get("/chatrooms/search")
                         .param("keyword", "word")
                         .param("page", "0")
                         .header(HttpHeaders.AUTHORIZATION, token)
@@ -224,6 +232,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(2)
+                        .hostName("머리끈")
+                        .hostProfileUrl("/image.jpg")
+                        .hostId(1L)
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(2L)
@@ -232,6 +243,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("주니어", "웤라이프", "프론트엔드"))
                         .numberOfMembers(12)
+                        .hostName("페리에")
+                        .hostProfileUrl("/image.jpg")
+                        .hostId(2L)
                         .build(),
                 ChatRoomDto.builder()
                         .chatRoomId(1L)
@@ -240,6 +254,9 @@ class ChatRoomControllerTest {
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
                         .numberOfMembers(4)
+                        .hostName("머야")
+                        .hostProfileUrl("/image.jpg")
+                        .hostId(3L)
                         .build()
         );
 
@@ -247,7 +264,7 @@ class ChatRoomControllerTest {
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
-        this.mockMvc.perform(get("/chatroom")
+        this.mockMvc.perform(get("/chatrooms")
                         .param("page", "0")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
@@ -296,12 +313,15 @@ class ChatRoomControllerTest {
                         .description("챗지비티에 관해 이야기 나놔보아요")
                         .createdAt(LocalDateTime.now())
                         .hashTags(Arrays.asList("챗지비티", "어쩌구", "ai"))
+                        .hostName("페리에")
+                        .hostProfileUrl("/image.jpg")
+                        .hostId(2L)
                         .numberOfMembers(2)
                         .build()
                 );
         //when
         //then
-        this.mockMvc.perform(get("/chatroom/{chatroomId}", 32L)
+        this.mockMvc.perform(get("/chatrooms/{chatroomId}", 32L)
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -337,25 +357,34 @@ class ChatRoomControllerTest {
                         .chatType(ChatType.MESSAGE)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .message("어쩌구저쩌구~")
+                        .userId(1L)
+                        .userName("닉넴")
+                        .userProfileUrl("/image.jpg")
                         .build(),
                 ChatDto.builder()
                         .chatId(2L)
                         .chatType(ChatType.IMAGE)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .imageUrl("/s3/fdsa.jpg")
+                        .userId(1L)
+                        .userName("닉넴")
+                        .userProfileUrl("/image.jpg")
                         .build(),
                 ChatDto.builder()
                         .chatId(3L)
                         .chatType(ChatType.MESSAGE)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .message("아그랬구나아하")
+                        .userId(1L)
+                        .userName("닉넴")
+                        .userProfileUrl("/image.jpg")
                         .build()
         );
         given(chatRoomService.readChats(anyLong(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
-        this.mockMvc.perform(get("/chatroom/{chatroomId}/chat", 32L)
+        this.mockMvc.perform(get("/chatrooms/{chatroomId}/chats", 32L)
                         .param("page", "0")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)

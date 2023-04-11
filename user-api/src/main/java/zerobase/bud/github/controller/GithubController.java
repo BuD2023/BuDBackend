@@ -14,6 +14,7 @@ import zerobase.bud.github.dto.CommitHistoryInfo;
 import zerobase.bud.github.service.GithubService;
 import zerobase.bud.security.TokenProvider;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/github")

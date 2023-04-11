@@ -17,6 +17,9 @@ import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.security.TokenProvider;
 
+import javax.validation.Valid;
+
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
@@ -37,11 +40,11 @@ public class PostController {
         @RequestPart(value = CREATE_POST_REQUEST) @Valid CreatePost.Request request,
         @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token
     ) {
+
         return ResponseEntity.ok(postService.createPost(
                  tokenProvider.getUserId(token.substring(TOKEN_PREFIX.length()))
                 , images
                 , request
-            )
-        );
+        ));
     }
 }
