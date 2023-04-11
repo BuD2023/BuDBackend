@@ -27,6 +27,7 @@ public class GithubController {
     public ResponseEntity<String> saveCommitInfoFromLastCommitDate(
         @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token
     ) {
+
         return ResponseEntity.ok(githubService.saveCommitInfoFromLastCommitDate(
                 tokenProvider.getUserId(token.substring(TOKEN_PREFIX.length()))
             )

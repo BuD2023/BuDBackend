@@ -38,7 +38,7 @@ public class PostController {
         @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token
     ) {
         return ResponseEntity.ok(postService.createPost(
-                tokenProvider.getUserId(token.substring(TOKEN_PREFIX.length()))
+                 tokenProvider.getUserId(token.substring(TOKEN_PREFIX.length()))
                 , images
                 , request
             )
