@@ -74,7 +74,7 @@ class ChatRoomServiceTest {
                         .id(1L)
                         .title("임의의타이틀")
                         .description("임의의 설명")
-                        .hashTag("#해시#태크")
+                        .hashTag("#해시#태크#")
                         .status(ChatRoomStatus.ACTIVE)
                         .build());
         List<String> hashStr = Arrays.asList("해시태그1", "해시태그2");
@@ -237,7 +237,7 @@ class ChatRoomServiceTest {
                                 .id(1L)
                                 .title("임의의타이틀")
                                 .description("임의의 첫번째 설명")
-                                .hashTag("해시태그#해시")
+                                .hashTag("#해시태그#해시#")
                                 .status(ChatRoomStatus.ACTIVE)
                                 .member(member)
                                 .createdAt(LocalDateTime.now())

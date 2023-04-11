@@ -38,7 +38,10 @@ public class ChatRoomService {
     @Transactional
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
 
-        String hastStr = "#" + String.join("#", hashTag) + "#";
+        String hastStr = "";
+        if (!hashTag.isEmpty()) {
+            hastStr = "#" + String.join("#", hashTag) + "#";
+        }
 
         return chatRoomRepository.save(
                 ChatRoom.builder()
