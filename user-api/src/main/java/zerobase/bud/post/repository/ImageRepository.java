@@ -7,4 +7,5 @@ import zerobase.bud.post.domain.Image;
 @Repository
 public interface ImageRepository extends JpaRepository<Image, Long> {
 
+    void deleteAllByPostId(Long postId);
 }

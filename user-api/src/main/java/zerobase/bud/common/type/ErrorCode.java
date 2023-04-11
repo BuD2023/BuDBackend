@@ -6,6 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
+
+    NOT_FOUND_POST("존재하지 않는 게시물입니다."),
     INVALID_INITIAL_VALUE("잘못된 초기값입니다."),
     INVALID_TOTAL_COMMIT_COUNT("유효하지 않은 총 커밋 수 입니다."),
     USER_NOT_FOUND("해당 유저가 없습니다."),
@@ -33,4 +35,3 @@ public enum ErrorCode {
     ;
     private final String description;
 }
-
