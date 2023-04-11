@@ -38,7 +38,7 @@ public class ChatRoomService {
     @Transactional
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
 
-        String hastStr = String.join("#", hashTag);
+        String hastStr = "#" + String.join("#", hashTag) + "#";
 
         return chatRoomRepository.save(
                 ChatRoom.builder()
@@ -56,8 +56,8 @@ public class ChatRoomService {
         ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 
         return chatRoomRepository
-                .findAllByTitleContainingIgnoreCaseAndStatus(keyword, ACTIVE,
-                        PageRequest.of(page, size))
+                .findAllByTitleContainingIgnoreCaseAndHashTagIsContainingIgnoreCaseAndStatus(
+                        keyword, "#" + keyword + "#", ACTIVE, PageRequest.of(page, size))
                 .map(chatRoom -> ChatRoomDto.of(chatRoom,
                         getNumberOfMembers(chatRoom.getId(), valueOperations)
                 ));
@@ -97,7 +97,7 @@ public class ChatRoomService {
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
 
         return chatRepository.findAllByChatRoomOrderByCreatedAtDesc(chatRoom,
-                PageRequest.of(page, CHAT_SIZE_PER_PAGE))
+                        PageRequest.of(page, CHAT_SIZE_PER_PAGE))
                 .map(ChatDto::from);
     }
 }

@@ -74,7 +74,7 @@ class ChatRoomServiceTest {
                         .id(1L)
                         .title("임의의타이틀")
                         .description("임의의 설명")
-                        .hashTag("해시태그#해시태그2")
+                        .hashTag("#해시#태크")
                         .status(ChatRoomStatus.ACTIVE)
                         .build());
         List<String> hashStr = Arrays.asList("해시태그1", "해시태그2");
@@ -86,7 +86,7 @@ class ChatRoomServiceTest {
         verify(chatRoomRepository, times(1)).save(captor.capture());
         assertEquals("챗지비티그거진짜어쩌구", captor.getValue().getTitle());
         assertEquals("챗지비티그거진짜나쁘네", captor.getValue().getDescription());
-        assertEquals("해시태그1#해시태그2", captor.getValue().getHashTag());
+        assertEquals("#해시태그1#해시태그2#", captor.getValue().getHashTag());
         assertEquals(1L, result);
     }
 
@@ -153,7 +153,7 @@ class ChatRoomServiceTest {
         );
 
         given(chatRoomRepository
-                .findAllByTitleContainingIgnoreCaseAndStatus(anyString(), any(), any()))
+                .findAllByTitleContainingIgnoreCaseAndHashTagIsContainingIgnoreCaseAndStatus(anyString(), anyString(), any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
 
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
