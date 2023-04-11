@@ -64,7 +64,7 @@ class GithubServiceTest {
             .willReturn(Optional.ofNullable(getMember()));
 
         given(commitHistoryRepository
-            .findAllByGithubInfoIdOrderByCommitDateDesc(anyLong()))
+            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(anyLong(), any(), any()))
             .willReturn(List.of(getCommitHistory()));
 
         given(
@@ -95,7 +95,7 @@ class GithubServiceTest {
             .willReturn(Optional.ofNullable(getMember()));
 
         given(commitHistoryRepository
-            .findAllByGithubInfoIdOrderByCommitDateDesc(anyLong()))
+            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(anyLong(), any(), any()))
             .willReturn(List.of());
 
         given(levelRepository.findByLevelStartCommitCount(anyLong()))
@@ -157,7 +157,7 @@ class GithubServiceTest {
             .willReturn(Optional.ofNullable(getMember()));
 
         given(commitHistoryRepository
-            .findAllByGithubInfoIdOrderByCommitDateDesc(anyLong()))
+            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(anyLong(), any(), any()))
             .willReturn(List.of());
 
         given(levelRepository.findByLevelStartCommitCount(anyLong()))

@@ -105,7 +105,7 @@ class GithubControllerTest {
         //when 어떤 경우에
         //then 이런 결과가 나온다.
         mockMvc.perform(
-                get("/github/info")
+                get("/github")
                     .header(HttpHeaders.AUTHORIZATION, TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .with(csrf()))

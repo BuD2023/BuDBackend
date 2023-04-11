@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 public class SecurityConfiguration {
     private final CustomOAuth2UserService customOAuth2UserService;
 

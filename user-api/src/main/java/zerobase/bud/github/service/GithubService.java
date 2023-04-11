@@ -44,7 +44,10 @@ public class GithubService {
 
     private final GithubApi githubApi;
 
-    private final static int INITIAL_VALUE = 0;
+    private static final int INITIAL_VALUE = 0;
+
+    private static final int WEEKS_FOR_COMMIT_HISTORY = 16;
+
 
     @Transactional
     public CommitHistoryInfo getCommitInfo(String userId) {
@@ -56,10 +59,15 @@ public class GithubService {
             .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
 
         List<CommitHistory> commitHistories = commitHistoryRepository
-            .findAllByGithubInfoIdOrderByCommitDateDesc(githubInfo.getId());
+            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(
+                githubInfo.getId()
+                , LocalDate.now().minusWeeks(WEEKS_FOR_COMMIT_HISTORY)
+                , LocalDate.now()
+            );
 
         if (commitHistories.isEmpty()) {
-            Level level = levelRepository.findByLevelStartCommitCount(INITIAL_VALUE)
+            Level level = levelRepository.findByLevelStartCommitCount(
+                    INITIAL_VALUE)
                 .orElseThrow(() -> new BudException(INVALID_INITIAL_VALUE));
 
             return CommitHistoryInfo.builder()
@@ -140,7 +148,7 @@ public class GithubService {
             .stream()
             .map(CommitHistory::getCommitDate)
             .findFirst()
-            .orElse(githubInfo.getCreatedAt().toLocalDate());
+            .orElse(LocalDate.now().minusWeeks(WEEKS_FOR_COMMIT_HISTORY));
     }
 
 
@@ -163,7 +171,7 @@ public class GithubService {
     private long getThisWeekCommitCount(List<CommitHistory> commitHistories) {
 
         LocalDate firstDayOfWeek = LocalDate.now().with(DayOfWeek.MONDAY);
-        long thisWeekCommitCount = 0;
+        long thisWeekCommitCount = INITIAL_VALUE;
 
         for (CommitHistory commitHistory : commitHistories) {
             LocalDate commitDate = commitHistory.getCommitDate();

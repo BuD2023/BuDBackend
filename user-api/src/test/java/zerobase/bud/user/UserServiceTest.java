@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
+import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
@@ -47,13 +48,29 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
+    Level level = Level.builder()
+        .id(1L)
+        .levelCode("씩씩한사람")
+        .levelStartCommitCount(0)
+        .nextLevelStartCommitCount(17)
+        .build();
+
+    Level level2 = Level.builder()
+        .id(1L)
+        .levelCode("씩씩하지않은새싹")
+        .levelStartCommitCount(0)
+        .nextLevelStartCommitCount(17)
+        .build();
+
+
+
     Member member = Member.builder()
             .id(1L)
             .createdAt(LocalDateTime.now())
             .status(MemberStatus.VERIFIED)
             .email("abcde@gmail.com")
             .introduceMessage("안녕나는나는")
-            .level("식씩한사람")
+            .level(level)
             .profileImg("abcde.jpg")
             .nickname("안뇽")
             .job("시스템프로그래머")
@@ -182,7 +199,7 @@ class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("안녕하세요 저는 어쩌구저쩌구")
-                .level("식씩한세싹")
+                .level(level)
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .build();
@@ -248,7 +265,7 @@ class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("안녕하세요 저는 어쩌구저쩌구")
-                .level("식씩한세싹")
+                .level(level)
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .build();
@@ -258,7 +275,7 @@ class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("안녕하세용")
-                .level("식씩하지않은세싹")
+                .level(level2)
                 .profileImg("ddddd.jpg")
                 .nickname("닉넴고갈")
                 .build();
@@ -297,7 +314,7 @@ class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("안녕하세요 저는 어쩌구저쩌구")
-                .level("식씩한세싹")
+                .level(level)
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .build();
@@ -307,7 +324,7 @@ class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("안녕하세용")
-                .level("식씩하지않은세싹")
+                .level(level2)
                 .profileImg("ddddd.jpg")
                 .nickname("닉넴고갈")
                 .build();
@@ -346,7 +363,7 @@ class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("암튼없음")
-                .level("식씩하지않은세싹")
+                .level(level2)
                 .profileImg("ddddd.jpg")
                 .nickname("닉넴없음")
                 .build();
@@ -356,7 +373,7 @@ class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("안녕하세요 저는 어쩌구저쩌구")
-                .level("식씩한세싹")
+                .level(level)
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .build();
@@ -402,7 +419,7 @@ class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("암튼없음")
-                .level("식씩하지않은세싹")
+                .level(level2)
                 .profileImg("ddddd.jpg")
                 .nickname("닉넴없음")
                 .build();
@@ -412,7 +429,7 @@ class UserServiceTest {
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("안녕하세요 저는 어쩌구저쩌구")
-                .level("식씩한세싹")
+                .level(level)
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .build();
