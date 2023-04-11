@@ -10,10 +10,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import zerobase.bud.oauth.service.CustomOAuth2UserService;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -86,8 +88,8 @@ public class SecurityConfiguration {
 
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Arrays.asList(
-                "http://localhost:8080",
-                "http://localhost:5173",
+                "http://127.0.0.1:8080",
+                "http://127.0.0.1:5173",
                 "https://mlf.vercel.app",
                 "https://stately-yeot-007fa8.netlify.app"
         ));
