@@ -187,7 +187,7 @@ class UserServiceTest {
         MemberException exception = assertThrows(MemberException.class,
                 () -> userService.follow(23L, member));
         //then
-        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+        assertEquals(ErrorCode.NOT_REGISTERED_MEMBER, exception.getErrorCode());
     }
 
     @Test
@@ -235,7 +235,7 @@ class UserServiceTest {
         MemberException exception = assertThrows(MemberException.class,
                 () -> userService.readProfile(23L, member));
         //then
-        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+        assertEquals(ErrorCode.NOT_REGISTERED_MEMBER, exception.getErrorCode());
     }
 
     @Test
@@ -476,7 +476,7 @@ class UserServiceTest {
         MemberException exception = assertThrows(MemberException.class,
                 () -> userService.readFollowings(1L, member));
         //then
-        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+        assertEquals(ErrorCode.NOT_REGISTERED_MEMBER, exception.getErrorCode());
     }
 
     @Test
@@ -489,7 +489,7 @@ class UserServiceTest {
         MemberException exception = assertThrows(MemberException.class,
                 () -> userService.readFollowers(1L, member));
         //then
-        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+        assertEquals(ErrorCode.NOT_REGISTERED_MEMBER, exception.getErrorCode());
     }
 
 

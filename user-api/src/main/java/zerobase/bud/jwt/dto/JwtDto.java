@@ -1,4 +1,4 @@
-package zerobase.bud.common.dto;
+package zerobase.bud.jwt.dto;
 
 import lombok.Builder;
 import lombok.Data;

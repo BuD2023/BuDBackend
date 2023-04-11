@@ -1,4 +1,4 @@
-package zerobase.bud.security;
+package zerobase.bud.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +18,7 @@ import java.util.Arrays;
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
-public class SecurityConfiguration {
+public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean

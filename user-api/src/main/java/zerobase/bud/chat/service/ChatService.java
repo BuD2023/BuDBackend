@@ -32,7 +32,7 @@ public class ChatService {
                 .orElseThrow(() -> new ChatRoomException(ErrorCode.CHATROOM_NOT_FOUND));
 
         Member member = memberRepository.findById(senderId)
-                .orElseThrow(() -> new MemberException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
         return ChatDto.from(
                 chatRepository.save(

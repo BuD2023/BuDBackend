@@ -1,4 +1,4 @@
-package zerobase.bud.security;
+package zerobase.bud.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -14,7 +14,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import zerobase.bud.common.dto.JwtDto;
+import zerobase.bud.jwt.dto.JwtDto;
 import zerobase.bud.domain.Member;
 import zerobase.bud.member.service.MemberService;
 import zerobase.bud.repository.MemberRepository;
@@ -22,7 +22,7 @@ import zerobase.bud.repository.MemberRepository;
 import java.util.Date;
 import java.util.Optional;
 
-import static zerobase.bud.common.util.Constant.TOKEN_PREFIX;
+import static zerobase.bud.common.util.Constants.TOKEN_PREFIX;
 
 @Slf4j
 @Component

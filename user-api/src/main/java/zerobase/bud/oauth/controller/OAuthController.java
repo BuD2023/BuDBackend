@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import zerobase.bud.common.dto.JwtDto;
-import zerobase.bud.common.dto.RefreshDto;
+import zerobase.bud.jwt.dto.JwtDto;
+import zerobase.bud.jwt.dto.RefreshDto;
 import zerobase.bud.member.service.AuthService;
 
 @RestController

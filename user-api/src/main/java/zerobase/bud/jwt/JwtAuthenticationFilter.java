@@ -1,4 +1,4 @@
-package zerobase.bud.security;
+package zerobase.bud.jwt;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

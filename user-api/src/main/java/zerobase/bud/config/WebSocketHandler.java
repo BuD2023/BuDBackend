@@ -18,11 +18,11 @@ import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.ChatRoomSession;
 import zerobase.bud.repository.ChatRoomRepository;
-import zerobase.bud.security.TokenProvider;
+import zerobase.bud.jwt.TokenProvider;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
-import static zerobase.bud.common.util.Constant.CHATROOM;
-import static zerobase.bud.common.util.Constant.SESSION;
+import static zerobase.bud.common.util.Constants.CHATROOM;
+import static zerobase.bud.common.util.Constants.SESSION;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
 
 @Slf4j

@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import zerobase.bud.common.dto.JwtDto;
-import zerobase.bud.common.dto.RefreshDto;
-import zerobase.bud.security.TokenProvider;
+import zerobase.bud.jwt.dto.JwtDto;
+import zerobase.bud.jwt.dto.RefreshDto;
+import zerobase.bud.jwt.TokenProvider;
 
 @Slf4j
 @Service

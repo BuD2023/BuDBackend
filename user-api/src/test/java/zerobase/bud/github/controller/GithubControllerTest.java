@@ -28,7 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import zerobase.bud.github.dto.CommitCountByDate;
 import zerobase.bud.github.dto.CommitHistoryInfo;
 import zerobase.bud.github.service.GithubService;
-import zerobase.bud.security.TokenProvider;
+import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.service.GithubApi;
 
 @WebMvcTest(GithubController.class)

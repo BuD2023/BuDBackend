@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import zerobase.bud.chat.dto.CreateChatRoomRequest;
+import zerobase.bud.chat.dto.CreateChatRoom;
 import zerobase.bud.chat.service.ChatRoomService;
 import zerobase.bud.domain.Member;
 
@@ -22,7 +22,7 @@ public class ChatRoomController {
     //TODO: member 추가
     @PostMapping("/chatrooms")
     private ResponseEntity createChatRoom(
-            @RequestBody @Valid CreateChatRoomRequest request,
+            @RequestBody @Valid CreateChatRoom.Request request,
             @AuthenticationPrincipal Member member) {
         Long id = chatRoomService
                 .createChatRoom(request.getTitle(), request.getDescription(), request.getHashTag(), member);
