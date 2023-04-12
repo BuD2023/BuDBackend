@@ -101,6 +101,7 @@ public class GithubApi {
             List<GHRepository> repositories = user.listRepositories().toList();
 
             for (GHRepository repository : repositories) {
+                log.info("started Repository... " + repository.getFullName());
                 GHCommitQueryBuilder commitQueryBuilder = repository.queryCommits();
 
                 commitQueryBuilder.author(username);
