@@ -21,6 +21,8 @@ import java.util.Arrays;
 public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
 
+    private final CustomAuthenticationHandler customAuthenticationHandler;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -41,7 +43,7 @@ public class SecurityConfig {
                 .and()
 
                 .oauth2Login()
-                .defaultSuccessUrl("/login/oauth2")
+                .successHandler(customAuthenticationHandler)
                 .userInfoEndpoint()
                 .userService(customOAuth2UserService);
 
