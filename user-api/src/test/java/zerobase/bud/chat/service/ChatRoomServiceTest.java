@@ -153,7 +153,7 @@ class ChatRoomServiceTest {
         );
 
         given(chatRoomRepository
-                .findByTitleContainsIgnoreCaseAndHashTagContainsIgnoreCaseAndStatus(anyString(), anyString(), any(), any()))
+                .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatus(anyString(), anyString(), any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
 
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
