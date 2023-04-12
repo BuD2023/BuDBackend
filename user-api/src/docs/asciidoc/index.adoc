@@ -205,6 +205,16 @@ include::{snippets}/post-controller-test/success_update-post/http-response.adoc[
 .response field
 include::{snippets}/post-controller-test/success_update-post/response-body.adoc[]
 
+=== 3. QNA 답글 생성
+.request
+include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-request.adoc[]
+
+.response
+include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_create-qna-answer/response-body.adoc[]
+
 
 
 == 유저
