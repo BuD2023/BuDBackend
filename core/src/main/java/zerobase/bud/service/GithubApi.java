@@ -56,7 +56,7 @@ public class GithubApi {
         log.info("complete saveCommitInfoFromLastCommitDate... "
                 + LocalDateTime.now());
 
-        return githubInfo.getEmail();
+        return githubInfo.getUsername();
     }
 
     private void saveCommitHistory(

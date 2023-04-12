@@ -10,7 +10,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 import static zerobase.bud.post.type.PostSortType.HIT;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 import static zerobase.bud.post.type.PostStatus.INACTIVE;
@@ -35,24 +34,20 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.awss3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.domain.GithubInfo;
+import zerobase.bud.domain.Level;
+import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CreatePost;
-import zerobase.bud.post.dto.CreatePost.Request;
 import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.post.repository.ImageRepository;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostType;
-import zerobase.bud.repository.GithubInfoRepository;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
-
-    @Mock
-    private GithubInfoRepository githubInfoRepository;
 
     @Mock
     private PostRepository postRepository;
@@ -74,9 +69,6 @@ class PostServiceTest {
         //given 어떤 데이터가 주어졌을 때
         List<MultipartFile> images = getMockMultipartFiles();
 
-        given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
-
         given(postRepository.save(any()))
             .willReturn(getPost());
 
@@ -93,7 +85,7 @@ class PostServiceTest {
         ArgumentCaptor<Image> imageCaptor = ArgumentCaptor.forClass(
             Image.class);
         //when 어떤 경우에
-        String result = postService.createPost("userId", images,
+        String result = postService.createPost(getMember(), images,
             CreatePost.Request.builder()
                 .title("t")
                 .content("c")
@@ -118,16 +110,13 @@ class PostServiceTest {
         //given 어떤 데이터가 주어졌을 때
         List<MultipartFile> images = getMockMultipartFiles();
 
-        given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
-
         given(postRepository.save(any()))
             .willReturn(getPost());
 
         ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
 
         //when 어떤 경우에
-        String result = postService.createPost("userId", images,
+        String result = postService.createPost(getMember(), images,
             CreatePost.Request.builder()
                 .title("t")
                 .content("c")
@@ -141,26 +130,6 @@ class PostServiceTest {
         assertEquals(ACTIVE, captor.getValue().getPostStatus());
         assertEquals(PostType.QNA, captor.getValue().getPostType());
         assertEquals("t", result);
-    }
-
-    @Test
-    @DisplayName("NOT_REGISTERED_MEMBER_createPost")
-    void NOT_REGISTERED_MEMBER_createPost() {
-        //given 어떤 데이터가 주어졌을 때
-        given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.empty());
-
-        //when 어떤 경우에
-        BudException budException = assertThrows(BudException.class,
-            () -> postService.createPost("userId", getMockMultipartFiles(),
-                Request.builder()
-                    .title("t")
-                    .content("c")
-                    .postType(PostType.FEED)
-                    .build()));
-
-        //then 이런 결과가 나온다.
-        assertEquals(NOT_REGISTERED_MEMBER, budException.getErrorCode());
     }
 
     @Test
@@ -355,7 +324,7 @@ class PostServiceTest {
 
     private static Post getPost() {
         return Post.builder()
-            .member(getGithubInfo().getMember())
+            .member(getMember())
             .title("title")
             .content("content")
             .postStatus(ACTIVE)
@@ -363,12 +332,21 @@ class PostServiceTest {
             .build();
     }
 
-    private static GithubInfo getGithubInfo() {
-        return GithubInfo.builder()
-            .id(1L)
-            .accessToken("accessToken")
-            .email("abcd@naver.com")
-            .username("userName")
+    private static Member getMember() {
+        return Member.builder()
+            .nickname("nick")
+            .level(getLevel())
+            .userId("")
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
+    }
+
+    private static Level getLevel() {
+        return Level.builder()
+            .levelCode("씩씩한_새싹")
+            .levelStartCommitCount(0)
+            .nextLevelStartCommitCount(17)
+            .levelNumber(1)
             .build();
     }
 

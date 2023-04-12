@@ -1,6 +1,12 @@
 package zerobase.bud.post.service;
 
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
+import static zerobase.bud.post.type.PostStatus.ACTIVE;
+import static zerobase.bud.util.Constants.POSTS;
+
 import com.querydsl.core.types.Order;
+import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -10,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.awss3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.domain.GithubInfo;
+import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CreatePost.Request;
@@ -21,22 +27,11 @@ import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostSortType;
 import zerobase.bud.post.type.PostStatus;
-import zerobase.bud.repository.GithubInfoRepository;
-
-import java.util.List;
-import java.util.Objects;
-
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
-import static zerobase.bud.post.type.PostStatus.ACTIVE;
-import static zerobase.bud.util.Constants.POSTS;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostService {
-
-    private final GithubInfoRepository githubInfoRepository;
 
     private final PostRepository postRepository;
 
@@ -47,14 +42,11 @@ public class PostService {
     private final AwsS3Api awsS3Api;
 
     @Transactional
-    public String createPost(String userId, List<MultipartFile> images,
+    public String createPost(Member member, List<MultipartFile> images,
         Request request) {
 
-        GithubInfo githubInfo = githubInfoRepository.findByUserId(userId)
-            .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
-
         Post post = postRepository.save(Post.builder()
-            .member(githubInfo.getMember())
+            .member(member)
             .title(request.getTitle())
             .content(request.getContent())
             .postStatus(ACTIVE)
@@ -95,10 +87,10 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostDto> searchPosts(String keyword, PostSortType sort,
-                                     Order order, int page, int size) {
+        Order order, int page, int size) {
 
         Page<Post> posts = postRepositoryQuerydsl.findAllByPostStatus(keyword,
-                sort, order, PageRequest.of(page, size));
+            sort, order, PageRequest.of(page, size));
 
         return PostDto.fromEntities(posts, imageRepository);
     }
@@ -107,16 +99,17 @@ public class PostService {
     public PostDto searchPost(Long postId) {
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BudException(NOT_FOUND_POST));
+            .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
-        return PostDto.fromEntity(post, imageRepository.findAllByPostId(postId));
+        return PostDto.fromEntity(post,
+            imageRepository.findAllByPostId(postId));
     }
 
     @Transactional
     public Long deletePost(Long postId) {
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BudException(NOT_FOUND_POST));
+            .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
         post.setPostStatus(PostStatus.INACTIVE);
         postRepository.save(post);

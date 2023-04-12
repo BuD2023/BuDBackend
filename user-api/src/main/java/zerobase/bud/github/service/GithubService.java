@@ -3,7 +3,6 @@ package zerobase.bud.github.service;
 import static zerobase.bud.common.type.ErrorCode.INVALID_INITIAL_VALUE;
 import static zerobase.bud.common.type.ErrorCode.INVALID_TOTAL_COMMIT_COUNT;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_GITHUB_USER_ID;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 import static zerobase.bud.common.util.Constants.MAXIMUM_LEVEL_CODE;
 
 import java.time.DayOfWeek;
@@ -26,15 +25,12 @@ import zerobase.bud.github.dto.CommitHistoryInfo;
 import zerobase.bud.repository.CommitHistoryRepository;
 import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.repository.LevelRepository;
-import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.service.GithubApi;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class GithubService {
-
-    private final MemberRepository memberRepository;
 
     private final LevelRepository levelRepository;
 
@@ -48,13 +44,11 @@ public class GithubService {
 
 
     @Transactional
-    public CommitHistoryInfo getCommitInfo(String userId) {
+    public CommitHistoryInfo getCommitInfo(Member member) {
 
-        GithubInfo githubInfo = githubInfoRepository.findByUserId(userId)
+        GithubInfo githubInfo = githubInfoRepository.findByUserId(
+                member.getUserId())
             .orElseThrow(() -> new BudException(NOT_REGISTERED_GITHUB_USER_ID));
-
-        Member member = memberRepository.findByUserId(userId)
-            .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
 
         List<CommitHistory> commitHistories = commitHistoryRepository
             .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(
@@ -128,10 +122,9 @@ public class GithubService {
         return level;
     }
 
-    public String saveCommitInfoFromLastCommitDate(
-        String userId
-    ) {
-        GithubInfo githubInfo = githubInfoRepository.findByUserId(userId)
+    public String saveCommitInfoFromLastCommitDate(Member member) {
+        GithubInfo githubInfo = githubInfoRepository.findByUserId(
+                member.getUserId())
             .orElseThrow(() -> new BudException(NOT_REGISTERED_GITHUB_USER_ID));
 
         return githubApi.saveCommitInfoFromLastCommitDate(
@@ -149,13 +142,14 @@ public class GithubService {
     }
 
 
-    private Long getTotalCommitCount(Member member, List<CommitCountByDate> commits) {
+    private Long getTotalCommitCount(Member member,
+        List<CommitCountByDate> commits) {
         LocalDate registeredDate = member.getCreatedAt().toLocalDate();
 
         return commits.stream()
             .filter(x -> x.getCommitDate().isAfter(registeredDate)
-                        || x.getCommitDate().isEqual(registeredDate)
-                    )
+                || x.getCommitDate().isEqual(registeredDate)
+            )
             .map(CommitCountByDate::getCommitCount)
             .reduce(0L, Long::sum);
     }

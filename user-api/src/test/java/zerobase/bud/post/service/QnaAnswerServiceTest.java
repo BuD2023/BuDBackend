@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,7 +13,6 @@ import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_GITHUB_USER_ID;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 import static zerobase.bud.post.type.PostStatus.INACTIVE;
 
@@ -28,7 +26,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.domain.GithubInfo;
+import zerobase.bud.domain.Level;
+import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.domain.QnaAnswerPin;
@@ -39,13 +38,9 @@ import zerobase.bud.post.repository.QnaAnswerPinRepository;
 import zerobase.bud.post.repository.QnaAnswerRepository;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
-import zerobase.bud.repository.GithubInfoRepository;
 
 @ExtendWith(MockitoExtension.class)
 class QnaAnswerServiceTest {
-
-    @Mock
-    private GithubInfoRepository githubInfoRepository;
 
     @Mock
     private PostRepository postRepository;
@@ -62,8 +57,6 @@ class QnaAnswerServiceTest {
     @Test
     void success_createQnaAnswer() {
         //given
-        given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(postRepository.findById(anyLong()))
             .willReturn(Optional.ofNullable(getPost()));
@@ -75,7 +68,7 @@ class QnaAnswerServiceTest {
             QnaAnswer.class);
 
         //when
-        String answer = qnaAnswerService.createQnaAnswer("userId",
+        String answer = qnaAnswerService.createQnaAnswer(getMember(),
             Request.builder()
                 .postId(1L)
                 .content("content")
@@ -93,37 +86,15 @@ class QnaAnswerServiceTest {
     }
 
     @Test
-    @DisplayName("NOT_REGISTERED_GITHUB_USER_ID_createQnaAnswer")
-    void NOT_REGISTERED_GITHUB_USER_ID_createQnaAnswer() {
-        //given 어떤 데이터가 주어졌을 때
-        given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.empty());
-
-        //when 어떤 경우에
-        BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer("userId",
-                Request.builder()
-                    .postId(1L)
-                    .content("content")
-                    .build()));
-        //then 이런 결과가 나온다.
-        assertEquals(NOT_REGISTERED_GITHUB_USER_ID,
-            budException.getErrorCode());
-    }
-
-    @Test
     @DisplayName("NOT_FOUND_POST_createQnaAnswer")
     void NOT_FOUND_POST_createQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
-        given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
-
         given(postRepository.findById(anyLong()))
             .willReturn(Optional.empty());
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer("userId",
+            () -> qnaAnswerService.createQnaAnswer(getMember(),
                 Request.builder()
                     .postId(1L)
                     .content("content")
@@ -137,23 +108,19 @@ class QnaAnswerServiceTest {
     void INVALID_POST_TYPE_FOR_ANSWER_createQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
         Post post = Post.builder()
-            .member(getGithubInfo().getMember())
+            .member(getMember())
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)
             .postType(PostType.FEED)
             .build();
 
-        given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
-
         given(postRepository.findById(anyLong()))
             .willReturn(Optional.ofNullable(post));
 
-
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer("userId",
+            () -> qnaAnswerService.createQnaAnswer(getMember(),
                 Request.builder()
                     .postId(1L)
                     .content("content")
@@ -167,23 +134,19 @@ class QnaAnswerServiceTest {
     void INVALID_POST_STATUS_createQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
         Post post = Post.builder()
-            .member(getGithubInfo().getMember())
+            .member(getMember())
             .title("title")
             .content("postContent")
             .postStatus(INACTIVE)
             .postType(PostType.QNA)
             .build();
 
-        given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
-
         given(postRepository.findById(anyLong()))
             .willReturn(Optional.ofNullable(post));
 
-
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer("userId",
+            () -> qnaAnswerService.createQnaAnswer(getMember(),
                 Request.builder()
                     .postId(1L)
                     .content("content")
@@ -202,7 +165,8 @@ class QnaAnswerServiceTest {
             .willReturn(Optional.empty());
 
         //when
-        Long answer = qnaAnswerService.updateQnaAnswer(UpdateQnaAnswer.Request.builder()
+        Long answer = qnaAnswerService.updateQnaAnswer(
+            UpdateQnaAnswer.Request.builder()
                 .qnaAnswerId(3L)
                 .content("content")
                 .build());
@@ -220,10 +184,11 @@ class QnaAnswerServiceTest {
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.updateQnaAnswer(UpdateQnaAnswer.Request.builder()
-                .qnaAnswerId(1L)
-                .content("content")
-                .build()));
+            () -> qnaAnswerService.updateQnaAnswer(
+                UpdateQnaAnswer.Request.builder()
+                    .qnaAnswerId(1L)
+                    .content("content")
+                    .build()));
         //then 이런 결과가 나온다.
         assertEquals(NOT_FOUND_QNA_ANSWER, budException.getErrorCode());
     }
@@ -233,7 +198,7 @@ class QnaAnswerServiceTest {
     void INVALID_QNA_ANSWER_STATUS_updateQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
         QnaAnswer qnaAnswer = QnaAnswer.builder()
-            .member(getGithubInfo().getMember())
+            .member(getMember())
             .post(getPost())
             .content("content")
             .qnaAnswerStatus(QnaAnswerStatus.INACTIVE)
@@ -244,7 +209,8 @@ class QnaAnswerServiceTest {
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.updateQnaAnswer(UpdateQnaAnswer.Request.builder()
+            () -> qnaAnswerService.updateQnaAnswer(
+                UpdateQnaAnswer.Request.builder()
                     .qnaAnswerId(1L)
                     .content("content")
                     .build()));
@@ -265,12 +231,14 @@ class QnaAnswerServiceTest {
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.updateQnaAnswer(UpdateQnaAnswer.Request.builder()
-                .qnaAnswerId(1L)
-                .content("content")
-                .build()));
+            () -> qnaAnswerService.updateQnaAnswer(
+                UpdateQnaAnswer.Request.builder()
+                    .qnaAnswerId(1L)
+                    .content("content")
+                    .build()));
         //then 이런 결과가 나온다.
-        assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER, budException.getErrorCode());
+        assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER,
+            budException.getErrorCode());
     }
 
     private QnaAnswerPin getQnaAnswerPin() {
@@ -282,7 +250,7 @@ class QnaAnswerServiceTest {
 
     private static QnaAnswer getQnaAnswer() {
         return QnaAnswer.builder()
-            .member(getGithubInfo().getMember())
+            .member(getMember())
             .post(getPost())
             .content("content")
             .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
@@ -291,7 +259,7 @@ class QnaAnswerServiceTest {
 
     private static Post getPost() {
         return Post.builder()
-            .member(getGithubInfo().getMember())
+            .member(getMember())
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)
@@ -299,13 +267,21 @@ class QnaAnswerServiceTest {
             .build();
     }
 
-    private static GithubInfo getGithubInfo() {
-        return GithubInfo.builder()
-            .id(1L)
-            .accessToken("accessToken")
-            .email("abcd@naver.com")
-            .username("userName")
-            .createdAt(LocalDateTime.now())
+    private static Member getMember() {
+        return Member.builder()
+            .nickname("nick")
+            .level(getLevel())
+            .userId("userId")
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
+    }
+
+    private static Level getLevel() {
+        return Level.builder()
+            .levelCode("씩씩한_새싹")
+            .levelStartCommitCount(0)
+            .nextLevelStartCommitCount(17)
+            .levelNumber(1)
             .build();
     }
 }
