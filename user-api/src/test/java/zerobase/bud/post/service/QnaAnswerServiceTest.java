@@ -8,9 +8,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_GITHUB_USER_ID;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 import static zerobase.bud.post.type.PostStatus.INACTIVE;
@@ -28,8 +31,11 @@ import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.GithubInfo;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
+import zerobase.bud.post.domain.QnaAnswerPin;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
+import zerobase.bud.post.dto.UpdateQnaAnswer;
 import zerobase.bud.post.repository.PostRepository;
+import zerobase.bud.post.repository.QnaAnswerPinRepository;
 import zerobase.bud.post.repository.QnaAnswerRepository;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
@@ -46,6 +52,9 @@ class QnaAnswerServiceTest {
 
     @Mock
     private QnaAnswerRepository qnaAnswerRepository;
+
+    @Mock
+    private QnaAnswerPinRepository qnaAnswerPinRepository;
 
     @InjectMocks
     private QnaAnswerService qnaAnswerService;
@@ -181,6 +190,94 @@ class QnaAnswerServiceTest {
                     .build()));
         //then 이런 결과가 나온다.
         assertEquals(INVALID_POST_STATUS, budException.getErrorCode());
+    }
+
+    @Test
+    void success_updateQnaAnswer() {
+        //given
+        given(qnaAnswerRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(getQnaAnswer()));
+
+        given(qnaAnswerPinRepository.findByQnaAnswerId(anyLong()))
+            .willReturn(Optional.empty());
+
+        //when
+        Long answer = qnaAnswerService.updateQnaAnswer(UpdateQnaAnswer.Request.builder()
+                .qnaAnswerId(3L)
+                .content("content")
+                .build());
+
+        //then
+        assertEquals(3L, answer);
+    }
+
+    @Test
+    @DisplayName("NOT_FOUND_QNA_ANSWER_updateQnaAnswer")
+    void NOT_FOUND_QNA_ANSWER_updateQnaAnswer() {
+        //given 어떤 데이터가 주어졌을 때
+        given(qnaAnswerRepository.findById(anyLong()))
+            .willReturn(Optional.empty());
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.updateQnaAnswer(UpdateQnaAnswer.Request.builder()
+                .qnaAnswerId(1L)
+                .content("content")
+                .build()));
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_FOUND_QNA_ANSWER, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("INVALID_QNA_ANSWER_STATUS_updateQnaAnswer")
+    void INVALID_QNA_ANSWER_STATUS_updateQnaAnswer() {
+        //given 어떤 데이터가 주어졌을 때
+        QnaAnswer qnaAnswer = QnaAnswer.builder()
+            .member(getGithubInfo().getMember())
+            .post(getPost())
+            .content("content")
+            .qnaAnswerStatus(QnaAnswerStatus.INACTIVE)
+            .build();
+
+        given(qnaAnswerRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(qnaAnswer));
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.updateQnaAnswer(UpdateQnaAnswer.Request.builder()
+                    .qnaAnswerId(1L)
+                    .content("content")
+                    .build()));
+        //then 이런 결과가 나온다.
+        assertEquals(INVALID_QNA_ANSWER_STATUS, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("CHANGE_IMPOSSIBLE_PINNED_ANSWER_updateQnaAnswer")
+    void CHANGE_IMPOSSIBLE_PINNED_ANSWER_updateQnaAnswer() {
+        //given 어떤 데이터가 주어졌을 때
+
+        given(qnaAnswerRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(getQnaAnswer()));
+
+        given(qnaAnswerPinRepository.findByQnaAnswerId(anyLong()))
+            .willReturn(Optional.of(getQnaAnswerPin()));
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.updateQnaAnswer(UpdateQnaAnswer.Request.builder()
+                .qnaAnswerId(1L)
+                .content("content")
+                .build()));
+        //then 이런 결과가 나온다.
+        assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER, budException.getErrorCode());
+    }
+
+    private QnaAnswerPin getQnaAnswerPin() {
+        return QnaAnswerPin.builder()
+            .post(getPost())
+            .qnaAnswer(getQnaAnswer())
+            .build();
     }
 
     private static QnaAnswer getQnaAnswer() {
