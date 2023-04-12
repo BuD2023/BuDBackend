@@ -212,6 +212,7 @@ class GithubServiceTest {
             .nickname("nick")
             .level(getLevel())
             .userId("")
+            .createdAt(LocalDateTime.now().minusDays(1))
             .build();
     }
 
