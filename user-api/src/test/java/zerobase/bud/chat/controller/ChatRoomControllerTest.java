@@ -27,13 +27,14 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
+import zerobase.bud.chat.dto.ChatRoomStatusDto;
 import zerobase.bud.chat.dto.CreateChatRoom;
 import zerobase.bud.chat.service.ChatRoomService;
-import zerobase.bud.util.TimeUtil;
 import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.MemberStatus;
+import zerobase.bud.util.TimeUtil;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -419,6 +420,29 @@ class ChatRoomControllerTest {
                                         .description("하나의 페이지 안에 몇개의 채팅이 들어갔는지")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("채팅방 현황 읽기 성공")
+    void successChatRoomsStatusTest() throws Exception {
+        //given
+        given(chatRoomService.chatRoomsStatus()).willReturn(
+                ChatRoomStatusDto.builder()
+                        .numberOfChatRooms(1)
+                        .numberOfUsers(2).build());
+        //when
+        //then
+        this.mockMvc.perform(get("/chatrooms/status")
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
     }
 
 
