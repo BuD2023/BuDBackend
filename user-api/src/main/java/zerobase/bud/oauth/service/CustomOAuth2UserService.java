@@ -48,7 +48,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         }
         else {
             member = optionalMember.get();
-            member.update(attributes.getEmail(), attributes.getNickname(), attributes.getOAuthAccessToken());
+            member.update(attributes.getOAuthAccessToken());
         }
         memberRepository.save(member);
         return member;

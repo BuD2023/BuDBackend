@@ -145,10 +145,10 @@ public class GithubService {
     private LocalDate getLastCommitDate(GithubInfo githubInfo) {
         return commitHistoryRepository.findFirstByGithubInfoIdOrderByCommitDateDesc(
                 githubInfo.getId())
-            .stream()
-            .map(CommitHistory::getCommitDate)
-            .findFirst()
-            .orElse(LocalDate.now().minusWeeks(WEEKS_FOR_COMMIT_HISTORY));
+                .stream()
+                .map(CommitHistory::getCommitDate)
+                .findFirst()
+                .orElse(LocalDate.now().minusWeeks(WEEKS_FOR_COMMIT_HISTORY));
     }
 
 
