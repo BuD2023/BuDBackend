@@ -257,7 +257,7 @@ include::{snippets}/post-controller-test/success_delete-post/http-response.adoc[
 .response field
 include::{snippets}/post-controller-test/success_delete-post/response-body.adoc[]
 
-=== 6. QNA 답글 생성
+=== 6. QNA 답변 작성
 .request
 include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-request.adoc[]
 
@@ -266,6 +266,17 @@ include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-re
 
 .response field
 include::{snippets}/qna-answer-controller-test/success_create-qna-answer/response-body.adoc[]
+
+=== 7. QNA 답변 수성
+.request
+include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-request.adoc[]
+
+.response
+include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_update-qna-answer/response-body.adoc[]
+
 
 == 유저
 === 1. 유저 팔로우 / 팔로우 취소

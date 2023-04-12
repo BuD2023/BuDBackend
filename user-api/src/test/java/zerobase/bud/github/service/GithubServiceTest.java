@@ -206,11 +206,11 @@ class GithubServiceTest {
 
     private Member getMember() {
         return Member.builder()
-                .nickname("nick")
-                .level(getLevel())
-                .createdAt(LocalDateTime.now())
-                .userId("")
-                .build();
+            .nickname("nick")
+            .level(getLevel())
+            .userId("")
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
     }
 
     private static Level getLevel() {

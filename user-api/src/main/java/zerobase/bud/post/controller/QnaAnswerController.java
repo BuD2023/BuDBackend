@@ -7,12 +7,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.post.dto.CreateQnaAnswer;
+import zerobase.bud.post.dto.UpdateQnaAnswer;
 import zerobase.bud.post.service.QnaAnswerService;
 
 @RestController
@@ -34,5 +36,12 @@ public class QnaAnswerController {
                 , request
             )
         );
+    }
+
+    @PutMapping
+    public ResponseEntity<Long> updateQnaAnswer(
+        @RequestBody @Valid UpdateQnaAnswer.Request request
+    ) {
+        return ResponseEntity.ok(qnaAnswerService.updateQnaAnswer(request));
     }
 }
