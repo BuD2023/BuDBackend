@@ -9,12 +9,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
+import zerobase.bud.chat.dto.ChatRoomStatusDto;
 import zerobase.bud.common.exception.ChatRoomException;
 import zerobase.bud.common.type.ErrorCode;
+import zerobase.bud.common.util.Constants;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.Member;
@@ -36,6 +39,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static zerobase.bud.common.util.Constants.SESSION;
 
 @ExtendWith(MockitoExtension.class)
 class ChatRoomServiceTest {
@@ -50,6 +54,9 @@ class ChatRoomServiceTest {
 
     @Mock
     private ValueOperations valueOperations;
+
+    @Mock
+    private HashOperations hashOperations;
 
     @InjectMocks
     private ChatRoomService chatRoomService;
@@ -153,7 +160,7 @@ class ChatRoomServiceTest {
         );
 
         given(chatRoomRepository
-                .findByTitleContainsIgnoreCaseAndHashTagContainsIgnoreCaseAndStatus(anyString(), anyString(), any(), any()))
+                .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatus(anyString(), anyString(), any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
 
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
@@ -310,5 +317,22 @@ class ChatRoomServiceTest {
                 () -> chatRoomService.readChats(12L, 1, 10));
         //then
         assertEquals(ErrorCode.CHATROOM_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("채팅방 현황 읽기 성공")
+    void successChatRoomsStatusTest() {
+        //given
+        given(chatRoomRepository.countByStatus(ChatRoomStatus.ACTIVE))
+                .willReturn(3L);
+
+        given(redisTemplate.opsForHash()).willReturn(hashOperations);
+        given(hashOperations.size(anyString())).willReturn(24L);
+        //when
+        ChatRoomStatusDto dto = chatRoomService.chatRoomsStatus();
+        //then
+        assertEquals(3L, dto.getNumberOfChatRooms());
+        assertEquals(24L, dto.getNumberOfUsers());
+
     }
 }
