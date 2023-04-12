@@ -59,7 +59,7 @@ public class ChatRoomService {
         ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 
         return chatRoomRepository
-                .findByTitleContainsIgnoreCaseAndHashTagContainsIgnoreCaseAndStatus(
+                .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatus(
                         keyword, "#" + keyword + "#", ACTIVE, PageRequest.of(page, size))
                 .map(chatRoom -> ChatRoomDto.of(chatRoom,
                         getNumberOfMembers(chatRoom.getId(), valueOperations)
