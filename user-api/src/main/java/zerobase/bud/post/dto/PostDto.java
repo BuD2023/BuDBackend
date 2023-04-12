@@ -3,7 +3,6 @@ package zerobase.bud.post.dto;
 import lombok.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.security.core.parameters.P;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.repository.ImageRepository;
@@ -41,7 +40,7 @@ public class PostDto {
         String[] imageUrls = new String[images.size()];
 
         for (int i = 0; i < images.size(); i++) {
-            imageUrls[i] = images.get(0).getImageUrl();
+            imageUrls[i] = images.get(0).getImagePath();
         }
 
         return PostDto.builder()

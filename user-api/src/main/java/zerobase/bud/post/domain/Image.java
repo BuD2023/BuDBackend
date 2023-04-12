@@ -27,6 +27,6 @@ public class Image extends BaseEntity {
     @ManyToOne
     private Post post;
 
-    private String imageUrl;
+    private String imagePath;
 
 }

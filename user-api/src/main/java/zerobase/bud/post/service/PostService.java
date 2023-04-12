@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import zerobase.bud.awss3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.GithubInfo;
 import zerobase.bud.post.domain.Image;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
+import static zerobase.bud.util.Constants.POSTS;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,6 +43,8 @@ public class PostService {
     private final ImageRepository imageRepository;
 
     private final PostRepositoryQuerydslImpl postRepositoryQuerydsl;
+
+    private final AwsS3Api awsS3Api;
 
     @Transactional
     public String createPost(String userId, List<MultipartFile> images,
@@ -58,12 +62,8 @@ public class PostService {
             .build());
 
         if (Objects.nonNull(images)) {
-            //TODO : S3 기능 구현 후 로직 수정
             for (MultipartFile image : images) {
-                imageRepository.save(Image.builder()
-                    .post(post)
-                    .imageUrl(image.getOriginalFilename())
-                    .build());
+                saveImage(post, image);
             }
         }
 
@@ -80,21 +80,18 @@ public class PostService {
             .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
         post.update(request);
+
+        deleteImagesFromAwsS3(post.getId());
         imageRepository.deleteAllByPostId(post.getId());
 
         if (Objects.nonNull(images)) {
-            //TODO : S3 기능 구현 후 로직 수정
             for (MultipartFile image : images) {
-                imageRepository.save(Image.builder()
-                    .post(post)
-                    .imageUrl(image.getOriginalFilename())
-                    .build());
+                saveImage(post, image);
             }
         }
 
         return request.getTitle();
     }
-
 
     @Transactional(readOnly = true)
     public Page<PostDto> searchPosts(String keyword, PostSortType sort,
@@ -125,5 +122,20 @@ public class PostService {
         postRepository.save(post);
 
         return post.getId();
+    }
+
+    private void saveImage(Post post, MultipartFile image) {
+        String imagePath = awsS3Api.uploadImage(image, POSTS);
+        imageRepository.save(Image.builder()
+            .post(post)
+            .imagePath(imagePath)
+            .build());
+    }
+
+    private void deleteImagesFromAwsS3(Long postId) {
+        List<Image> imageList = imageRepository.findAllByPostId(postId);
+        for (Image image : imageList) {
+            awsS3Api.deleteImage(image.getImagePath());
+        }
     }
 }
