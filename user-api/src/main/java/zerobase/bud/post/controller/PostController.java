@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.dto.PostDto;
@@ -78,5 +80,14 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public ResponseEntity<Long> deletePost(@PathVariable Long postId) {
         return ResponseEntity.ok(postService.deletePost(postId));
+    }
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<String> setLike(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal Member member
+    ) {
+        return ResponseEntity.ok(
+                postService.isLike(postId, member) ? "좋아요" : "좋아요 해제");
     }
 }
