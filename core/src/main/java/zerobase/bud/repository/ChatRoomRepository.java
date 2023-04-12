@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
-    Slice<ChatRoom> findAllByTitleContainingIgnoreCaseAndHashTagIsContainingIgnoreCaseAndStatus(
+    Slice<ChatRoom> findByTitleContainsIgnoreCaseAndHashTagContainsIgnoreCaseAndStatus(
             String keyword, String hashKeyword, ChatRoomStatus status, Pageable pageable);
 
     Slice<ChatRoom> findAllByStatus(ChatRoomStatus status, Pageable pageable);
