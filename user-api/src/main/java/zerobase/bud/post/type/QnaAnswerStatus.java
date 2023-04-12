@@ -1,8 +1,7 @@
 package zerobase.bud.post.type;
 
-public enum PostStatus {
+public enum QnaAnswerStatus {
     ACTIVE,
     PENDING,
-    BLOCKED,
     INACTIVE
 }

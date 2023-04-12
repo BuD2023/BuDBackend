@@ -7,6 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    INVALID_POST_STATUS("게시글의 상태가 유효하지 않습니다."),
+    INVALID_POST_TYPE_FOR_ANSWER("답변을 달기에 유효하지 않은 게시글 타입입니다."),
     NOT_FOUND_POST("존재하지 않는 게시물입니다."),
     INVALID_INITIAL_VALUE("잘못된 초기값입니다."),
     INVALID_TOTAL_COMMIT_COUNT("유효하지 않은 총 커밋 수 입니다."),
