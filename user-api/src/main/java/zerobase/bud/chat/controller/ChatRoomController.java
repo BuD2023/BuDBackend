@@ -55,4 +55,9 @@ public class ChatRoomController {
                                      @RequestParam(defaultValue = "10") int size){
         return ResponseEntity.ok(chatRoomService.readChats(chatroomId, page, size));
     }
+
+    @GetMapping("/chatrooms/status")
+    private ResponseEntity chatRoomsStatus(){
+        return ResponseEntity.ok(chatRoomService.chatRoomsStatus());
+    }
 }

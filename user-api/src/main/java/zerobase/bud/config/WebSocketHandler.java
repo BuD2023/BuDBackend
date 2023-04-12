@@ -17,8 +17,8 @@ import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.ChatRoomSession;
-import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.repository.ChatRoomRepository;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
 import static zerobase.bud.common.util.Constants.CHATROOM;
@@ -34,6 +34,10 @@ public class WebSocketHandler implements ChannelInterceptor {
     private final TokenProvider tokenProvider;
 
     private final RedisTemplate redisTemplate;
+
+    private static HashOperations<String, String, ChatRoomSession> hashOperations;
+
+    private static ValueOperations<String, Integer> valueOperations;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -53,20 +57,24 @@ public class WebSocketHandler implements ChannelInterceptor {
 
             ChatRoom chatRoom = getChatRoom(chatroomId);
 
+            hashOperations = redisTemplate.opsForHash();
             addSessionCount(chatroomId);
             saveSession(chatRoom, userId, sessionId);
         } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
             String sessionId = accessor.getSessionId();
-            HashOperations<String, String, ChatRoomSession> hashOperations = redisTemplate.opsForHash();
+            hashOperations = redisTemplate.opsForHash();
             ChatRoomSession session = hashOperations.get(SESSION, sessionId);
 
             try {
+                valueOperations = redisTemplate.opsForValue();
+
                 ChatRoom chatRoom = getChatRoom(session.getChatroomId());
                 minusSessionCount(chatRoom.getId());
 
                 if (chatRoom.getMember().getUserId().equals(session.getUserId())) {
                     chatRoom.delete();
                     chatRoomRepository.save(chatRoom);
+                    valueOperations.getAndDelete(CHATROOM + chatRoom.getId());
                 }
             } catch (ChatRoomException | NullPointerException e) {
                 log.error("{}", e.getMessage());
@@ -80,7 +88,6 @@ public class WebSocketHandler implements ChannelInterceptor {
     }
 
     private void saveSession(ChatRoom chatRoom, String userId, String sessionId) {
-        HashOperations<String, String, ChatRoomSession> hashOperations = redisTemplate.opsForHash();
         ChatRoomSession session = ChatRoomSession.builder()
                 .chatroomId(chatRoom.getId())
                 .userId(userId)
@@ -89,13 +96,11 @@ public class WebSocketHandler implements ChannelInterceptor {
     }
 
     private void addSessionCount(Long chatroomId) {
-        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
         valueOperations.setIfAbsent(CHATROOM + chatroomId, 0);
         valueOperations.increment(CHATROOM + chatroomId);
     }
 
     private void minusSessionCount(Long chatroomId) {
-        ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
         valueOperations.decrement(CHATROOM + chatroomId);
     }
 
