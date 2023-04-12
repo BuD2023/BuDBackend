@@ -124,6 +124,7 @@ class ChatRoomControllerTest {
                                         .title("챗지비티는 거짓말쟁이")
                                         .description("챗지비티와 인공지능")
                                         .hashTag(Arrays.asList("인공지능", "챗지비티", "ai"))
+                                        .build()
                         ))
                 )
                 .andExpect(status().isCreated())
@@ -177,13 +178,14 @@ class ChatRoomControllerTest {
                         .build()
         );
 
-        given(chatRoomService.searchChatRooms(anyString(), anyInt()))
+        given(chatRoomService.searchChatRooms(anyString(), anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatrooms/search")
                         .param("keyword", "word")
                         .param("page", "0")
+                        .param("size", "5")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
                 )
@@ -260,12 +262,13 @@ class ChatRoomControllerTest {
                         .build()
         );
 
-        given(chatRoomService.readChatRooms(anyInt()))
+        given(chatRoomService.readChatRooms(anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatrooms")
                         .param("page", "0")
+                        .param("size", "4")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
                 )
@@ -380,12 +383,13 @@ class ChatRoomControllerTest {
                         .userProfileUrl("/image.jpg")
                         .build()
         );
-        given(chatRoomService.readChats(anyLong(), anyInt()))
+        given(chatRoomService.readChats(anyLong(), anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatrooms/{chatroomId}/chats", 32L)
                         .param("page", "0")
+                        .param("size", "20")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
                 )

@@ -136,7 +136,7 @@ class UserControllerTest {
                         .isFollowing(true)
                         .isReader(false)
                         .nickName("닉넴")
-                        .level("씩씩한사람")
+                        .level(1L)
                         .profileUrl("ahd.jpg")
                         .numberOfFollows(3L)
                         .numberOfFollowers(4L)
@@ -169,7 +169,7 @@ class UserControllerTest {
                                                 .description("회원이 쓴 글의 개수"),
                                         fieldWithPath("nickName").type(JsonFieldType.STRING)
                                                 .description("회원의 닉네임"),
-                                        fieldWithPath("level").type(JsonFieldType.STRING)
+                                        fieldWithPath("level").type(JsonFieldType.NUMBER)
                                                 .description("회원의 레벨"),
                                         fieldWithPath("isFollowing").type(JsonFieldType.BOOLEAN)
                                                 .description("읽는 유저가 이 회원을 팔로잉하고 있는지"),
@@ -191,7 +191,7 @@ class UserControllerTest {
                         .description("암생각없다")
                         .id(1L)
                         .nickName("닉넴")
-                        .level("씩씩한사람")
+                        .level(1L)
                         .profileUrl("ahd.jpg")
                         .numberOfFollows(3L)
                         .numberOfFollowers(4L)
@@ -224,7 +224,7 @@ class UserControllerTest {
                                                 .description("회원이 쓴 글의 개수"),
                                         fieldWithPath("nickName").type(JsonFieldType.STRING)
                                                 .description("회원의 닉네임"),
-                                        fieldWithPath("level").type(JsonFieldType.STRING)
+                                        fieldWithPath("level").type(JsonFieldType.NUMBER)
                                                 .description("회원의 레벨"),
                                         fieldWithPath("profileUrl").type(JsonFieldType.STRING)
                                                 .description("회원의 프로필 url")
