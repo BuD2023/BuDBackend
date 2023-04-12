@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import zerobase.bud.awss3.AwsS3Api;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.common.exception.ChatRoomException;
 import zerobase.bud.common.exception.MemberException;
@@ -41,6 +42,9 @@ class ChatServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private AwsS3Api awsS3Api;
 
     @InjectMocks
     private ChatService chatService;
@@ -149,6 +153,8 @@ class ChatServiceTest {
                         .type(ChatType.IMAGE).build()
                 );
 
+        given(awsS3Api.uploadFileImage(any(), any())).willReturn("image.jpg");
+
         //when
         ArgumentCaptor<Chat> captor = ArgumentCaptor.forClass(Chat.class);
         ChatDto chatDto = chatService.image("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wCEABAMBg8GBREPDg",
@@ -157,6 +163,7 @@ class ChatServiceTest {
         verify(chatRepository, times(1)).save(captor.capture());
         assertEquals(1L, captor.getValue().getChatRoom().getId());
         assertEquals(1L, captor.getValue().getMember().getId());
+        assertEquals("image.jpg", captor.getValue().getMessage());
         assertEquals(ChatType.IMAGE, captor.getValue().getType());
         assertEquals(1L, chatDto.getChatId());
         assertEquals("filepath.jpg", chatDto.getMessage());
