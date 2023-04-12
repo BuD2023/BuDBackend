@@ -1,6 +1,5 @@
 package zerobase.bud.domain;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,7 +29,6 @@ import zerobase.bud.type.MemberStatus;
 @AllArgsConstructor
 @Builder
 public class Member implements UserDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,10 +38,6 @@ public class Member implements UserDetails {
 
     @OneToOne
     private Level level;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime modifiedAt;
 
     private String nickname;
 
@@ -56,10 +50,9 @@ public class Member implements UserDetails {
     private String introduceMessage;
 
     private String oAuthAccessToken;
+    private boolean addInfoYn;
 
-    public Member update(String email, String nickname, String oAuthAccessToken) {
-        this.email = email;
-        this.nickname = nickname;
+    public Member update(String oAuthAccessToken) {
         this.oAuthAccessToken = oAuthAccessToken;
 
         return this;
