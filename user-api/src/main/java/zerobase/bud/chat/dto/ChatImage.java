@@ -19,6 +19,6 @@ public class ChatImage {
         @NotNull
         private Long chatroomId;
         @NotBlank
-        private String imageCode;
+        private String imageByte;
     }
 }

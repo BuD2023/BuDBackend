@@ -13,7 +13,7 @@ public class UserDto {
     private String userId;
     private String nickName;
     private String description;
-    private String level;
+    private Long level;
     private Long numberOfFollowers;
     private Long numberOfFollows;
     private Long numberOfPosts;
@@ -30,7 +30,7 @@ public class UserDto {
                 .userId(member.getUserId())
                 .nickName(member.getNickname())
                 .description(member.getIntroduceMessage())
-                .level(member.getLevel().getLevelCode())
+                .level(member.getLevel().getLevelNumber())
                 .profileUrl(member.getProfileImg())
                 .numberOfFollowers(numberOfFollowrs)
                 .numberOfFollows(numberOfFollows)
@@ -47,7 +47,7 @@ public class UserDto {
                 .userId(member.getUserId())
                 .nickName(member.getNickname())
                 .description(member.getIntroduceMessage())
-                .level(member.getLevel().getLevelCode())
+                .level(member.getLevel().getLevelNumber())
                 .profileUrl(member.getProfileImg())
                 .numberOfFollowers(numberOfFollowrs)
                 .numberOfFollows(numberOfFollows)

@@ -38,7 +38,10 @@ public class ChatRoomService {
     @Transactional
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
 
-        String hastStr = String.join("#", hashTag);
+        String hastStr = "";
+        if (!hashTag.isEmpty()) {
+            hastStr = "#" + String.join("#", hashTag) + "#";
+        }
 
         return chatRoomRepository.save(
                 ChatRoom.builder()
@@ -51,25 +54,25 @@ public class ChatRoomService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<ChatRoomDto> searchChatRooms(String keyword, int page) {
+    public Slice<ChatRoomDto> searchChatRooms(String keyword, int page, int size) {
 
         ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 
         return chatRoomRepository
-                .findAllByTitleContainingIgnoreCaseAndStatus(keyword, ACTIVE,
-                        PageRequest.of(page, CHATROOM_SIZE_PER_PAGE))
+                .findByTitleContainsIgnoreCaseAndHashTagContainsIgnoreCaseAndStatus(
+                        keyword, "#" + keyword + "#", ACTIVE, PageRequest.of(page, size))
                 .map(chatRoom -> ChatRoomDto.of(chatRoom,
                         getNumberOfMembers(chatRoom.getId(), valueOperations)
                 ));
     }
 
     @Transactional(readOnly = true)
-    public Slice<ChatRoomDto> readChatRooms(int page) {
+    public Slice<ChatRoomDto> readChatRooms(int page, int size) {
 
         ValueOperations<String, Integer> valueOperations = redisTemplate.opsForValue();
 
         return chatRoomRepository.findAllByStatus(ACTIVE,
-                        PageRequest.of(page, CHATROOM_SIZE_PER_PAGE))
+                        PageRequest.of(page, size))
                 .map(chatRoom -> ChatRoomDto.of(chatRoom,
                         getNumberOfMembers(chatRoom.getId(), valueOperations)
                 ));
@@ -92,12 +95,12 @@ public class ChatRoomService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<ChatDto> readChats(Long chatroomId, int page) {
+    public Slice<ChatDto> readChats(Long chatroomId, int page, int size) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
 
         return chatRepository.findAllByChatRoomOrderByCreatedAtDesc(chatRoom,
-                PageRequest.of(page, CHAT_SIZE_PER_PAGE))
+                        PageRequest.of(page, size))
                 .map(ChatDto::from);
     }
 }
