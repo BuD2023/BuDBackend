@@ -1,22 +1,23 @@
 package zerobase.bud.post.controller;
 
-import static zerobase.bud.common.util.Constants.TOKEN_PREFIX;
-
-import java.util.List;
-import javax.validation.Valid;
+import com.querydsl.core.types.Order;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.post.dto.CreatePost;
+import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.post.service.PostService;
-import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.post.type.PostSortType;
+
+import javax.validation.Valid;
+import java.util.List;
+
+import static zerobase.bud.common.util.Constants.TOKEN_PREFIX;
 
 @RestController
 @RequiredArgsConstructor
@@ -56,5 +57,26 @@ public class PostController {
                 , request
             )
         );
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<PostDto>> searchPosts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "DATE") PostSortType sort,
+            @RequestParam(required = false, defaultValue = "DESC") Order order,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(postService.searchPosts(keyword, sort, order, page, size));
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostDto> searchPost(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.searchPost(postId));
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Long> deletePost(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.deletePost(postId));
     }
 }
