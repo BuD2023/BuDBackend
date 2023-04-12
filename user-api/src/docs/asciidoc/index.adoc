@@ -96,8 +96,8 @@ include::{snippets}/chat-room-controller-test/success-read-chats-test/response-f
 
 
 === 6. 채팅방 현황
-.response
-include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/http-response.adoc[]
+.request
+include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/http-request.adoc[]
 
 .response field
 include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/response-body.adoc[]
