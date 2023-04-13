@@ -85,7 +85,6 @@ public class NewsServiceTest {
                 .id(1L)
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
-                .email("email@naver.com")
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
                 .job("백")
