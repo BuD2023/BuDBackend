@@ -111,7 +111,7 @@ http://34.64.224.24:8083/ws
 Authorization: Bearer accestokenvlaue
 ----
 
-=== 8. 웹소켓 pub
+=== 8. 웹소켓 pub - 메세지
 .STOMP
 ----
 http://34.64.224.24:8083/ws
@@ -135,6 +135,32 @@ Authorization: Bearer accestokenvlaue
 "userId": 24
 }
 ----
+
+=== 9. 웹소켓 pub - 이미지
+.STOMP
+----
+http://34.64.224.24:8083/ws
+/chats/message
+Authorization: Bearer accestokenvlaue
+
+{
+    "senderId" : 1,
+    "chatroomId" : 1,
+    "imageByte" : "data:image/jpegbase64/9j/4AAQSkZJRgABAQAAAQABAA/+RXhpZgAATU0AKgAAAAgABQEaA"
+}
+----
+----
+{
+"chatId": 24,
+"message": "/chats/feafsfdsaf.jpg",
+"chatType": "IMAGE",
+"createdAt": "0초 전",
+"userProfileUrl": null,
+"userName": "haden",
+"userId": 24
+}
+----
+
 
 
 == 깃헙 API
