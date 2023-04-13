@@ -7,6 +7,7 @@ import static zerobase.bud.util.Constants.POSTS;
 import com.querydsl.core.types.Order;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
