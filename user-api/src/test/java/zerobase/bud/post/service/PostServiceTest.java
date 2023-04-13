@@ -46,6 +46,7 @@ import zerobase.bud.post.repository.PostLikeRepository;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostType;
+import zerobase.bud.type.MemberStatus;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -337,7 +338,6 @@ class PostServiceTest {
                 .id(1L)
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
-                .email("email@naver.com")
                 .userId("xoals25")
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
@@ -380,7 +380,6 @@ class PostServiceTest {
                 .id(1L)
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
-                .email("email@naver.com")
                 .userId("xoals25")
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
