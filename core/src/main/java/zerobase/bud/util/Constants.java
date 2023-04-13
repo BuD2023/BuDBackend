@@ -13,4 +13,10 @@ public class Constants {
 
     public static final List<String> ALLOW_IMAGE_CODES = List.of("jpeg", "png", "jpg", "gif");
 
+    public static final String TOKEN_PREFIX = "Bearer ";
+
+    public static final String SESSION = "CHATROOM_SESSION";
+
+    public static final String CHATROOM = "CHATROOM";
+
 }

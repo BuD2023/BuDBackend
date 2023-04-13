@@ -1,4 +1,4 @@
-package zerobase.bud.chat.dto;
+package zerobase.bud.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-
-public class ChatMessage {
+public class ChatImage {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -20,6 +19,6 @@ public class ChatMessage {
         @NotNull
         private Long chatroomId;
         @NotBlank
-        private String message;
+        private String imageByte;
     }
 }

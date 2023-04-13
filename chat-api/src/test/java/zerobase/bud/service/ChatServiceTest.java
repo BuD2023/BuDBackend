@@ -1,4 +1,4 @@
-package zerobase.bud.chat.service;
+package zerobase.bud.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,20 +7,21 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import zerobase.bud.awss3.AwsS3Api;
-import zerobase.bud.chat.dto.ChatDto;
-import zerobase.bud.common.exception.ChatRoomException;
-import zerobase.bud.common.exception.MemberException;
-import zerobase.bud.common.type.ErrorCode;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.Member;
+import zerobase.bud.exception.ChatRoomException;
+import zerobase.bud.exception.MemberException;
 import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.ChatRoomStatus;
 import zerobase.bud.type.ChatType;
+import zerobase.bud.type.ErrorCode;
 import zerobase.bud.type.MemberStatus;
+import zerobase.bud.util.AwsS3Api;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -45,6 +46,9 @@ class ChatServiceTest {
 
     @Mock
     private AwsS3Api awsS3Api;
+
+    @Mock
+    private RedisTemplate redisTemplate;
 
     @InjectMocks
     private ChatService chatService;
@@ -92,16 +96,13 @@ class ChatServiceTest {
 
         //when
         ArgumentCaptor<Chat> captor = ArgumentCaptor.forClass(Chat.class);
-        ChatDto chatDto = chatService.chatting("어떤메시지", 1L, 2L);
+        chatService.chatting("어떤메시지", 1L, 2L);
         //then
         verify(chatRepository, times(1)).save(captor.capture());
         assertEquals("어떤메시지", captor.getValue().getMessage());
         assertEquals(1L, captor.getValue().getChatRoom().getId());
         assertEquals(1L, captor.getValue().getMember().getId());
         assertEquals(ChatType.MESSAGE, captor.getValue().getType());
-        assertEquals(1L, chatDto.getChatId());
-        assertEquals("어쩌구저쩌구", chatDto.getMessage());
-        assertTrue(chatDto.getCreatedAt().contains("초 전"));
     }
 
     @Test
@@ -157,7 +158,7 @@ class ChatServiceTest {
 
         //when
         ArgumentCaptor<Chat> captor = ArgumentCaptor.forClass(Chat.class);
-        ChatDto chatDto = chatService.image("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wCEABAMBg8GBREPDg",
+        chatService.image("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wCEABAMBg8GBREPDg",
                 1L, 2L);
         //then
         verify(chatRepository, times(1)).save(captor.capture());
@@ -165,9 +166,6 @@ class ChatServiceTest {
         assertEquals(1L, captor.getValue().getMember().getId());
         assertEquals("image.jpg", captor.getValue().getMessage());
         assertEquals(ChatType.IMAGE, captor.getValue().getType());
-        assertEquals(1L, chatDto.getChatId());
-        assertEquals("filepath.jpg", chatDto.getMessage());
-        assertTrue(chatDto.getCreatedAt().contains("초 전"));
     }
 
     @Test

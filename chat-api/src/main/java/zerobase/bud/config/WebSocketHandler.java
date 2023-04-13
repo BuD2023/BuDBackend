@@ -12,18 +12,18 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
-import zerobase.bud.common.exception.ChatRoomException;
-import zerobase.bud.common.exception.MemberException;
-import zerobase.bud.common.type.ErrorCode;
+import zerobase.bud.util.TokenProvider;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.ChatRoomSession;
-import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.exception.ChatRoomException;
+import zerobase.bud.exception.MemberException;
 import zerobase.bud.repository.ChatRoomRepository;
+import zerobase.bud.type.ErrorCode;
 
-import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
-import static zerobase.bud.common.util.Constants.CHATROOM;
-import static zerobase.bud.common.util.Constants.SESSION;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
+import static zerobase.bud.type.ErrorCode.CHATROOM_NOT_FOUND;
+import static zerobase.bud.util.Constants.CHATROOM;
+import static zerobase.bud.util.Constants.SESSION;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,8 +41,6 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        log.error("preSend");
-
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
