@@ -1,8 +1,7 @@
 package zerobase.bud.post.service;
 
 import static com.querydsl.core.types.Order.ASC;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -36,17 +35,21 @@ import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.awss3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.GithubInfo;
+import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
+import zerobase.bud.post.domain.PostLike;
 import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.dto.CreatePost.Request;
 import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.post.repository.ImageRepository;
+import zerobase.bud.post.repository.PostLikeRepository;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.repository.GithubInfoRepository;
+import zerobase.bud.type.MemberStatus;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -59,6 +62,9 @@ class PostServiceTest {
 
     @Mock
     private ImageRepository imageRepository;
+
+    @Mock
+    private PostLikeRepository postLikeRepository;
 
     @Mock
     private PostRepositoryQuerydslImpl postRepositoryQuerydsl;
@@ -351,6 +357,109 @@ class PostServiceTest {
         //then
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
     }
+
+    @Test
+    @DisplayName("성공 - 게시물 좋아요 추가")
+    void success_postLike(){
+        //given
+        Post post = getPost();
+        post.setId((long)1);
+        post.setLikeCount(2);
+
+        Member member = Member.builder()
+                .id(1L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .email("email@naver.com")
+                .userId("xoals25")
+                .profileImg("abcde.jpg")
+                .nickname("엄탱")
+                .job("백")
+                .oAuthAccessToken("token")
+                .build();
+
+        PostLike postLike = PostLike.builder()
+                .post(post)
+                .member(member)
+                .build();
+
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(post));
+
+        given(postLikeRepository.findByPostIdAndMemberId(anyLong(), anyLong()))
+                .willReturn(Optional.empty());
+
+        ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
+
+        //when
+        boolean isAdd = postService.isLike(post.getId(), member);
+
+        //then
+        verify(postRepository, times(1)).save(postCaptor.capture());
+        assertEquals(1L, post.getId());
+        assertEquals(3, postCaptor.getValue().getLikeCount());
+        assertTrue(isAdd);
+    }
+
+    @Test
+    @DisplayName("성공 - 게시물 좋아요 해제")
+    void success_postLikeRemove(){
+        //given
+        Post post = getPost();
+        post.setId((long)1);
+        post.setLikeCount(2);
+
+        Member member = Member.builder()
+                .id(1L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .email("email@naver.com")
+                .userId("xoals25")
+                .profileImg("abcde.jpg")
+                .nickname("엄탱")
+                .job("백")
+                .oAuthAccessToken("token")
+                .build();
+
+        PostLike postLike = PostLike.builder()
+                .post(post)
+                .member(member)
+                .build();
+
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(post));
+
+        given(postLikeRepository.findByPostIdAndMemberId(anyLong(), anyLong()))
+                .willReturn(Optional.of(postLike));
+
+        ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
+
+        //when
+        boolean isAdd = postService.isLike(post.getId(), member);
+
+        //then
+        verify(postRepository, times(1)).save(postCaptor.capture());
+        assertEquals(1L, post.getId());
+        assertEquals(1, postCaptor.getValue().getLikeCount());
+        assertFalse(isAdd);
+    }
+
+    @Test
+    @DisplayName("실패 - 존재하지 않는 게시글 좋아요 ")
+    void fail_postLike() {
+        //given
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.empty());
+
+        //when
+        BudException budException = assertThrows(BudException.class,
+                () -> postService.isLike((long)1, new Member()));
+
+        //then
+        assertEquals(NOT_FOUND_POST, budException.getErrorCode());
+    }
+
+
 
 
     private static Post getPost() {

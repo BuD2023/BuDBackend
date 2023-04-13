@@ -1,10 +1,37 @@
 package zerobase.bud.post.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.post.dto.PostDto;
+import zerobase.bud.post.service.PostService;
+import zerobase.bud.post.type.PostStatus;
+import zerobase.bud.post.type.PostType;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
@@ -14,39 +41,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.querydsl.core.types.Order;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.core.parameters.P;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-import zerobase.bud.post.dto.PostDto;
-import zerobase.bud.post.service.PostService;
-import zerobase.bud.jwt.TokenProvider;
-import zerobase.bud.post.type.PostSortType;
-import zerobase.bud.post.type.PostStatus;
-import zerobase.bud.post.type.PostType;
 
 @WebMvcTest(PostController.class)
 @AutoConfigureRestDocs
@@ -175,7 +169,7 @@ class PostControllerTest {
                     .likeCount(i)
                     .scrapCount(i)
                     .hitCount(i)
-                    .postStatus(i % 4 == 0 ? PostStatus.INACTIVE : PostStatus.ACTIVE)
+                    .postStatus(PostStatus.ACTIVE)
                     .postType(PostType.FEED)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
@@ -353,6 +347,54 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
                 .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("성공 - 게시글 좋아요")
+    void success_addPostLike() throws Exception {
+        //given
+        given(postService.isLike(anyLong(), any()))
+                .willReturn(true);
+        //when
+        //then
+        mockMvc.perform(post("/posts/1/like")
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(jsonPath("$").value("좋아요"))
+                .andExpect(status().isOk())
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("성공 - 게시글 좋아요 해제")
+    void success_removePostLike() throws Exception {
+        //given
+        given(postService.isLike(anyLong(), any()))
+                .willReturn(false);
+        //when
+        //then
+        mockMvc.perform(post("/posts/1/like")
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(jsonPath("$").value("좋아요 해제"))
                 .andExpect(status().isOk())
                 .andDo(
                         document("{class-name}/{method-name}",
