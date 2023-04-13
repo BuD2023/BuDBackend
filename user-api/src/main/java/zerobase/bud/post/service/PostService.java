@@ -19,10 +19,12 @@ import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
+import zerobase.bud.post.domain.PostLike;
 import zerobase.bud.post.dto.CreatePost.Request;
 import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.post.repository.ImageRepository;
+import zerobase.bud.post.repository.PostLikeRepository;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostSortType;
@@ -34,6 +36,8 @@ import zerobase.bud.post.type.PostStatus;
 public class PostService {
 
     private final PostRepository postRepository;
+
+    private final PostLikeRepository postLikeRepository;
 
     private final ImageRepository imageRepository;
 
@@ -97,7 +101,6 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostDto searchPost(Long postId) {
-
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
@@ -107,7 +110,6 @@ public class PostService {
 
     @Transactional
     public Long deletePost(Long postId) {
-
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
@@ -115,6 +117,41 @@ public class PostService {
         postRepository.save(post);
 
         return post.getId();
+    }
+
+    @Transactional
+    public boolean isLike(Long postId, Member member) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new BudException(NOT_FOUND_POST));
+
+        var isAdd = new AtomicReference<Boolean>(false);
+
+        postLikeRepository.findByPostIdAndMemberId(postId, member.getId())
+                .ifPresentOrElse(
+                        postLike -> removeLike(postLike, post),
+                        () -> isAdd.set(addLike(post, member, isAdd.get()))
+                );
+
+        postRepository.save(post);
+
+        return isAdd.get();
+    }
+
+    private void removeLike(PostLike postLike, Post post) {
+        postLikeRepository.delete(postLike);
+
+        post.likeCountDown();
+    }
+
+    private boolean addLike(Post post, Member member, Boolean isAdd) {
+        postLikeRepository.save(PostLike.builder()
+                .post(post)
+                .member(member)
+                .build());
+
+        post.likeCountUp();
+
+        return true;
     }
 
     private void saveImage(Post post, MultipartFile image) {

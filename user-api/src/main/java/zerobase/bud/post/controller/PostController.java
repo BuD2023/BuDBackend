@@ -81,4 +81,13 @@ public class PostController {
     public ResponseEntity<Long> deletePost(@PathVariable Long postId) {
         return ResponseEntity.ok(postService.deletePost(postId));
     }
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<String> setLike(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal Member member
+    ) {
+        return ResponseEntity.ok(
+                postService.isLike(postId, member) ? "좋아요" : "좋아요 해제");
+    }
 }
