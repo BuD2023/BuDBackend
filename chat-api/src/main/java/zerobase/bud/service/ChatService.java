@@ -42,6 +42,8 @@ public class ChatService {
 
     private final RedisTemplate<String, ?> redisTemplate;
 
+    private final ChannelTopic channelTopic;
+
     @Transactional
     public void chatting(String message, Long roomId, Long senderId) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(roomId, ACTIVE)
@@ -60,7 +62,7 @@ public class ChatService {
                                 .type(ChatType.MESSAGE)
                                 .build()));
 
-        redisTemplate.convertAndSend("/chatrooms/"+ roomId, dto);
+        redisTemplate.convertAndSend(channelTopic.getTopic(), dto);
     }
 
     @Transactional
@@ -104,6 +106,6 @@ public class ChatService {
                                 .build())
         );
 
-        redisTemplate.convertAndSend("/chatrooms/"+ roomId, dto);
+        redisTemplate.convertAndSend(channelTopic.getTopic(), dto);
     }
 }

@@ -27,8 +27,7 @@ public class RedisMessageSubscriber implements MessageListener {
         String messageStr = (String) redisTemplate.getStringSerializer().deserialize(message.getBody());
         try {
             ChatDto chat = objectMapper.readValue(messageStr, ChatDto.class);
-            log.error(message.getChannel().toString());
-            messagingTemplate.convertAndSend(message.getChannel().toString(), chat);
+            messagingTemplate.convertAndSend("/chatrooms/" + chat.getChatroomId(), chat);
         } catch (JsonProcessingException e) {
             throw new ChatException(ErrorCode.REDIS_BROKER_ERROR);
         }

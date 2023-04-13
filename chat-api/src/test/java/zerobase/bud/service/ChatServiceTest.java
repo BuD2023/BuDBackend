@@ -50,6 +50,9 @@ class ChatServiceTest {
     @Mock
     private RedisTemplate redisTemplate;
 
+    @Mock
+    private ChannelTopic channelTopic;
+
     @InjectMocks
     private ChatService chatService;
 
@@ -93,6 +96,8 @@ class ChatServiceTest {
                         .member(member)
                         .type(ChatType.MESSAGE).build()
                 );
+
+        given(channelTopic.getTopic()).willReturn("chatQueue");
 
         //when
         ArgumentCaptor<Chat> captor = ArgumentCaptor.forClass(Chat.class);
@@ -155,6 +160,8 @@ class ChatServiceTest {
                 );
 
         given(awsS3Api.uploadFileImage(any(), any())).willReturn("image.jpg");
+
+        given(channelTopic.getTopic()).willReturn("chatQueue");
 
         //when
         ArgumentCaptor<Chat> captor = ArgumentCaptor.forClass(Chat.class);

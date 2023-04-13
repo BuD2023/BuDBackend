@@ -17,7 +17,6 @@ import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.ChatRoomStatusDto;
 import zerobase.bud.common.exception.ChatRoomException;
 import zerobase.bud.common.type.ErrorCode;
-import zerobase.bud.common.util.Constants;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.Member;
@@ -39,7 +38,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static zerobase.bud.common.util.Constants.SESSION;
 
 @ExtendWith(MockitoExtension.class)
 class ChatRoomServiceTest {

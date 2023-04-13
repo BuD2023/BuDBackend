@@ -106,7 +106,7 @@ include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/res
 === 7. 웹소켓 sub
 .STOMP
 ----
-http://34.64.224.24:8080/ws
+http://34.64.224.24:8083/ws
 /chatrooms/1
 Authorization: Bearer accestokenvlaue
 ----
@@ -114,7 +114,7 @@ Authorization: Bearer accestokenvlaue
 === 8. 웹소켓 pub
 .STOMP
 ----
-http://34.64.224.24:8080/ws
+http://34.64.224.24:8083/ws
 /chats/message
 Authorization: Bearer accestokenvlaue
 
