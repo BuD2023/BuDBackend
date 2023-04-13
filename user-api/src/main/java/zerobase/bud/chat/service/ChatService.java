@@ -2,6 +2,8 @@ package zerobase.bud.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.awss3.AwsS3Api;
@@ -37,27 +39,33 @@ public class ChatService {
 
     private final AwsS3Api awsS3Api;
 
+    private final ChannelTopic channelTopic;
+
+    private final RedisTemplate<String, ?> redisTemplate;
+
     @Transactional
-    public ChatDto chatting(String message, Long roomId, Long senderId) {
+    public void chatting(String message, Long roomId, Long senderId) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(roomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(ErrorCode.CHATROOM_NOT_FOUND));
 
         Member member = memberRepository.findById(senderId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        return ChatDto.from(
+
+        ChatDto dto = ChatDto.from(
                 chatRepository.save(
                         Chat.builder()
                                 .chatRoom(chatRoom)
                                 .message(message)
                                 .member(member)
                                 .type(ChatType.MESSAGE)
-                                .build())
-        );
+                                .build()));
+
+        redisTemplate.convertAndSend(channelTopic.getTopic(), dto);
     }
 
     @Transactional
-    public ChatDto image(String imageStr, Long roomId, Long senderId) {
+    public void image(String imageStr, Long roomId, Long senderId) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(roomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(ErrorCode.CHATROOM_NOT_FOUND));
 
@@ -87,7 +95,7 @@ public class ChatService {
             throw new ChatException(ErrorCode.CANNOT_COVERT_IMAGE);
         }
 
-        return ChatDto.from(
+        ChatDto dto = ChatDto.from(
                 chatRepository.save(
                         Chat.builder()
                                 .chatRoom(chatRoom)
@@ -96,5 +104,7 @@ public class ChatService {
                                 .type(ChatType.IMAGE)
                                 .build())
         );
+
+        redisTemplate.convertAndSend(channelTopic.getTopic(), dto);
     }
 }
