@@ -32,13 +32,16 @@ public class ChatRoomController {
     @GetMapping("/chatrooms/search")
     private ResponseEntity searchChatRoom(
             @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(chatRoomService.searchChatRooms(keyword, page));
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(chatRoomService.searchChatRooms(keyword, page, size));
     }
 
     @GetMapping("/chatrooms")
-    private ResponseEntity readChatRooms(@RequestParam(defaultValue = "0") int page) {
-        return ResponseEntity.ok(chatRoomService.readChatRooms(page));
+    private ResponseEntity readChatRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(chatRoomService.readChatRooms(page, size));
     }
 
     @GetMapping("/chatrooms/{chatroomId}")
@@ -48,7 +51,13 @@ public class ChatRoomController {
 
     @GetMapping("/chatrooms/{chatroomId}/chats")
     private ResponseEntity readChats(@PathVariable Long chatroomId,
-                                     @RequestParam(defaultValue = "0") int page){
-        return ResponseEntity.ok(chatRoomService.readChats(chatroomId, page));
+                                     @RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "10") int size){
+        return ResponseEntity.ok(chatRoomService.readChats(chatroomId, page, size));
+    }
+
+    @GetMapping("/chatrooms/status")
+    private ResponseEntity chatRoomsStatus(){
+        return ResponseEntity.ok(chatRoomService.chatRoomsStatus());
     }
 }

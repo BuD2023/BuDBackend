@@ -19,6 +19,7 @@ include::{snippets}/chat-room-controller-test/success-search-chat-rooms-test/htt
 |필드명|타입|필수여부|설명
 |keyword|String|Y|
 |page|Number|N|page값 입력 안할시 0
+|size|Number|N|size값 입력 안할시 5
 |===
 
 .response
@@ -36,6 +37,7 @@ include::{snippets}/chat-room-controller-test/success-read-chat-rooms-test/http-
 |===
 |필드명|타입|필수여부|설명
 |page|Number|N|page값 입력 안할시 0
+|size|Number|N|size값 입력 안할시 5
 |===
 
 .response
@@ -56,7 +58,7 @@ include::{snippets}/chat-room-controller-test/success-read-chat-room-test/http-r
 |===
 
 .response
-include::{snippets}/chat-room-controller-test/success-read-chat-room-test//http-response.adoc[]
+include::{snippets}/chat-room-controller-test/success-read-chat-room-test/http-response.adoc[]
 
 .response field
 include::{snippets}/chat-room-controller-test/success-read-chat-room-test/response-fields.adoc[]
@@ -77,6 +79,7 @@ include::{snippets}/chat-room-controller-test/success-read-chats-test/http-reque
 |필드명|타입|필수여부|설명
 |chatroomId|Number|Y|path variable
 |page|Number|Y|query param
+|size|Number|N|size값 입력 안할시 10
 |===
 
 .response
@@ -91,7 +94,16 @@ include::{snippets}/chat-room-controller-test/success-read-chats-test/response-f
 |400|CHATROOM_NOT_FOUND|해당 채팅방 정보가 없습니다.
 |===
 
-=== 6. 웹소켓 sub
+
+=== 6. 채팅방 현황
+.request
+include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/http-request.adoc[]
+
+.response field
+include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/response-body.adoc[]
+
+
+=== 7. 웹소켓 sub
 .STOMP
 ----
 http://34.64.224.24:8080/ws
@@ -99,7 +111,7 @@ http://34.64.224.24:8080/ws
 Authorization: Bearer accestokenvlaue
 ----
 
-=== 7. 웹소켓 pub
+=== 8. 웹소켓 pub
 .STOMP
 ----
 http://34.64.224.24:8080/ws
@@ -245,6 +257,25 @@ include::{snippets}/post-controller-test/success_delete-post/http-response.adoc[
 .response field
 include::{snippets}/post-controller-test/success_delete-post/response-body.adoc[]
 
+=== 6. QNA 답변 작성
+.request
+include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-request.adoc[]
+
+.response
+include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_create-qna-answer/response-body.adoc[]
+
+=== 7. QNA 답변 수성
+.request
+include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-request.adoc[]
+
+.response
+include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_update-qna-answer/response-body.adoc[]
 
 === 6. 게시글 좋아요
 .request

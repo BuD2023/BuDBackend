@@ -1,8 +1,8 @@
 package zerobase.bud.common.util;
 
+import java.util.List;
+
 public abstract class Constants {
-    public static final int CHATROOM_SIZE_PER_PAGE = 5;
-    public static final int CHAT_SIZE_PER_PAGE = 10;
 
     public static final String TOKEN_PREFIX = "Bearer ";
 
@@ -46,4 +46,6 @@ public abstract class Constants {
     public static final String FIRST_IMG_ATTR_KEY = "data-src";
 
     public static final String JOURNALIST_SELECTOR = "span.byline_s";
+
+    public static final List<String> ALLOW_IMAGE_CODES = List.of("jpeg", "png", "jpg", "gif");
 }

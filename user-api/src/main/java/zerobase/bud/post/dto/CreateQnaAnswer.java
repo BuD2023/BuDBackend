@@ -1,24 +1,26 @@
-package zerobase.bud.chat.dto;
+package zerobase.bud.post.dto;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+public class CreateQnaAnswer {
 
-public class ChatImage {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class Request {
+
         @NotNull
-        private Long senderId;
+        @Min(1)
+        private Long postId;
+
         @NotNull
-        private Long chatroomId;
-        @NotBlank
-        private String imageByte;
+        private String content;
+
     }
 }

@@ -1,8 +1,10 @@
 package zerobase.bud.common.exception;
 
+import static zerobase.bud.common.type.ErrorCode.AWS_S3_ERROR;
 import static zerobase.bud.common.type.ErrorCode.INTERNAL_ERROR;
 import static zerobase.bud.common.type.ErrorCode.WRONG_REQUEST_TYPE_ERROR;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,6 +15,15 @@ import zerobase.bud.common.dto.ErrorResponse;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AmazonS3Exception.class)
+    public ResponseEntity<ErrorResponse> handleAmazonS3Exception(AmazonS3Exception ae){
+        log.error("AWS S3 Exception is occurred" , ae);
+        return ResponseEntity.internalServerError().body(ErrorResponse.builder()
+                .errorCode(AWS_S3_ERROR)
+                .message(ae.getMessage())
+            .build());
+    }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException he){
@@ -49,6 +60,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ChatRoomException.class)
     public ResponseEntity<ErrorResponse> handleChatRoomException(ChatRoomException e) {
+        log.error("{} is occurred", e.getErrorCode());
+        return ResponseEntity.badRequest().body(
+                ErrorResponse.builder()
+                        .errorCode(e.getErrorCode())
+                        .message(e.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(ChatException.class)
+    public ResponseEntity<ErrorResponse> handleChatRoomException(ChatException e) {
         log.error("{} is occurred", e.getErrorCode());
         return ResponseEntity.badRequest().body(
                 ErrorResponse.builder()

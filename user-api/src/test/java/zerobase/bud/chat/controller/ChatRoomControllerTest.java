@@ -27,13 +27,14 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
+import zerobase.bud.chat.dto.ChatRoomStatusDto;
 import zerobase.bud.chat.dto.CreateChatRoom;
 import zerobase.bud.chat.service.ChatRoomService;
-import zerobase.bud.util.TimeUtil;
 import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.MemberStatus;
+import zerobase.bud.util.TimeUtil;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -124,6 +125,7 @@ class ChatRoomControllerTest {
                                         .title("챗지비티는 거짓말쟁이")
                                         .description("챗지비티와 인공지능")
                                         .hashTag(Arrays.asList("인공지능", "챗지비티", "ai"))
+                                        .build()
                         ))
                 )
                 .andExpect(status().isCreated())
@@ -177,13 +179,14 @@ class ChatRoomControllerTest {
                         .build()
         );
 
-        given(chatRoomService.searchChatRooms(anyString(), anyInt()))
+        given(chatRoomService.searchChatRooms(anyString(), anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatrooms/search")
                         .param("keyword", "word")
                         .param("page", "0")
+                        .param("size", "5")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
                 )
@@ -260,12 +263,13 @@ class ChatRoomControllerTest {
                         .build()
         );
 
-        given(chatRoomService.readChatRooms(anyInt()))
+        given(chatRoomService.readChatRooms(anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatrooms")
                         .param("page", "0")
+                        .param("size", "4")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
                 )
@@ -380,12 +384,13 @@ class ChatRoomControllerTest {
                         .userProfileUrl("/image.jpg")
                         .build()
         );
-        given(chatRoomService.readChats(anyLong(), anyInt()))
+        given(chatRoomService.readChats(anyLong(), anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
         this.mockMvc.perform(get("/chatrooms/{chatroomId}/chats", 32L)
                         .param("page", "0")
+                        .param("size", "20")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .accept(MediaType.APPLICATION_JSON)
                 )
@@ -415,6 +420,29 @@ class ChatRoomControllerTest {
                                         .description("하나의 페이지 안에 몇개의 채팅이 들어갔는지")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("채팅방 현황 읽기 성공")
+    void successChatRoomsStatusTest() throws Exception {
+        //given
+        given(chatRoomService.chatRoomsStatus()).willReturn(
+                ChatRoomStatusDto.builder()
+                        .numberOfChatRooms(1)
+                        .numberOfUsers(2).build());
+        //when
+        //then
+        this.mockMvc.perform(get("/chatrooms/status")
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
     }
 
 

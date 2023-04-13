@@ -1,19 +1,5 @@
 package zerobase.bud.github.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-import static zerobase.bud.common.type.ErrorCode.INVALID_INITIAL_VALUE;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_GITHUB_USER_ID;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +17,17 @@ import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.repository.LevelRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.service.GithubApi;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static zerobase.bud.common.type.ErrorCode.*;
 
 @ExtendWith(MockitoExtension.class)
 class GithubServiceTest {
@@ -58,22 +55,22 @@ class GithubServiceTest {
     void success_getCommitInfo() {
         //given
         given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
+                .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(memberRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getMember()));
+                .willReturn(Optional.ofNullable(getMember()));
 
         given(commitHistoryRepository
-            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(anyLong(), any(), any()))
-            .willReturn(List.of(getCommitHistory()));
+                .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(anyLong(), any(), any()))
+                .willReturn(List.of(getCommitHistory()));
 
         given(
-            levelRepository.findByLevelStartCommitCountLessThanEqualAndNextLevelStartCommitCountGreaterThan(
-                anyLong(), anyLong()))
-            .willReturn(Optional.ofNullable(getLevel()));
+                levelRepository.findByLevelStartCommitCountLessThanEqualAndNextLevelStartCommitCountGreaterThan(
+                        anyLong(), anyLong()))
+                .willReturn(Optional.ofNullable(getLevel()));
         //when
         CommitHistoryInfo info = githubService.getCommitInfo(
-            "abcd@naver.com");
+                "abcd@naver.com");
         //then
         assertEquals("nick", info.getNickName());
         assertEquals("씩씩한_새싹", info.getLevelCode());
@@ -89,20 +86,20 @@ class GithubServiceTest {
     void success_getCommitInfo_empty() {
         //given
         given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
+                .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(memberRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getMember()));
+                .willReturn(Optional.ofNullable(getMember()));
 
         given(commitHistoryRepository
-            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(anyLong(), any(), any()))
-            .willReturn(List.of());
+                .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(anyLong(), any(), any()))
+                .willReturn(List.of());
 
         given(levelRepository.findByLevelStartCommitCount(anyLong()))
-            .willReturn(Optional.ofNullable(getLevel()));
+                .willReturn(Optional.ofNullable(getLevel()));
         //when
         CommitHistoryInfo info = githubService.getCommitInfo(
-            "abcd@naver.com");
+                "abcd@naver.com");
         //then
         assertEquals("nick", info.getNickName());
         assertEquals("씩씩한_새싹", info.getLevelCode());
@@ -117,15 +114,15 @@ class GithubServiceTest {
     void NOT_REGISTERED_GITHUB_USER_ID_getCommitInfo() {
         //given
         given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.empty());
+                .willReturn(Optional.empty());
 
         //when
         BudException budException = assertThrows(BudException.class,
-            () -> githubService.getCommitInfo(
-                "abcd@naver.com"));
+                () -> githubService.getCommitInfo(
+                        "abcd@naver.com"));
         //then
         assertEquals(NOT_REGISTERED_GITHUB_USER_ID,
-            budException.getErrorCode());
+                budException.getErrorCode());
     }
 
     @Test
@@ -133,15 +130,15 @@ class GithubServiceTest {
     void NOT_REGISTERED_MEMBER_getCommitInfo() {
         //given
         given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
+                .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(memberRepository.findByUserId(anyString()))
-            .willReturn(Optional.empty());
+                .willReturn(Optional.empty());
 
         //when
         BudException budException = assertThrows(BudException.class,
-            () -> githubService.getCommitInfo(
-                "abcd@naver.com"));
+                () -> githubService.getCommitInfo(
+                        "abcd@naver.com"));
         //then
         assertEquals(NOT_REGISTERED_MEMBER, budException.getErrorCode());
     }
@@ -151,22 +148,22 @@ class GithubServiceTest {
     void INVALID_INITIAL_VALUE_getCommitInfo_empty() {
         //given
         given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
+                .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(memberRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getMember()));
+                .willReturn(Optional.ofNullable(getMember()));
 
         given(commitHistoryRepository
-            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(anyLong(), any(), any()))
-            .willReturn(List.of());
+                .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(anyLong(), any(), any()))
+                .willReturn(List.of());
 
         given(levelRepository.findByLevelStartCommitCount(anyLong()))
-            .willReturn(Optional.empty());
+                .willReturn(Optional.empty());
 
         //when
         BudException budException = assertThrows(BudException.class,
-            () -> githubService.getCommitInfo(
-                "abcd@naver.com"));
+                () -> githubService.getCommitInfo(
+                        "abcd@naver.com"));
         //then
         assertEquals(INVALID_INITIAL_VALUE, budException.getErrorCode());
     }
@@ -175,18 +172,18 @@ class GithubServiceTest {
     void success_saveCommitInfoFromLastCommitDate() {
         //given
         given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.ofNullable(getGithubInfo()));
+                .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(githubApi.saveCommitInfoFromLastCommitDate(any(), any()))
-            .willReturn("success");
+                .willReturn("success");
 
         given(
-            commitHistoryRepository.findFirstByGithubInfoIdOrderByCommitDateDesc(
-                anyLong()))
-            .willReturn(Optional.ofNullable(getCommitHistory()));
+                commitHistoryRepository.findFirstByGithubInfoIdOrderByCommitDateDesc(
+                        anyLong()))
+                .willReturn(Optional.ofNullable(getCommitHistory()));
         //when
         String user = githubService.saveCommitInfoFromLastCommitDate(
-            "email@naver.com");
+                "email@naver.com");
         //then
         assertEquals("success", user);
     }
@@ -196,15 +193,15 @@ class GithubServiceTest {
     void NOT_REGISTERED_MEMBER_saveCommitInfoFromLastCommitDate() {
         //given
         given(githubInfoRepository.findByUserId(anyString()))
-            .willReturn(Optional.empty());
+                .willReturn(Optional.empty());
 
         //when
         BudException budException = assertThrows(BudException.class,
-            () -> githubService.saveCommitInfoFromLastCommitDate(
-                "email@naver.com"));
+                () -> githubService.saveCommitInfoFromLastCommitDate(
+                        "email@naver.com"));
         //then
         assertEquals(NOT_REGISTERED_GITHUB_USER_ID,
-            budException.getErrorCode());
+                budException.getErrorCode());
     }
 
     private Member getMember() {
@@ -212,33 +209,34 @@ class GithubServiceTest {
             .nickname("nick")
             .level(getLevel())
             .userId("")
+            .createdAt(LocalDateTime.now().minusDays(1))
             .build();
     }
 
     private static Level getLevel() {
         return Level.builder()
-            .levelCode("씩씩한_새싹")
-            .levelStartCommitCount(0)
-            .nextLevelStartCommitCount(17)
-            .levelNumber(1)
-            .build();
+                .levelCode("씩씩한_새싹")
+                .levelStartCommitCount(0)
+                .nextLevelStartCommitCount(17)
+                .levelNumber(1)
+                .build();
     }
 
     private static CommitHistory getCommitHistory() {
         return CommitHistory.builder()
-            .commitDate(LocalDate.now())
-            .consecutiveCommitDays(1L)
-            .commitCount(3L)
-            .build();
+                .commitDate(LocalDate.now())
+                .consecutiveCommitDays(1L)
+                .commitCount(3L)
+                .build();
     }
 
     private static GithubInfo getGithubInfo() {
         return GithubInfo.builder()
-            .id(1L)
-            .accessToken("accessToken")
-            .email("abcd@naver.com")
-            .username("userName")
-            .createdAt(LocalDateTime.now())
-            .build();
+                .id(1L)
+                .accessToken("accessToken")
+                .email("abcd@naver.com")
+                .username("userName")
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 }
