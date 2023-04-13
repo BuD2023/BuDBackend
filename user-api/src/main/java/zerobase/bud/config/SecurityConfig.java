@@ -46,8 +46,8 @@ public class SecurityConfig {
                 .userService(customOAuth2UserService);
 
 
-        http.
-                httpBasic().disable()
+        http
+                .httpBasic().disable()
                 .csrf().disable()
                 .headers().frameOptions().disable();
 
