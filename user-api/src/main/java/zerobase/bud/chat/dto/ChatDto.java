@@ -9,11 +9,14 @@ import zerobase.bud.util.TimeUtil;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.type.ChatType;
 
+import java.io.Serializable;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatDto {
+public class ChatDto implements Serializable {
+    private Long chatroomId;
     private Long chatId;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
@@ -27,6 +30,7 @@ public class ChatDto {
 
     public static ChatDto from(Chat chat) {
         return ChatDto.builder()
+                .chatroomId(chat.getChatRoom().getId())
                 .chatId(chat.getId())
                 .chatType(chat.getType())
                 .createdAt(TimeUtil.caculateTerm(chat.getCreatedAt()))

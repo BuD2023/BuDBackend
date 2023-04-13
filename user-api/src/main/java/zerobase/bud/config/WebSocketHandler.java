@@ -41,6 +41,7 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
+        log.error("preSend");
 
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
