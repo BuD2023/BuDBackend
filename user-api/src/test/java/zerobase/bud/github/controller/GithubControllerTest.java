@@ -1,6 +1,6 @@
 package zerobase.bud.github.controller;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -56,12 +56,8 @@ class GithubControllerTest {
     @WithMockUser
     void success_saveCommitInfoFromLastCommitDate() throws Exception {
         //given 어떤 데이터가 주어졌을 때
-        given(githubService.saveCommitInfoFromLastCommitDate(
-            anyString()))
+        given(githubService.saveCommitInfoFromLastCommitDate(any()))
             .willReturn("success");
-
-        given(tokenProvider.getUserId(anyString()))
-            .willReturn("value");
 
         //when 어떤 경우에
         //then 이런 결과가 나온다.
@@ -83,10 +79,7 @@ class GithubControllerTest {
     void success_getCommitInfo() throws Exception {
         //given 어떤 데이터가 주어졌을 때
 
-        given(tokenProvider.getUserId(anyString()))
-            .willReturn("value");
-
-        given(githubService.getCommitInfo(anyString()))
+        given(githubService.getCommitInfo(any()))
             .willReturn(CommitHistoryInfo.builder()
                 .nickName("nick")
                 .levelCode("씩씩한_새싹")

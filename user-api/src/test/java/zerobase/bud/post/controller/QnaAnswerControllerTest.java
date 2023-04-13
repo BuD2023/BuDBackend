@@ -1,7 +1,6 @@
 package zerobase.bud.post.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -49,14 +48,12 @@ class QnaAnswerControllerTest {
     @WithMockUser
     void success_createQnaAnswer() throws Exception {
         //given
-        given(qnaAnswerService.createQnaAnswer(anyString(), any()))
+        given(qnaAnswerService.createQnaAnswer(any(), any()))
             .willReturn("finish");
 
-        given(tokenProvider.getUserId(anyString()))
-            .willReturn(TOKEN);
         //when
         //then
-        mockMvc.perform(post("/posts/answer")
+        mockMvc.perform(post("/posts/qna-answer")
                 .header("Authorization", TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(
@@ -83,7 +80,7 @@ class QnaAnswerControllerTest {
 
         //when
         //then
-        mockMvc.perform(put("/posts/answer")
+        mockMvc.perform(put("/posts/qna-answer")
                 .header("Authorization", TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(
