@@ -33,8 +33,6 @@ public class PostController {
 
     private final ScrapService scrapService;
 
-    private final TokenProvider tokenProvider;
-
     private static final String IMAGES = "images";
     private static final String CREATE_POST_REQUEST = "createPostRequest";
     private static final String UPDATE_POST_REQUEST = "updatePostRequest";

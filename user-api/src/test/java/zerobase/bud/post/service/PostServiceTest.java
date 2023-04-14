@@ -439,9 +439,7 @@ class PostServiceTest {
 
         Member member = Member.builder()
                 .id(1L)
-//                .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
-                .email("email@naver.com")
                 .userId("xoals25")
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
@@ -477,9 +475,7 @@ class PostServiceTest {
 
         Member member = Member.builder()
                 .id(1L)
-//                .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
-                .email("email@naver.com")
                 .userId("xoals25")
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
