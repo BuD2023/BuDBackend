@@ -74,7 +74,7 @@ public class TokenProvider {
                 .signWith(SignatureAlgorithm.HS512, this.secretKey)
                 .compact();
         return JwtDto.builder()
-                .grantType("Bearer")
+                .grantType("Bearer ")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .accessTokenExpiresTime(accessTokenExpiredTime)

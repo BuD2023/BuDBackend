@@ -57,7 +57,16 @@ public class Post extends BaseEntity {
         this.postType = request.getPostType();
     }
 
+    public void likeCountUp() {
+        this.likeCount++;
+    }
+
+    public void likeCountDown() {
+        this.likeCount--;
+    }
+
     public void plusCommentCount() {
         this.commentCount += 1;
     }
 }
+

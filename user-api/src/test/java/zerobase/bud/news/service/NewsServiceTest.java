@@ -1,7 +1,10 @@
 package zerobase.bud.news.service;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Order;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,10 +17,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.common.exception.BudException;
+import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.news.domain.News;
 import zerobase.bud.news.dto.NewsDto;
@@ -25,6 +36,7 @@ import zerobase.bud.news.dto.SearchAllNews;
 import zerobase.bud.news.repository.NewsRepository;
 import zerobase.bud.news.repository.NewsRepositoryQuerydsl;
 import zerobase.bud.news.type.NewsSortType;
+import zerobase.bud.type.MemberStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,6 +50,8 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static zerobase.bud.common.type.ErrorCode.NEWS_ID_NOT_EXCEED_MIN_VALUE;
 import static zerobase.bud.common.type.ErrorCode.NEWS_NOT_FOUND;
 
@@ -78,7 +92,6 @@ public class NewsServiceTest {
                 .id(1L)
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
-                .email("email@naver.com")
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
                 .job("백")
