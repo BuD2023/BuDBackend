@@ -1,4 +1,4 @@
-package zerobase.bud.chat.service;
+package zerobase.bud.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,26 +9,27 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import zerobase.bud.awss3.AwsS3Api;
-import zerobase.bud.chat.dto.ChatDto;
-import zerobase.bud.common.exception.ChatRoomException;
-import zerobase.bud.common.exception.MemberException;
-import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.Member;
+import zerobase.bud.exception.ChatRoomException;
+import zerobase.bud.exception.MemberException;
 import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.ChatRoomStatus;
 import zerobase.bud.type.ChatType;
+import zerobase.bud.type.ErrorCode;
 import zerobase.bud.type.MemberStatus;
+import zerobase.bud.util.AwsS3Api;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -48,10 +49,10 @@ class ChatServiceTest {
     private AwsS3Api awsS3Api;
 
     @Mock
-    private ChannelTopic channelTopic;
+    private RedisTemplate redisTemplate;
 
     @Mock
-    private RedisTemplate redisTemplate;
+    private ChannelTopic channelTopic;
 
     @InjectMocks
     private ChatService chatService;
@@ -96,6 +97,8 @@ class ChatServiceTest {
                         .type(ChatType.MESSAGE).build()
                 );
         given(channelTopic.getTopic()).willReturn("messageQueue");
+
+        given(channelTopic.getTopic()).willReturn("chatQueue");
 
         //when
         ArgumentCaptor<Chat> captor = ArgumentCaptor.forClass(Chat.class);
@@ -159,6 +162,8 @@ class ChatServiceTest {
 
         given(awsS3Api.uploadFileImage(any(), any())).willReturn("image.jpg");
         given(channelTopic.getTopic()).willReturn("messageQueue");
+
+        given(channelTopic.getTopic()).willReturn("chatQueue");
 
         //when
         ArgumentCaptor<Chat> captor = ArgumentCaptor.forClass(Chat.class);

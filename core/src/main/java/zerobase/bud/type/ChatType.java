@@ -2,6 +2,9 @@ package zerobase.bud.type;
 
 public enum ChatType {
     MESSAGE,
-    IMAGE
+    IMAGE,
+    EXPIRE,
+    ENTER,
+    EXIT
     ;
 }

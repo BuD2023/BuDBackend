@@ -1,19 +1,22 @@
-package zerobase.bud.config;
+package zerobase.bud.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import zerobase.bud.chat.dto.ChatDto;
-import zerobase.bud.common.exception.ChatException;
-import zerobase.bud.common.type.ErrorCode;
+import zerobase.bud.dto.ChatDto;
+import zerobase.bud.exception.ChatException;
+import zerobase.bud.type.ErrorCode;
+
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class RedisMessageSubscriber implements MessageListener {
     private final SimpMessagingTemplate messagingTemplate;
     private final RedisTemplate redisTemplate;

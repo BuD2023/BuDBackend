@@ -1,7 +1,7 @@
 = Getting Started With Spring REST Docs
 :toc:
 
-== 채팅
+== 채팅 API
 === 1. 채팅방 생성
 .request
 include::{snippets}/chat-room-controller-test/success-create-chat-room-test/http-request.adoc[]
@@ -106,15 +106,15 @@ include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/res
 === 7. 웹소켓 sub
 .STOMP
 ----
-http://34.64.224.24:8080/ws
+http://34.64.224.24:8083/ws
 /chatrooms/1
 Authorization: Bearer accestokenvlaue
 ----
 
-=== 8. 웹소켓 pub
+=== 8. 웹소켓 pub - 메세지
 .STOMP
 ----
-http://34.64.224.24:8080/ws
+http://34.64.224.24:8083/ws
 /chats/message
 Authorization: Bearer accestokenvlaue
 
@@ -127,12 +127,76 @@ Authorization: Bearer accestokenvlaue
 ----
 {
 "chatId": 24,
+"chatroomId" : 1,
 "message": "안녕이건스톰프메세지!",
 "chatType": "MESSAGE",
 "createdAt": "0초 전",
 "userProfileUrl": null,
 "userName": "haden",
 "userId": 24
+}
+----
+
+=== 9. 웹소켓 pub - 이미지
+.STOMP
+----
+http://34.64.224.24:8083/ws
+/chats/image
+Authorization: Bearer accestokenvlaue
+
+{
+    "senderId" : 1,
+    "chatroomId" : 1,
+    "imageByte" : "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4ST+RXhpZgAATU0AKgAAAAgABQ"
+}
+----
+.request field
+|===
+|필드명|타입|필수여부|설명
+|imageByte|String|Y|base64 인코딩된 이미지 코드
+|===
+----
+{
+"chatId": 24,
+"chatroomId" : 1,
+"message": "/chats/feafsfdsaf.jpg",
+"chatType": "IMAGE",
+"createdAt": "0초 전",
+"userProfileUrl": null,
+"userName": "haden",
+"userId": 24
+}
+----
+
+=== 10. 채팅방에서 유저가 들어왔을 때
+.STOMP
+----
+{
+"chatroomId" : 1,
+"chatType": "ENTER",
+"numberOfMembers": 3
+}
+----
+
+=== 11. 채팅방에서 유저가 나갔을 때
+.STOMP
+----
+{
+"chatroomId" : 1,
+"chatType": "EXIT",
+"numberOfMembers": 3
+}
+----
+
+=== 12. 채팅방이 폭파되었을 때
+호스트가 나가 채팅방이 폭파된 경우
+
+.STOMP
+----
+{
+"chatroomId" : 1,
+"chatType": "EXPIRE",
+"numberOfMembers": 3
 }
 ----
 
@@ -300,7 +364,7 @@ include::{snippets}/post-controller-test/success_remove-post-like/response-body.
 
 
 
-== 유저
+== 유저 API
 === 1. 유저 팔로우 / 팔로우 취소
 .request
 include::{snippets}/user-controller-test/success-follow-test/http-request.adoc[]

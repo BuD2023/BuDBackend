@@ -1,24 +1,25 @@
-package zerobase.bud.chat.service;
+package zerobase.bud.service;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zerobase.bud.awss3.AwsS3Api;
-import zerobase.bud.chat.dto.ChatDto;
-import zerobase.bud.common.exception.ChatException;
-import zerobase.bud.common.exception.ChatRoomException;
-import zerobase.bud.common.exception.MemberException;
-import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.Member;
+import zerobase.bud.dto.ChatDto;
+import zerobase.bud.exception.ChatException;
+import zerobase.bud.exception.ChatRoomException;
+import zerobase.bud.exception.MemberException;
 import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.ChatType;
+import zerobase.bud.type.ErrorCode;
+import zerobase.bud.util.AwsS3Api;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.File;
@@ -39,9 +40,9 @@ public class ChatService {
 
     private final AwsS3Api awsS3Api;
 
-    private final ChannelTopic channelTopic;
-
     private final RedisTemplate<String, ?> redisTemplate;
+
+    private final ChannelTopic channelTopic;
 
     @Transactional
     public void chatting(String message, Long roomId, Long senderId) {

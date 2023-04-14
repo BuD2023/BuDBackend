@@ -71,6 +71,40 @@ public class NewsControllerTest {
 
     private static final String token = "token";
 
+    @BeforeEach
+    void init(
+            WebApplicationContext context,
+            RestDocumentationContextProvider contextProvider) {
+
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(documentationConfiguration(contextProvider))
+                .addFilters(new CharacterEncodingFilter("UTF-8", true))
+                .alwaysDo(print())
+                .build();
+
+        Member member = Member.builder()
+                .id(1L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .profileImg("abcde.jpg")
+                .nickname("엄탱")
+                .job("백")
+                .oAuthAccessToken("token")
+                .build();
+
+        this.objectMapper.setVisibility(PropertyAccessor.FIELD,
+                JsonAutoDetect.Visibility.ANY);
+
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(member, "",
+                        List.of(MemberStatus.VERIFIED.getKey()).stream().map(
+                                        SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList()));
+
+        given(this.tokenProvider.getAuthentication("token"))
+                .willReturn(authentication);
+    }
+
     @Test
     @WithMockUser
     @DisplayName("뉴스 리스트 검색 성공")
