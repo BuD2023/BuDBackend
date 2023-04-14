@@ -22,6 +22,7 @@ import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.type.PostSortType;
+import zerobase.bud.post.service.ScrapService;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +30,11 @@ import zerobase.bud.post.type.PostSortType;
 public class PostController {
 
     private final PostService postService;
+
+    private final ScrapService scrapService;
+
+    private final TokenProvider tokenProvider;
+
     private static final String IMAGES = "images";
     private static final String CREATE_POST_REQUEST = "createPostRequest";
     private static final String UPDATE_POST_REQUEST = "updatePostRequest";
@@ -90,4 +96,14 @@ public class PostController {
         return ResponseEntity.ok(
                 postService.isLike(postId, member) ? "좋아요" : "좋아요 해제");
     }
+
+    @PostMapping("/{postId}/scrap")
+    public ResponseEntity<String> setScrap(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal Member member
+    ) {
+        return ResponseEntity.ok(scrapService.isScrap(postId, member)
+                ? "스크랩 추가" : "스크랩 해제");
+    }
 }
+

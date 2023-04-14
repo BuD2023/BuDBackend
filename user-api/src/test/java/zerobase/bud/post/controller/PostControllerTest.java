@@ -45,6 +45,7 @@ import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
+import zerobase.bud.post.service.ScrapService;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -74,6 +75,9 @@ class PostControllerTest {
 
     @MockBean
     private PostService postService;
+
+    @MockBean
+    private ScrapService scrapService;
 
     @MockBean
     private TokenProvider tokenProvider;
@@ -437,6 +441,54 @@ class PostControllerTest {
                         .with(csrf()))
                 .andDo(print())
                 .andExpect(jsonPath("$").value("좋아요 해제"))
+                .andExpect(status().isOk())
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("성공 - 게시글 스크랩 추가")
+    void success_addPostScrap() throws Exception {
+        //given
+        given(scrapService.isScrap(anyLong(), any()))
+                .willReturn(true);
+        //when
+        //then
+        mockMvc.perform(post("/posts/1/scrap")
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value("스크랩 추가"))
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("성공 - 게시글 스크랩 추가")
+    void success_removePostScrap() throws Exception {
+        //given
+        given(scrapService.isScrap(anyLong(), any()))
+                .willReturn(false);
+        //when
+        //then
+        mockMvc.perform(post("/posts/1/scrap")
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(jsonPath("$").value("스크랩 해제"))
                 .andExpect(status().isOk())
                 .andDo(
                         document("{class-name}/{method-name}",

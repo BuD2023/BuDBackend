@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
@@ -26,6 +27,11 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.post.dto.PostDto;
+import zerobase.bud.post.type.PostStatus;
+import zerobase.bud.post.type.PostType;
+import zerobase.bud.post.dto.ScrapDto;
+import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.controller.UserController;
 import zerobase.bud.user.dto.FollowDto;
@@ -33,6 +39,7 @@ import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.service.UserService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,12 +48,15 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith({RestDocumentationExtension.class})
@@ -56,6 +66,9 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private ScrapService scrapService;
 
     @MockBean
     private TokenProvider tokenProvider;
@@ -484,4 +497,109 @@ class UserControllerTest {
                 );
     }
 
+    @Test
+    @DisplayName("성공 - 마이페이지 스크랩 불러오기")
+    void successSearchScrap() throws Exception {
+        //given
+        List<PostDto> postDtos = new ArrayList<>();
+
+        for (int i = 1; i <= 3; i++) {
+            postDtos.add(PostDto.builder()
+                    .id(i)
+                    .title("제목" + i)
+                    .imageUrls(new String[]{"url1", "url2"})
+                    .content("내용" + i)
+                    .member(null)
+                    .commentCount(i)
+                    .likeCount(i)
+                    .scrapCount(i)
+                    .hitCount(i)
+                    .postStatus(PostStatus.ACTIVE)
+                    .postType(PostType.FEED)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build());
+        }
+
+        List<ScrapDto> scrapDtos = new ArrayList<>();
+
+        for (int i = 1; i <= 3; i++) {
+            scrapDtos.add(ScrapDto.builder()
+                    .id((long)i)
+                    .post(postDtos.get(i - 1))
+                    .createdAt(LocalDateTime.now().plusDays(1))
+                    .build());
+        }
+
+        given(scrapService.searchScrap(any(), any()))
+                .willReturn(new SliceImpl<>(scrapDtos));
+        //when
+        //then
+
+        mockMvc.perform(get("/users/posts/scraps")
+                        .param("size", "2")
+                        .param("page", "0")
+                        .param("sort", "postCreatedAt,desc")
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("content[0].post.title").value("제목1"))
+                .andExpect(jsonPath("content[0].post.scrapCount").value("1"))
+                .andExpect(jsonPath("content[0].post.content").value("내용1"))
+                .andExpect(jsonPath("content[0].post.imageUrls[0]").value("url1"))
+                .andExpect(jsonPath("content[0].post.imageUrls[1]").value("url2"))
+                .andExpect(jsonPath("content[0].post.postStatus").value("ACTIVE"))
+                .andExpect(jsonPath("content[0].id").value("1"))
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                relaxedResponseFields(
+                                        fieldWithPath("content[].id").type(JsonFieldType.NUMBER)
+                                                .description("스크랩 고유 id"),
+                                        fieldWithPath("content[].post").type(JsonFieldType.OBJECT)
+                                                .description("게시글 정보"),
+                                        fieldWithPath("content[].post.createdAt").type(JsonFieldType.STRING)
+                                                .description("게시글 등록 날짜"),
+                                        fieldWithPath("content[].post.member")
+                                                .description("게시글 작성한 멤버 정보"),
+                                        fieldWithPath("content[].createdAt").type(JsonFieldType.STRING)
+                                                .description("스크랩 등록 날짜"),
+                                        fieldWithPath("first").type(JsonFieldType.BOOLEAN)
+                                                .description("첫번째 페이지인지 여부"),
+                                        fieldWithPath("last").type(JsonFieldType.BOOLEAN)
+                                                .description("마지막 페이지인지 여부"),
+                                        fieldWithPath("number").type(JsonFieldType.NUMBER)
+                                                .description("현재 페이지"),
+                                        fieldWithPath("size").type(JsonFieldType.NUMBER)
+                                                .description("현재 페이지의 데이터 수")
+                                )
+                        )
+                );
+    }
+
+    @Test
+    @DisplayName("성공 - 마이페이지에서 스크랩 삭제하기")
+    void successDeleteScrap() throws Exception {
+        //given
+        given(scrapService.removeScrap(any())).willReturn((long)4);
+
+        //when
+        //then
+        mockMvc.perform(delete("/users/posts/scraps/4")
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value("4"))
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
 }

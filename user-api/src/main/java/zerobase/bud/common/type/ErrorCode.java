@@ -45,6 +45,9 @@ public enum ErrorCode {
     INVALID_API_URL_ADDRESS("잘못된 API URL입니다."),
     HTTP_CONNECT_FAIL("HTTP 연결이 실패했습니다"),
     API_RESPONSE_READ_FAIL("API 응답을 읽는데 실패했습니다."),
+
+    ALREADY_STORED_SCRAP_POST("이미 스크랩한 포스트 입니다."),
+    NOT_FOUND_SCRAP_ID("존재하지 않는 스크랩 아이디입니다."),
     ;
     private final String description;
 }
