@@ -1,6 +1,7 @@
 package zerobase.bud.notification.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,8 @@ import zerobase.bud.notification.type.PageType;
 @NoArgsConstructor
 @Builder
 public class NotificationDto {
+
+    private List<String> tokens;
 
     private Member sender;
 

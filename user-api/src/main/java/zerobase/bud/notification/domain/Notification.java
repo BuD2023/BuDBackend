@@ -1,6 +1,7 @@
 package zerobase.bud.notification.domain;
 
 import java.time.LocalDateTime;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -36,6 +37,9 @@ public class Notification extends BaseEntity {
     @ManyToOne
     private Member sender;
 
+    @Column(unique = true)
+    private String notificationId;
+
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType;
 
@@ -52,9 +56,10 @@ public class Notification extends BaseEntity {
 
     private LocalDateTime notifiedAt;
 
-    public static Notification from(NotificationDto dto) {
+    public static Notification of(String notificationId, NotificationDto dto) {
         return Notification.builder()
             .sender(dto.getSender())
+            .notificationId(notificationId)
             .notificationType(dto.getNotificationType())
             .pageType(dto.getPageType())
             .pageId(dto.getPageId())

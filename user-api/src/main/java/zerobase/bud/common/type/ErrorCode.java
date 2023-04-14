@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    NOT_FOUND_NOTIFICATION_INFO("알림 정보가 없습니다."),
     NOT_FOUND_TOKEN("Firebase 토큰을 발견하지 못했습니다."),
     FIREBASE_SEND_MESSAGE_FAILED("Firebase 메시지 전송에 실패하였습니다."),
     FIREBASE_INIT_FAILED("Firebase 초기화에 실패하였습니다."),

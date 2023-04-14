@@ -4,10 +4,12 @@ import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION_INFO;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.fcm.FcmApi;
+import zerobase.bud.notification.domain.NotificationInfo;
 import zerobase.bud.notification.dto.NotificationDto;
+import zerobase.bud.notification.repository.NotificationInfoRepository;
 import zerobase.bud.notification.type.NotificationDetailType;
 import zerobase.bud.notification.type.NotificationStatus;
 import zerobase.bud.notification.type.NotificationType;
@@ -45,6 +49,8 @@ public class QnaAnswerService {
 
     private final QnaAnswerPinRepository qnaAnswerPinRepository;
 
+    private final NotificationInfoRepository notificationInfoRepository;
+
     @Transactional
     public String createQnaAnswer(Member member, Request request) {
 
@@ -61,15 +67,22 @@ public class QnaAnswerService {
             .build());
 
         post.plusCommentCount();
+        //TODO: 추후 토큰 관련 로직들이 생기면 작성
+        NotificationInfo notificationInfo = notificationInfoRepository.findByMemberId(
+                post.getMember().getId())
+            .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
 
-        sendNotification(member, post);
+        if (notificationInfo.isPostPushAvailable()) {
+            sendNotification(notificationInfo.getFcmToken(), member, post);
+        }
 
         return member.getUserId();
     }
 
-    private void sendNotification(Member member, Post post) {
+    private void sendNotification(String token, Member sender, Post post) {
         fcmApi.sendNotificationByToken(NotificationDto.builder()
-            .sender(member)
+            .tokens(List.of(token))
+            .sender(sender)
             .notificationType(NotificationType.POST)
             .pageType(PageType.QNA)
             .pageId(post.getId())

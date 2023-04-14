@@ -2,13 +2,17 @@ package zerobase.bud.fcm;
 
 import static zerobase.bud.common.type.ErrorCode.FIREBASE_SEND_MESSAGE_FAILED;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_TOKEN;
+import static zerobase.bud.util.Constants.REPLACE_EXPRESSION;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.WebpushConfig;
 import com.google.firebase.messaging.WebpushNotification;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +35,8 @@ public class FcmApi {
     private String fcmTempToken;
 
     public void sendNotificationByToken(NotificationDto dto) {
-//        String token = dto.getSender().getFCMToken();
+        //TODO: 토큰 값이 정상적으로 채워지면 로직 수정
+//        List<String> tokens = dto.getTokens();
         String token = fcmTempToken;
         if (Objects.nonNull(token)) {
 
@@ -41,11 +46,17 @@ public class FcmApi {
                         , dto.getNotificationDetailType().getMessage()))
                 .build();
 
+            String now = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+            String notificationId = UUID.randomUUID().toString()
+                .replaceAll(REPLACE_EXPRESSION, "")
+                .concat(now);
+
             // 메시지 만들기
             Message message = Message.builder()
                 .setToken(token)
                 .setWebpushConfig(webpushConfig)
-                .putData("senderId", dto.getSender().getId().toString())
+                .putData("notificationId", notificationId)
                 .putData("senderNickname", dto.getSender().getNickname())
                 .putData("notificationType", dto.getNotificationType().name())
                 .putData("pageType", dto.getPageType().name())
@@ -61,7 +72,8 @@ public class FcmApi {
                 String response = FirebaseMessaging.getInstance().send(message);
                 log.info(response);
 
-                notificationRepository.save(Notification.from(dto));
+                notificationRepository.save(
+                    Notification.of(notificationId, dto));
             } catch (FirebaseMessagingException e) {
                 log.error(
                     "cannot send to memberList push message. error info : {}",
