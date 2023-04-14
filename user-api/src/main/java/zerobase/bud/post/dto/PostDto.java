@@ -1,17 +1,14 @@
 package zerobase.bud.post.dto;
 
 import lombok.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
+import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
-import zerobase.bud.post.repository.ImageRepository;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -20,6 +17,8 @@ import java.util.stream.Collectors;
 @Builder
 public class PostDto {
     private long id;
+
+    private Member member;
 
     private String title;
     private String[] imageUrls;
@@ -45,6 +44,7 @@ public class PostDto {
 
         return PostDto.builder()
                 .id(post.getId())
+                .member(post.getMember())
                 .title(post.getTitle())
                 .imageUrls(imageUrls)
                 .content(post.getContent())
@@ -57,12 +57,5 @@ public class PostDto {
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();
-    }
-
-    public static Page<PostDto> fromEntities(Page<Post> posts, ImageRepository imageRepository) {
-        return new PageImpl<>(posts.stream()
-                .map(post -> PostDto.fromEntity(post,
-                        imageRepository.findAllByPostId(post.getId())))
-                .collect(Collectors.toList()), posts.getPageable(), posts.getTotalElements());
     }
 }

@@ -1,13 +1,16 @@
 package zerobase.bud.user.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import zerobase.bud.domain.Member;
+import zerobase.bud.post.dto.ScrapDto;
+import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.user.service.UserService;
 
 import java.net.URI;
@@ -17,6 +20,7 @@ import java.net.URI;
 public class UserController {
 
     private final UserService userService;
+    private final ScrapService scrapService;
 
     @PostMapping("/users/{userId}/follows")
     private ResponseEntity follow(@PathVariable Long userId,
@@ -56,5 +60,20 @@ public class UserController {
     @GetMapping("/users")
     private ResponseEntity readMyProfile(@AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(userService.readMyProfile(member));
+    }
+
+    @GetMapping("/users/posts/scraps")
+    public ResponseEntity<Slice<ScrapDto>> searchScraps(
+            @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable,
+            @AuthenticationPrincipal Member member
+    ) {
+
+        return ResponseEntity.ok(scrapService.searchScrap(pageable, member));
+    }
+
+    @DeleteMapping("/users/posts/scraps/{scrapId}")
+    public ResponseEntity<Long> removeScrap(@PathVariable Long scrapId) {
+        return ResponseEntity.ok(scrapService.removeScrap(scrapId));
     }
 }

@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ import zerobase.bud.repository.GithubInfoRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
@@ -106,7 +108,13 @@ public class PostService {
         Page<Post> posts = postRepositoryQuerydsl.findAllByPostStatus(keyword,
                 sort, order, PageRequest.of(page, size));
 
-        return PostDto.fromEntities(posts, imageRepository);
+        return new PageImpl<>(
+                posts.stream()
+                        .map(post -> PostDto.fromEntity(post,
+                                imageRepository.findAllByPostId(post.getId())))
+                        .collect(Collectors.toList()),
+                posts.getPageable(),
+                posts.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -135,11 +143,9 @@ public class PostService {
 
         var isAdd = new AtomicReference<Boolean>(false);
 
-        postLikeRepository.findByPostIdAndMemberId(postId, member.getId())
-                .ifPresentOrElse(
+        postLikeRepository.findByPostIdAndMemberId(postId, member.getId()).ifPresentOrElse(
                         postLike -> removeLike(postLike, post),
-                        () -> isAdd.set(addLike(post, member, isAdd.get()))
-                );
+                        () -> isAdd.set(addLike(post, member, isAdd.get())));
 
         postRepository.save(post);
 
