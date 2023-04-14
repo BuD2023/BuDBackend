@@ -40,4 +40,12 @@ public class ChatDto implements Serializable {
                 .userId(chat.getId())
                 .build();
     }
+
+    public static ChatDto of(ChatType chatType, Long chatroomId, Integer numberOfMembers) {
+        return ChatDto.builder()
+                .chatType(chatType)
+                .chatroomId(chatroomId)
+                .numberOfMembers(numberOfMembers)
+                .build();
+    }
 }

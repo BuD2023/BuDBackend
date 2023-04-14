@@ -2,9 +2,13 @@ package zerobase.bud.chat.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import zerobase.bud.chat.dto.ChatDto;
+import zerobase.bud.chat.dto.ChatRoomDto;
+import zerobase.bud.chat.dto.ChatRoomStatusDto;
 import zerobase.bud.chat.dto.CreateChatRoom;
 import zerobase.bud.chat.service.ChatRoomService;
 import zerobase.bud.domain.Member;
@@ -21,7 +25,7 @@ public class ChatRoomController {
 
     //TODO: member 추가
     @PostMapping("/chatrooms")
-    private ResponseEntity createChatRoom(
+    private ResponseEntity<URI> createChatRoom(
             @RequestBody @Valid CreateChatRoom.Request request,
             @AuthenticationPrincipal Member member) {
         Long id = chatRoomService
@@ -30,7 +34,7 @@ public class ChatRoomController {
     }
 
     @GetMapping("/chatrooms/search")
-    private ResponseEntity searchChatRoom(
+    private ResponseEntity<Slice<ChatRoomDto>> searchChatRoom(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
@@ -38,26 +42,26 @@ public class ChatRoomController {
     }
 
     @GetMapping("/chatrooms")
-    private ResponseEntity readChatRooms(
+    private ResponseEntity<Slice<ChatRoomDto>> readChatRooms(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         return ResponseEntity.ok(chatRoomService.readChatRooms(page, size));
     }
 
     @GetMapping("/chatrooms/{chatroomId}")
-    private ResponseEntity readChatRoom(@PathVariable Long chatroomId){
+    private ResponseEntity<ChatRoomDto> readChatRoom(@PathVariable Long chatroomId){
         return ResponseEntity.ok(chatRoomService.readChatRoom(chatroomId));
     }
 
     @GetMapping("/chatrooms/{chatroomId}/chats")
-    private ResponseEntity readChats(@PathVariable Long chatroomId,
-                                     @RequestParam(defaultValue = "0") int page,
-                                     @RequestParam(defaultValue = "10") int size){
+    private ResponseEntity<Slice<ChatDto>> readChats(@PathVariable Long chatroomId,
+                                                     @RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "10") int size){
         return ResponseEntity.ok(chatRoomService.readChats(chatroomId, page, size));
     }
 
     @GetMapping("/chatrooms/status")
-    private ResponseEntity chatRoomsStatus(){
+    private ResponseEntity<ChatRoomStatusDto> chatRoomsStatus(){
         return ResponseEntity.ok(chatRoomService.chatRoomsStatus());
     }
 }

@@ -26,7 +26,6 @@ public class UserService {
 
     private final PostRepository postRepository;
 
-    @Transactional
     public Long follow(Long memberId, Member member) {
         Member targetMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
@@ -50,7 +49,6 @@ public class UserService {
         return targetMember.getId();
     }
 
-    @Transactional(readOnly = true)
     public UserDto readProfile(Long userId, Member member) {
         Member targetMember = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
@@ -65,7 +63,6 @@ public class UserService {
                 numberOfFollowers, numberOfFollows, numberOfPosts);
     }
 
-    @Transactional(readOnly = true)
     public UserDto readMyProfile(Member member) {
         Long numberOfFollowers = followRepository.countByTarget(member);
         Long numberOfFollows = followRepository.countByMember(member);
@@ -74,21 +71,18 @@ public class UserService {
         return UserDto.of(member, numberOfFollowers, numberOfFollows, numberOfPosts);
     }
 
-    @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowings(Member member) {
         return followRepository.findByMember(member)
                 .map(follow -> FollowDto.of(follow.getTarget()))
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowers(Member member) {
         return followRepository.findByTarget(member)
                 .map(follow -> FollowDto.of(follow.getMember()))
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<FollowDto> readFollowings(Long userId, Member reader) {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
@@ -98,7 +92,6 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<FollowDto> readFollowers(Long userId, Member reader) {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));

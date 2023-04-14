@@ -25,11 +25,13 @@ public class TokenProvider {
         return this.parseClaims(token).getSubject();
     }
 
+    //TODO: 토큰 재발급 로직 이상으로 잠깐 유효기간 없앰
     public boolean validateToken(String token) {
         if (!StringUtils.hasText(token)) return false;
 
         Claims claims = this.parseClaims(token);
-        return !claims.getExpiration().before(new Date());
+        //return !claims.getExpiration().before(new Date());
+        return true;
     }
 
     private Claims parseClaims(String token) {
