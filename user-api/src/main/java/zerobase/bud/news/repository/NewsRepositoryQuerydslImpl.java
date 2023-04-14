@@ -48,7 +48,7 @@ public class NewsRepositoryQuerydslImpl implements NewsRepositoryQuerydsl {
 
 
     private BooleanExpression eqTitle(String keyword) {
-        return keyword == null ? null : news.title.eq(keyword);
+        return keyword == null ? null : news.title.contains(keyword);
     }
 
     private BooleanExpression eqDate(LocalDateTime start, LocalDateTime end) {
