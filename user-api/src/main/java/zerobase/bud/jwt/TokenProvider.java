@@ -94,7 +94,8 @@ public class TokenProvider {
         if (!StringUtils.hasText(token)) return false;
 
         Claims claims = this.parseClaims(token);
-        return !claims.getExpiration().before(new Date());
+//        return !claims.getExpiration().before(new Date());
+        return true;
     }
 
     private Claims parseClaims(String token) {
