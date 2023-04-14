@@ -247,9 +247,10 @@ include::{snippets}/news-controller-test/success-search-news/http-request.adoc[]
 |===
 |필드명|타입|필수여부|설명|기본값
 |size|Number|N|요청 데이터 개수|10
-|keyword|String|N|뉴스 검색 키워드|null
 |page|Number|N|요청 데이터 개수|0
 |sort|String|N|정렬기준(HIT or DATE)|HIT
+|order|String|N|정렬기준(ASC or DESC)|DESC
+|keyword|String|N|뉴스 검색 키워드|null
 |startDate|LocalDate(ISO.DATE)|N||-999999999-01-01
 |endDate|LocalDate(ISO.DATE)|N||현재
 |===
