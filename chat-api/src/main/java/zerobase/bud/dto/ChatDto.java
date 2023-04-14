@@ -15,17 +15,17 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChatDto implements Serializable {
     private Long chatroomId;
     private Long chatId;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
     private ChatType chatType;
     private String createdAt;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String imageUrl;
     private String userProfileUrl;
     private String userName;
+    private int numberOfMembers;
     private Long userId;
 
     public static ChatDto from(Chat chat) {
