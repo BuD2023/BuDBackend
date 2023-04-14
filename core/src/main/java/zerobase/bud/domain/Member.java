@@ -51,8 +51,8 @@ public class Member extends BaseEntity implements UserDetails {
     private String oAuthAccessToken;
     private boolean addInfoYn;
 
-    public Member update(String oAuthAccessToken) {
-        this.oAuthAccessToken = oAuthAccessToken;
+    public Member update(String nickname) {
+        this.nickname = nickname;
 
         return this;
     }
