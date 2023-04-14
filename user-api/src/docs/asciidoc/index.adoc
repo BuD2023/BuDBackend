@@ -341,6 +341,27 @@ include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-re
 .response field
 include::{snippets}/qna-answer-controller-test/success_update-qna-answer/response-body.adoc[]
 
+=== 6. 게시글 좋아요
+.request
+include::{snippets}/post-controller-test/success_add-post-like/http-request.adoc[]
+
+.response
+include::{snippets}/post-controller-test/success_add-post-like/http-response.adoc[]
+
+.response field
+include::{snippets}/post-controller-test/success_add-post-like/response-body.adoc[]
+
+=== 7. 게시글 좋아요 해제
+.request
+include::{snippets}/post-controller-test/success_remove-post-like/http-request.adoc[]
+
+.response
+include::{snippets}/post-controller-test/success_remove-post-like/http-response.adoc[]
+
+.response field
+include::{snippets}/post-controller-test/success_remove-post-like/response-body.adoc[]
+
+
 
 == 유저 API
 === 1. 유저 팔로우 / 팔로우 취소

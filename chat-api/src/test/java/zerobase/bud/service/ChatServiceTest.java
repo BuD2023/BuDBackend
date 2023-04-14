@@ -26,7 +26,8 @@ import zerobase.bud.util.AwsS3Api;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
@@ -60,7 +61,6 @@ class ChatServiceTest {
             .id(1L)
             .createdAt(LocalDateTime.now())
             .status(MemberStatus.VERIFIED)
-            .email("abcde@gmail.com")
             .profileImg("abcde.jpg")
             .nickname("안뇽")
             .job("시스템프로그래머")
@@ -96,6 +96,7 @@ class ChatServiceTest {
                         .member(member)
                         .type(ChatType.MESSAGE).build()
                 );
+        given(channelTopic.getTopic()).willReturn("messageQueue");
 
         given(channelTopic.getTopic()).willReturn("chatQueue");
 
@@ -160,6 +161,7 @@ class ChatServiceTest {
                 );
 
         given(awsS3Api.uploadFileImage(any(), any())).willReturn("image.jpg");
+        given(channelTopic.getTopic()).willReturn("messageQueue");
 
         given(channelTopic.getTopic()).willReturn("chatQueue");
 
