@@ -5,7 +5,6 @@ import lombok.Getter;
 import zerobase.bud.domain.Member;
 import zerobase.bud.type.MemberStatus;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @Getter
@@ -43,10 +42,9 @@ public class OAuthAttribute {
         return Member.builder()
                 .userId(userId)
                 .nickname(nickname)
-                .email(email)
                 .oAuthAccessToken(oAuthAccessToken)
                 .status(MemberStatus.VERIFIED)
-                .createdAt(LocalDateTime.now())
+                .addInfoYn(false)
                 .build();
     }
 

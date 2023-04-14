@@ -6,7 +6,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatImage;
 import zerobase.bud.chat.dto.ChatMessage;
 import zerobase.bud.chat.service.ChatService;
@@ -24,16 +23,13 @@ public class ChatController {
 
     @MessageMapping("/message")
     public void chatting(@RequestBody @Valid ChatMessage.Request request) {
-        ChatDto chat = chatService.chatting(
+        chatService.chatting(
                 request.getMessage(), request.getChatroomId(), request.getSenderId());
-        messagingTemplate.convertAndSend("/chatrooms/" + request.getChatroomId(), chat);
     }
 
     @MessageMapping("/image")
     public void image(@RequestBody @Valid ChatImage.Request request) {
-        ChatDto chat = chatService.image(
-                request.getImageByte(), request.getChatroomId(), request.getSenderId());
-        messagingTemplate.convertAndSend("/chatrooms/" + request.getChatroomId(), chat);
+        chatService.image(request.getImageByte(), request.getChatroomId(), request.getSenderId());
     }
 
 }

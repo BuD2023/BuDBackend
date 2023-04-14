@@ -18,4 +18,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     Slice<ChatRoom> findAllByStatus(ChatRoomStatus status, Pageable pageable);
 
     Optional<ChatRoom> findByIdAndStatus(Long id, ChatRoomStatus status);
+
+    Long countByStatus(ChatRoomStatus status);
 }

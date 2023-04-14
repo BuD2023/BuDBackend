@@ -5,12 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import zerobase.bud.jwt.dto.JwtDto;
 import zerobase.bud.jwt.dto.RefreshDto;
+import zerobase.bud.member.dto.MemberDto;
 import zerobase.bud.member.service.AuthService;
 
 @RestController
@@ -28,5 +26,13 @@ public class OAuthController {
         return !ObjectUtils.isEmpty(result) ?
                 ResponseEntity.ok("토큰 재발급에 성공하였습니다.\n" + result) :
                 ResponseEntity.ok("토큰 재발급에 실패하였습니다.");
+    }
+
+    @PostMapping("/addInfo")
+    public ResponseEntity<?> addInfo(@RequestHeader("Authorization") String token,
+                                     @RequestBody MemberDto.addInfo parameter) {
+        boolean result = authService.addAdditionalInfo(token, parameter);
+        return result ? ResponseEntity.ok("정상적으로 정보가 추가되었습니다.") :
+                        ResponseEntity.ok("정보 추가에 실패하였습니다.");
     }
 }

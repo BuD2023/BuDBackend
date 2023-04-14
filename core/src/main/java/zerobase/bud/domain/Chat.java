@@ -22,7 +22,7 @@ public class Chat extends BaseEntity{
     @NotNull
     private String message;
 
-    @ManyToOne(fetch = FetchType.LAZY) // chatRoom이 필요하면 쿼리 나가기
+    @ManyToOne
     private ChatRoom chatRoom;
 
     @Enumerated(EnumType.STRING)

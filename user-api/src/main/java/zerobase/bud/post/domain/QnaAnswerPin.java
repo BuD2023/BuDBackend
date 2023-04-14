@@ -18,7 +18,7 @@ import zerobase.bud.domain.BaseEntity;
 @AllArgsConstructor
 @SuperBuilder
 @Entity
-public class Image extends BaseEntity {
+public class QnaAnswerPin extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +27,7 @@ public class Image extends BaseEntity {
     @ManyToOne
     private Post post;
 
-    private String imagePath;
+    @ManyToOne
+    private QnaAnswer qnaAnswer;
 
 }

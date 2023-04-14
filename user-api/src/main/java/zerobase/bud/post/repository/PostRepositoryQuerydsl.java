@@ -7,8 +7,6 @@ import org.springframework.data.domain.Pageable;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.type.PostSortType;
 
-import java.util.List;
-
 public interface PostRepositoryQuerydsl {
     Page<Post> findAllByPostStatus(String keyword,
                                    PostSortType sortType,

@@ -45,4 +45,7 @@ public class QnaAnswer extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private QnaAnswerStatus qnaAnswerStatus;
 
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

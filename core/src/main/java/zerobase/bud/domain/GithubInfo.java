@@ -30,8 +30,6 @@ public class GithubInfo extends BaseEntity {
     @Column(unique = true)
     private String userId;
 
-    private String email;
-
     private String username;
 
     private String accessToken;

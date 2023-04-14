@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.type.PostSortType;
-import zerobase.bud.post.type.PostStatus;
 
 import java.util.List;
 
