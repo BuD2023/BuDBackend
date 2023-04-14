@@ -7,6 +7,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    NOT_FOUND_TOKEN("Firebase 토큰을 발견하지 못했습니다."),
+    FIREBASE_SEND_MESSAGE_FAILED("Firebase 메시지 전송에 실패하였습니다."),
+    FIREBASE_INIT_FAILED("Firebase 초기화에 실패하였습니다."),
     REQUEST_METHOD_OR_URL_ERROR("요청하신 메서드 혹은 주소가 잘못되었습니다."),
     AWS_S3_ERROR("AWS S3 오류입니다."),
     INVALID_QNA_ANSWER_STATUS("답변의 상태가 유효하지 않습니다."),

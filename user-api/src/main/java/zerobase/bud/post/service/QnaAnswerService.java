@@ -7,6 +7,7 @@ import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
+import zerobase.bud.fcm.FcmApi;
+import zerobase.bud.notification.dto.NotificationDto;
+import zerobase.bud.notification.type.NotificationDetailType;
+import zerobase.bud.notification.type.NotificationStatus;
+import zerobase.bud.notification.type.NotificationType;
+import zerobase.bud.notification.type.PageType;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
@@ -29,6 +36,8 @@ import zerobase.bud.post.type.QnaAnswerStatus;
 @RequiredArgsConstructor
 @Service
 public class QnaAnswerService {
+
+    private final FcmApi fcmApi;
 
     private final PostRepository postRepository;
 
@@ -53,7 +62,21 @@ public class QnaAnswerService {
 
         post.plusCommentCount();
 
+        sendNotification(member, post);
+
         return member.getUserId();
+    }
+
+    private void sendNotification(Member member, Post post) {
+        fcmApi.sendNotificationByToken(NotificationDto.builder()
+            .sender(member)
+            .notificationType(NotificationType.POST)
+            .pageType(PageType.QNA)
+            .pageId(post.getId())
+            .notificationDetailType(NotificationDetailType.ANSWER)
+            .notificationStatus(NotificationStatus.UNREAD)
+            .notifiedAt(LocalDateTime.now())
+            .build());
     }
 
     @Transactional

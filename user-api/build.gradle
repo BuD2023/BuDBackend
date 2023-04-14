@@ -61,6 +61,7 @@ dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
     implementation project(':core')
+    implementation 'com.google.firebase:firebase-admin:9.1.1'
 }
 
 tasks.named('test') {
