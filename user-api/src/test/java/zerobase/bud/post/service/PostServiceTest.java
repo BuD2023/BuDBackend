@@ -39,14 +39,12 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;
+import zerobase.bud.post.domain.Scrap;
 import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.dto.CreatePost.Request;
 import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.UpdatePost;
-import zerobase.bud.post.repository.ImageRepository;
-import zerobase.bud.post.repository.PostLikeRepository;
-import zerobase.bud.post.repository.PostRepository;
-import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
+import zerobase.bud.post.repository.*;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.type.MemberStatus;
@@ -64,6 +62,9 @@ class PostServiceTest {
     private ImageRepository imageRepository;
 
     @Mock
+    private ScrapRepository scrapRepository;
+
+    @Mock
     private PostLikeRepository postLikeRepository;
 
     @Mock
@@ -74,6 +75,9 @@ class PostServiceTest {
 
     @InjectMocks
     private PostService postService;
+
+    @InjectMocks
+    private ScrapService scrapService;
 
     @Test
     void success_createPostWithImage() {
@@ -459,7 +463,101 @@ class PostServiceTest {
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
     }
 
+    @Test
+    @DisplayName("성공 - 게시글 스크랩 추가")
+    void success_addPostScrap(){
+        //given
+        Post post = getPost();
+        post.setId((long)1);
+        post.setScrapCount(2);
 
+        Member member = Member.builder()
+                .id(1L)
+//                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .email("email@naver.com")
+                .userId("xoals25")
+                .profileImg("abcde.jpg")
+                .nickname("엄탱")
+                .job("백")
+                .oAuthAccessToken("token")
+                .build();
+
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(post));
+
+        given(scrapRepository.findByPostIdAndMemberId(anyLong(), anyLong()))
+                .willReturn(Optional.empty());
+
+        ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
+
+        //when
+        boolean isAdd = scrapService.isScrap(post.getId(), member);
+
+        //then
+        verify(postRepository, times(1)).save(postCaptor.capture());
+        assertEquals(1L, post.getId());
+        assertEquals(3, postCaptor.getValue().getScrapCount());
+        assertTrue(isAdd);
+    }
+
+    @Test
+    @DisplayName("성공 - 게시물 스크랩 해제")
+    void success_postScrapRemove(){
+        //given
+        Post post = getPost();
+        post.setId((long)1);
+        post.setScrapCount(2);
+
+        Member member = Member.builder()
+                .id(1L)
+//                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .email("email@naver.com")
+                .userId("xoals25")
+                .profileImg("abcde.jpg")
+                .nickname("엄탱")
+                .job("백")
+                .oAuthAccessToken("token")
+                .build();
+
+        Scrap scrap = Scrap.builder()
+                .post(post)
+                .member(member)
+                .build();
+
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(post));
+
+        given(scrapRepository.findByPostIdAndMemberId(anyLong(), anyLong()))
+                .willReturn(Optional.of(scrap));
+
+        ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
+
+        //when
+        boolean isAdd = scrapService.isScrap(post.getId(), member);
+
+        //then
+        verify(postRepository, times(1)).save(postCaptor.capture());
+        assertEquals(1L, post.getId());
+        assertEquals(1, postCaptor.getValue().getScrapCount());
+        assertFalse(isAdd);
+    }
+
+    @Test
+    @DisplayName("실패 - 존재하지 않는 게시글 스크랩 ")
+    void fail_postScrap() {
+        //given
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.empty());
+
+        //when
+        BudException budException = assertThrows(BudException.class,
+                () -> scrapService.isScrap((long)1, new Member()));
+
+        //then
+        assertEquals(NOT_FOUND_POST, budException.getErrorCode());
+    }
 
 
     private static Post getPost() {
