@@ -2,7 +2,6 @@ package zerobase.bud.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
@@ -88,7 +87,7 @@ public class UserService {
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
         return followRepository.findByMember(member)
-                .map(follow -> toFollowDto(reader, follow))
+                .map(follow -> toFollowDto(reader, follow.getTarget()))
                 .collect(Collectors.toList());
     }
 
@@ -97,13 +96,12 @@ public class UserService {
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
         return followRepository.findByTarget(member)
-                .map(follow -> toFollowDto(reader, follow))
+                .map(follow -> toFollowDto(reader, follow.getMember()))
                 .collect(Collectors.toList());
     }
 
-    private FollowDto toFollowDto(Member reader, Follow follow) {
-        Member target = follow.getTarget();
-        return FollowDto.of(target, reader.equals(target),
-                followRepository.existsByTargetAndMember(target, reader));
+    private FollowDto toFollowDto(Member reader, Member profileMember) {
+        return FollowDto.of(profileMember, reader.equals(profileMember),
+                followRepository.existsByTargetAndMember(profileMember, reader));
     }
 }
