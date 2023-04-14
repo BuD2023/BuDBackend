@@ -94,7 +94,6 @@ class ChatRoomControllerTest {
                 .id(1L)
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
-                .email("abcde@gmail.com")
                 .profileImg("abcde.jpg")
                 .nickname("안뇽")
                 .job("시스템프로그래머")

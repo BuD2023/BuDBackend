@@ -41,7 +41,7 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
                 .where(search(keyword), eqStatus())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(sortRoomList(sortType, order))
+                .orderBy(sortPostsList(sortType, order))
                 .fetch();
     }
 
@@ -65,7 +65,7 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
         return post.postStatus.eq(ACTIVE);
     }
 
-    private OrderSpecifier<?> sortRoomList(PostSortType sortType, Order order) {
+    private OrderSpecifier<?> sortPostsList(PostSortType sortType, Order order) {
         switch (sortType) {
             case HIT:
                 return new OrderSpecifier<>(order, post.hitCount);

@@ -42,7 +42,6 @@ public class OAuthAttribute {
         return Member.builder()
                 .userId(userId)
                 .nickname(nickname)
-                .email(email)
                 .oAuthAccessToken(oAuthAccessToken)
                 .status(MemberStatus.VERIFIED)
                 .addInfoYn(false)

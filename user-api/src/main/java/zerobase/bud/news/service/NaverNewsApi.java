@@ -42,7 +42,7 @@ public class NaverNewsApi {
     private final NewsRepository newsRepository;
 
     @Transactional
-    @Scheduled(cron = "0 0 0/12 * * *")
+    @Scheduled(cron = "0 0 0 1,7,14,21 * *")
     public void saveNaverNews() {
         for (String keyword : NAVER_NEWS_API_KEYWORDS) {
             for (String sort : NAVER_NEWS_API_SORT) {

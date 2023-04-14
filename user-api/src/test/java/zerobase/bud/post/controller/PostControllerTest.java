@@ -1,6 +1,32 @@
 package zerobase.bud.post.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,10 +116,7 @@ class PostControllerTest {
 
         String contents = objectMapper.writeValueAsString(input);
 
-        given(tokenProvider.getUserId(anyString()))
-            .willReturn("value");
-
-        given(postService.createPost(anyString(), any(), any()))
+        given(postService.createPost(any(), any(), any()))
             .willReturn("success");
         //when
         //then
@@ -132,9 +155,6 @@ class PostControllerTest {
 
         String contents = objectMapper.writeValueAsString(input);
 
-        given(tokenProvider.getUserId(anyString()))
-            .willReturn("value");
-
         given(postService.updatePost(any(), any()))
             .willReturn("success");
         //when
@@ -165,89 +185,107 @@ class PostControllerTest {
 
         for (int i = 1; i <= 3; i++) {
             list.add(PostDto.builder()
-                    .id(i)
-                    .title("제목" + i)
-                    .imageUrls(new String[]{"url1", "url2"})
-                    .content("내용" + i)
-                    .commentCount(i)
-                    .likeCount(i)
-                    .scrapCount(i)
-                    .hitCount(i)
-                    .postStatus(PostStatus.ACTIVE)
-                    .postType(PostType.FEED)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build());
+                .id(i)
+                .title("제목" + i)
+                .imageUrls(new String[]{"url1", "url2"})
+                .content("내용" + i)
+                .commentCount(i)
+                .likeCount(i)
+                .scrapCount(i)
+                .hitCount(i)
+                .postStatus(
+                    i % 4 == 0 ? PostStatus.INACTIVE : PostStatus.ACTIVE)
+                .postType(PostType.FEED)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build());
         }
 
-        given(postService.searchPosts(anyString(), any(), any(), anyInt(), anyInt()))
-                .willReturn(new PageImpl<>(list));
+        given(postService.searchPosts(anyString(), any(), any(), anyInt(),
+            anyInt()))
+            .willReturn(new PageImpl<>(list));
 
         //when
         //then
         mockMvc.perform(get("/posts")
-                        .param("keyword", "제목")
-                        .param("sort", "HIT")
-                        .param("order", "ASC")
-                        .param("page", "0")
-                        .param("size", "3")
+                .param("keyword", "제목")
+                .param("sort", "HIT")
+                .param("order", "ASC")
+                .param("page", "0")
+                .param("size", "3")
                 .header("Authorization", TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("content[0].title").value("제목1"))
-                .andExpect(jsonPath("content[0].content").value("내용1"))
-                .andExpect(jsonPath("content[0].commentCount").value("1"))
-                .andExpect(jsonPath("content[0].scrapCount").value("1"))
-                .andExpect(jsonPath("content[0].hitCount").value("1"))
-                .andExpect(jsonPath("content[0].postStatus").value("ACTIVE"))
-                .andDo(
-                        document("{class-name}/{method-name}",
-                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
-                                preprocessResponse(prettyPrint()),
-                                relaxedResponseFields(
-                                        fieldWithPath("content[].id").type(JsonFieldType.NUMBER)
-                                                .description("게시물 id"),
-                                        fieldWithPath("content[].title").type(JsonFieldType.STRING)
-                                                .description("게시물 제목"),
-                                        fieldWithPath("content[].imageUrls").type(JsonFieldType.ARRAY)
-                                                .description("게시물 이미지 링크들"),
-                                        fieldWithPath("content[].content").type(JsonFieldType.STRING)
-                                                .description("게시물 본문"),
-                                        fieldWithPath("content[].commentCount").type(JsonFieldType.NUMBER)
-                                                .description("댓글 수"),
-                                        fieldWithPath("content[].likeCount").type(JsonFieldType.NUMBER)
-                                                .description("좋아요 수"),
-                                        fieldWithPath("content[].scrapCount").type(JsonFieldType.NUMBER)
-                                                .description("스크랩 수"),
-                                        fieldWithPath("content[].hitCount").type(JsonFieldType.NUMBER)
-                                                .description("죄회수"),
-                                        fieldWithPath("content[].postStatus").type(JsonFieldType.STRING)
-                                                .description("게시물 상태(게시, 삭제 등)"),
-                                        fieldWithPath("content[].postType").type(JsonFieldType.STRING)
-                                                .description("게시물 종류(FEED, QNA)"),
-                                        fieldWithPath("content[].createdAt").type(JsonFieldType.STRING)
-                                                .description("게시물 등록일"),
-                                        fieldWithPath("content[].updatedAt").type(JsonFieldType.STRING)
-                                                .description("게시물 업데이트일"),
-                                        fieldWithPath("first").type(JsonFieldType.BOOLEAN)
-                                                .description("첫번째 페이지인지 여부"),
-                                        fieldWithPath("last").type(JsonFieldType.BOOLEAN)
-                                                .description("마지막 페이지인지 여부"),
-                                        fieldWithPath("totalElements").type(JsonFieldType.NUMBER)
-                                                .description("검색 데이터 전체 개수"),
-                                        fieldWithPath("totalElements").type(JsonFieldType.NUMBER)
-                                                .description("검색 데이터 전체 개수"),
-                                        fieldWithPath("totalPages").type(JsonFieldType.NUMBER)
-                                                .description("검색 데이터 전체 페이지 수"),
-                                        fieldWithPath("size").type(JsonFieldType.NUMBER)
-                                                .description("요청 데이터 수"),
-                                        fieldWithPath("numberOfElements").type(JsonFieldType.NUMBER)
-                                                .description("현재 페이지에서 보여지는 데이터 수")
-                                )
-                        )
-                );
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("content[0].title").value("제목1"))
+            .andExpect(jsonPath("content[0].content").value("내용1"))
+            .andExpect(jsonPath("content[0].commentCount").value("1"))
+            .andExpect(jsonPath("content[0].scrapCount").value("1"))
+            .andExpect(jsonPath("content[0].hitCount").value("1"))
+            .andExpect(jsonPath("content[0].postStatus").value("ACTIVE"))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(
+                        modifyUris().scheme(scheme).host(host).port(port),
+                        prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+                    relaxedResponseFields(
+                        fieldWithPath("content[].id").type(JsonFieldType.NUMBER)
+                            .description("게시물 id"),
+                        fieldWithPath("content[].title").type(
+                                JsonFieldType.STRING)
+                            .description("게시물 제목"),
+                        fieldWithPath("content[].imageUrls").type(
+                                JsonFieldType.ARRAY)
+                            .description("게시물 이미지 링크들"),
+                        fieldWithPath("content[].content").type(
+                                JsonFieldType.STRING)
+                            .description("게시물 본문"),
+                        fieldWithPath("content[].commentCount").type(
+                                JsonFieldType.NUMBER)
+                            .description("댓글 수"),
+                        fieldWithPath("content[].likeCount").type(
+                                JsonFieldType.NUMBER)
+                            .description("좋아요 수"),
+                        fieldWithPath("content[].scrapCount").type(
+                                JsonFieldType.NUMBER)
+                            .description("스크랩 수"),
+                        fieldWithPath("content[].hitCount").type(
+                                JsonFieldType.NUMBER)
+                            .description("죄회수"),
+                        fieldWithPath("content[].postStatus").type(
+                                JsonFieldType.STRING)
+                            .description("게시물 상태(게시, 삭제 등)"),
+                        fieldWithPath("content[].postType").type(
+                                JsonFieldType.STRING)
+                            .description("게시물 종류(FEED, QNA)"),
+                        fieldWithPath("content[].createdAt").type(
+                                JsonFieldType.STRING)
+                            .description("게시물 등록일"),
+                        fieldWithPath("content[].updatedAt").type(
+                                JsonFieldType.STRING)
+                            .description("게시물 업데이트일"),
+                        fieldWithPath("first").type(JsonFieldType.BOOLEAN)
+                            .description("첫번째 페이지인지 여부"),
+                        fieldWithPath("last").type(JsonFieldType.BOOLEAN)
+                            .description("마지막 페이지인지 여부"),
+                        fieldWithPath("totalElements").type(
+                                JsonFieldType.NUMBER)
+                            .description("검색 데이터 전체 개수"),
+                        fieldWithPath("totalElements").type(
+                                JsonFieldType.NUMBER)
+                            .description("검색 데이터 전체 개수"),
+                        fieldWithPath("totalPages").type(JsonFieldType.NUMBER)
+                            .description("검색 데이터 전체 페이지 수"),
+                        fieldWithPath("size").type(JsonFieldType.NUMBER)
+                            .description("요청 데이터 수"),
+                        fieldWithPath("numberOfElements").type(
+                                JsonFieldType.NUMBER)
+                            .description("현재 페이지에서 보여지는 데이터 수")
+                    )
+                )
+            );
     }
 
     @Test
@@ -256,69 +294,71 @@ class PostControllerTest {
     void success_searchPost() throws Exception {
         //given
         PostDto postDto = PostDto.builder()
-                .id(1)
-                .title("제목")
-                .imageUrls(new String[]{"url1", "url2"})
-                .content("내용")
-                .commentCount(1)
-                .likeCount(1)
-                .scrapCount(1)
-                .hitCount(1)
-                .postStatus(PostStatus.ACTIVE)
-                .postType(PostType.FEED)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+            .id(1)
+            .title("제목")
+            .imageUrls(new String[]{"url1", "url2"})
+            .content("내용")
+            .commentCount(1)
+            .likeCount(1)
+            .scrapCount(1)
+            .hitCount(1)
+            .postStatus(PostStatus.ACTIVE)
+            .postType(PostType.FEED)
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
 
         given(postService.searchPost(anyLong()))
-                .willReturn(postDto);
+            .willReturn(postDto);
         //when
         //then
 
         mockMvc.perform(get("/posts/1")
-                        .header("Authorization", TOKEN)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(csrf()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("title").value("제목"))
-                .andExpect(jsonPath("content").value("내용"))
-                .andExpect(jsonPath("commentCount").value("1"))
-                .andExpect(jsonPath("scrapCount").value("1"))
-                .andExpect(jsonPath("hitCount").value("1"))
-                .andExpect(jsonPath("postStatus").value("ACTIVE"))
-                .andDo(
-                        document("{class-name}/{method-name}",
-                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
-                                preprocessResponse(prettyPrint()),
-                                relaxedResponseFields(
-                                        fieldWithPath("id").type(JsonFieldType.NUMBER)
-                                                .description("게시물 id"),
-                                        fieldWithPath("title").type(JsonFieldType.STRING)
-                                                .description("게시물 제목"),
-                                        fieldWithPath("imageUrls").type(JsonFieldType.ARRAY)
-                                                .description("게시물 이미지 링크들"),
-                                        fieldWithPath("content").type(JsonFieldType.STRING)
-                                                .description("게시물 본문"),
-                                        fieldWithPath("commentCount").type(JsonFieldType.NUMBER)
-                                                .description("댓글 수"),
-                                        fieldWithPath("likeCount").type(JsonFieldType.NUMBER)
-                                                .description("좋아요 수"),
-                                        fieldWithPath("scrapCount").type(JsonFieldType.NUMBER)
-                                                .description("스크랩 수"),
-                                        fieldWithPath("hitCount").type(JsonFieldType.NUMBER)
-                                                .description("죄회수"),
-                                        fieldWithPath("postStatus").type(JsonFieldType.STRING)
-                                                .description("게시물 상태(게시, 삭제 등)"),
-                                        fieldWithPath("postType").type(JsonFieldType.STRING)
-                                                .description("게시물 종류(FEED, QNA)"),
-                                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
-                                                .description("게시물 등록일"),
-                                        fieldWithPath("updatedAt").type(JsonFieldType.STRING)
-                                                .description("게시물 업데이트일")
-                                )
-                        )
-                );
+                .header("Authorization", TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("title").value("제목"))
+            .andExpect(jsonPath("content").value("내용"))
+            .andExpect(jsonPath("commentCount").value("1"))
+            .andExpect(jsonPath("scrapCount").value("1"))
+            .andExpect(jsonPath("hitCount").value("1"))
+            .andExpect(jsonPath("postStatus").value("ACTIVE"))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(
+                        modifyUris().scheme(scheme).host(host).port(port),
+                        prettyPrint()),
+                    preprocessResponse(prettyPrint()),
+                    relaxedResponseFields(
+                        fieldWithPath("id").type(JsonFieldType.NUMBER)
+                            .description("게시물 id"),
+                        fieldWithPath("title").type(JsonFieldType.STRING)
+                            .description("게시물 제목"),
+                        fieldWithPath("imageUrls").type(JsonFieldType.ARRAY)
+                            .description("게시물 이미지 링크들"),
+                        fieldWithPath("content").type(JsonFieldType.STRING)
+                            .description("게시물 본문"),
+                        fieldWithPath("commentCount").type(JsonFieldType.NUMBER)
+                            .description("댓글 수"),
+                        fieldWithPath("likeCount").type(JsonFieldType.NUMBER)
+                            .description("좋아요 수"),
+                        fieldWithPath("scrapCount").type(JsonFieldType.NUMBER)
+                            .description("스크랩 수"),
+                        fieldWithPath("hitCount").type(JsonFieldType.NUMBER)
+                            .description("죄회수"),
+                        fieldWithPath("postStatus").type(JsonFieldType.STRING)
+                            .description("게시물 상태(게시, 삭제 등)"),
+                        fieldWithPath("postType").type(JsonFieldType.STRING)
+                            .description("게시물 종류(FEED, QNA)"),
+                        fieldWithPath("createdAt").type(JsonFieldType.STRING)
+                            .description("게시물 등록일"),
+                        fieldWithPath("updatedAt").type(JsonFieldType.STRING)
+                            .description("게시물 업데이트일")
+                    )
+                )
+            );
     }
 
     @Test
@@ -327,37 +367,39 @@ class PostControllerTest {
     void success_deletePost() throws Exception {
         //given
         PostDto postDto = PostDto.builder()
-                .id(1)
-                .title("제목")
-                .imageUrls(new String[]{"url1", "url2"})
-                .content("내용")
-                .commentCount(1)
-                .likeCount(1)
-                .scrapCount(1)
-                .hitCount(1)
-                .postStatus(PostStatus.INACTIVE)
-                .postType(PostType.FEED)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+            .id(1)
+            .title("제목")
+            .imageUrls(new String[]{"url1", "url2"})
+            .content("내용")
+            .commentCount(1)
+            .likeCount(1)
+            .scrapCount(1)
+            .hitCount(1)
+            .postStatus(PostStatus.INACTIVE)
+            .postType(PostType.FEED)
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
 
         given(postService.deletePost(anyLong()))
-                .willReturn(postDto.getId());
+            .willReturn(postDto.getId());
         //when
         //then
 
         mockMvc.perform(delete("/posts/1")
-                        .header("Authorization", TOKEN)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(csrf()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andDo(
-                        document("{class-name}/{method-name}",
-                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
-                                preprocessResponse(prettyPrint())
-                        )
-                );
+                .header("Authorization", TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(
+                        modifyUris().scheme(scheme).host(host).port(port),
+                        prettyPrint()),
+                    preprocessResponse(prettyPrint())
+                )
+            );
     }
 
     @Test

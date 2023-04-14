@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    REQUEST_METHOD_OR_URL_ERROR("요청하신 메서드 혹은 주소가 잘못되었습니다."),
     AWS_S3_ERROR("AWS S3 오류입니다."),
     INVALID_QNA_ANSWER_STATUS("답변의 상태가 유효하지 않습니다."),
     CHANGE_IMPOSSIBLE_PINNED_ANSWER("고정된 답글은 수정하거나 삭제할 수 없습니다."),
@@ -24,6 +25,8 @@ public enum ErrorCode {
     FAILED_GET_COMMIT_INFO("커밋 정보를 가져오는 데 실패했습니다."),
     FAILED_CONNECT_GITHUB("깃헙과 연결에 실패했습니다."),
     NOT_REGISTERED_MEMBER("등록되지 않은 회원입니다."),
+
+    REDIS_BROKER_ERROR("레디스 메세지 브로커 과정에서 실패했습니다."),
     INVALID_TOKEN("토큰이 유효하지 않습니다."),
     INTERNAL_ERROR("내부 서버 오류가 발생했습니다."),
     ELEMENT_NOT_EXIST("데이터가 존재하지 않는 문서입니다."),

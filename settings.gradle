@@ -2,4 +2,4 @@ rootProject.name = 'bud'
 include 'user-api'
 include 'core'
 include 'batch-api'
-
+include 'chat-api'

@@ -3,6 +3,7 @@ package zerobase.bud.news.service;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.querydsl.core.types.Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,30 +14,34 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
+import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.news.domain.News;
 import zerobase.bud.news.dto.NewsDto;
 import zerobase.bud.news.dto.SearchAllNews;
 import zerobase.bud.news.repository.NewsRepository;
+import zerobase.bud.news.repository.NewsRepositoryQuerydsl;
 import zerobase.bud.news.type.NewsSortType;
-import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.type.MemberStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,7 +49,6 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -57,6 +61,9 @@ public class NewsServiceTest {
 
     @Mock
     private NewsRepository newsRepository;
+
+    @Mock
+    private NewsRepositoryQuerydsl newsRepositoryQuerydsl;
 
     @InjectMocks
     private NewsService newsService;
@@ -85,7 +92,6 @@ public class NewsServiceTest {
                 .id(1L)
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
-                .email("email@naver.com")
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
                 .job("백")
@@ -104,8 +110,9 @@ public class NewsServiceTest {
         given(this.tokenProvider.getAuthentication("token"))
                 .willReturn(authentication);
     }
-
+    
     @Test
+    @WithMockUser
     @DisplayName("뉴스 상세 정보 검색 성공")
     void successGetNewsDetail() {
         //given
@@ -146,12 +153,13 @@ public class NewsServiceTest {
     }
 
     @Test
-    @DisplayName("기사 작성일 기준 내림차순 뉴스 리스트 검색 성공")
+    @WithMockUser
+    @DisplayName("기사뉴스 리스트 검색 성공")
     void successGetNewsListNoKeywordOrderByRegisteredAtDesc() {
         //given
         List<News> list = new ArrayList<>();
 
-        for (int i = 1; i <= 20; i++) {
+        for (int i = 1; i <= 3; i++) {
             News news = News.builder()
                     .id(i)
                     .registeredAt(getAnyDateTime(i))
@@ -170,56 +178,56 @@ public class NewsServiceTest {
             list.add(news);
         }
 
-        int size = 7;
-        list.sort(Comparator.comparing(News::getRegisteredAt).reversed());
-        list = list.subList(0, size);
-        given(newsRepository.findAllByTitleContainingAndRegisteredAtIsBetweenOrderByRegisteredAtDesc(
-                any(),
-                anyString(),
-                any(),
-                any()))
-                .willReturn(list);
+        PageRequest pageRequest = PageRequest.of(0, 3);
+
+        given(newsRepositoryQuerydsl.findAll(any(), anyString(), any(), any(), any(), any()))
+                .willReturn(new PageImpl<>(list, pageRequest, 3));
+
 
         //when
-        List<NewsDto> newsDtoList = newsService.getNewsList(new SearchAllNews.Request(
-                "기사",
-                size,
-                0,
-                NewsSortType.DATE,
-                getAnyDate(5),
-                getAnyDate(20)));
+        Page<SearchAllNews.Response> responsePage = newsService.getNewsList(
+                new SearchAllNews.Request(
+                        "기사",
+                        3,
+                        0,
+                        NewsSortType.HIT,
+                        Order.DESC,
+                        getAnyDate(1),
+                        getAnyDate(3))
+        );
 
         //then
-        assertEquals(7, newsDtoList.size());
-        assertEquals("기사 제목", newsDtoList.get(0).getTitle());
+        List<SearchAllNews.Response> responseList
+                = responsePage.get().collect(Collectors.toList());
 
-        assertEquals("http://news/url/20",
-                newsDtoList.get(0).getLink());
+        assertEquals(3, responsePage.getTotalElements());
+        assertEquals(1, responsePage.getTotalPages());
+        assertEquals("기사 제목",responseList.get(0).getTitle());
+
+        assertEquals("http://news/url/1", responseList.get(0).getLink());
 
         assertEquals("본문 요약 내용입니다.",
-                newsDtoList.get(0).getSummaryContent());
+                responseList.get(0).getSummaryContent());
 
-        assertEquals("<div>본문입니다.</div>",
-                newsDtoList.get(0).getContent());
+        assertEquals("http://news/main/img/url/1",
+                responseList.get(0).getMainImgUrl());
 
-        assertEquals("http://news/main/img/url/20",
-                newsDtoList.get(0).getMainImgUrl());
-
-        assertEquals("네이버뉴스", newsDtoList.get(0).getCompany());
+        assertEquals("네이버뉴스", responseList.get(0).getCompany());
 
         assertEquals("[\"x기x xxxx@naver.com\", \"x희x xxxx@naver.com\"]"
-                , newsDtoList.get(0).getJournalistOriginalNames());
+                , responseList.get(0).getJournalistOriginalNames());
 
         assertEquals("[\"x기x\", \"x희x\"]",
-                newsDtoList.get(0).getJournalistNames());
+                responseList.get(0).getJournalistNames());
 
         assertEquals("[\"프론트엔드\", \"백엔드\"]",
-                newsDtoList.get(0).getKeywords());
+                responseList.get(0).getKeywords());
 
-        assertEquals(0, newsDtoList.get(0).getHitCount());
+        assertEquals(19, responseList.get(0).getHitCount());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("뉴스 검색 실패 - 뉴스 고유 아이디 0이하")
     void failGetNewsIdZero() {
         //given
@@ -231,6 +239,7 @@ public class NewsServiceTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("뉴스 검색 실패 - 뉴스 고유 아이디 매칭 데이터 없음")
     void failGetNewsIdNoMatching() {
         //given
@@ -239,80 +248,6 @@ public class NewsServiceTest {
                 () -> newsService.getNewsDetail(10));
         //then
         assertEquals(NEWS_NOT_FOUND, budException.getErrorCode());
-    }
-
-    @Test
-    @DisplayName("조회수 내림차순 뉴스 리스트 검색 성공")
-    void successGetNewsListNoKeywordOrderByHitDesc() {
-        //given
-        List<News> list = new ArrayList<>();
-
-        for (int i = 1; i <= 20; i++) {
-            News news = News.builder()
-                    .id(i)
-                    .registeredAt(getAnyDateTime(i))
-                    .title("기사 제목")
-                    .link("http://news/url/" + i)
-                    .summaryContent("본문 요약 내용입니다.")
-                    .content("<div>본문입니다.</div>")
-                    .mainImgUrl("http://news/main/img/url/" + i)
-                    .company("네이버뉴스")
-                    .journalistOriginalNames("[\"x기x xxxx@naver.com\", " +
-                            "\"x희x xxxx@naver.com\"]")
-                    .journalistNames("[\"x기x\", \"x희x\"]")
-                    .keywords("[\"프론트엔드\", \"백엔드\"]")
-                    .hitCount(i)
-                    .build();
-            list.add(news);
-        }
-
-        int size = 7;
-        list.sort(Comparator.comparing(News::getHitCount).reversed());
-        list = list.subList(0, size);
-        given(newsRepository.findAllByTitleContainingAndRegisteredAtIsBetweenOrderByHitCountDesc(
-                any(),
-                anyString(),
-                any(),
-                any()))
-                .willReturn(list);
-
-        //when
-        List<NewsDto> newsDtoList = newsService.getNewsList(new SearchAllNews.Request(
-                "기사",
-                size,
-                0,
-                NewsSortType.HIT,
-                getAnyDate(5),
-                getAnyDate(20)));
-
-        //then
-        assertEquals(7, newsDtoList.size());
-        assertEquals("기사 제목", newsDtoList.get(0).getTitle());
-
-        assertEquals("http://news/url/20",
-                newsDtoList.get(0).getLink());
-
-        assertEquals("본문 요약 내용입니다.",
-                newsDtoList.get(0).getSummaryContent());
-
-        assertEquals("<div>본문입니다.</div>",
-                newsDtoList.get(0).getContent());
-
-        assertEquals("http://news/main/img/url/20",
-                newsDtoList.get(0).getMainImgUrl());
-
-        assertEquals("네이버뉴스", newsDtoList.get(0).getCompany());
-
-        assertEquals("[\"x기x xxxx@naver.com\", \"x희x xxxx@naver.com\"]"
-                , newsDtoList.get(0).getJournalistOriginalNames());
-
-        assertEquals("[\"x기x\", \"x희x\"]",
-                newsDtoList.get(0).getJournalistNames());
-
-        assertEquals("[\"프론트엔드\", \"백엔드\"]",
-                newsDtoList.get(0).getKeywords());
-
-        assertEquals(20, newsDtoList.get(0).getHitCount());
     }
 
     private LocalDateTime getAnyDateTime(int day) {
