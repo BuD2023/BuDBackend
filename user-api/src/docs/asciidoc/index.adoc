@@ -157,14 +157,14 @@ Authorization: Bearer accestokenvlaue
 |===
 ----
 {
-"chatId": 24,
-"chatroomId" : 1,
-"message": "/chats/feafsfdsaf.jpg",
-"chatType": "IMAGE",
-"createdAt": "0초 전",
-"userProfileUrl": null,
-"userName": "haden",
-"userId": 24
+  "chatroomId": 10,
+  "chatId": 33,
+  "message": "chats/2023-04-15/5b02874e83cf4f1b88b231316a2add61_20230415214940577.jpeg",
+  "chatType": "IMAGE",
+  "createdAt": "0초 전",
+  "userName": "haden",
+  "numberOfMembers": 0,
+  "userId": 33
 }
 ----
 
