@@ -28,6 +28,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
+import zerobase.bud.fcm.FcmApi;
+import zerobase.bud.notification.domain.NotificationInfo;
+import zerobase.bud.notification.repository.NotificationInfoRepository;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.domain.QnaAnswerPin;
@@ -51,6 +54,12 @@ class QnaAnswerServiceTest {
     @Mock
     private QnaAnswerPinRepository qnaAnswerPinRepository;
 
+    @Mock
+    private NotificationInfoRepository notificationInfoRepository;
+
+    @Mock
+    private FcmApi fcmApi;
+
     @InjectMocks
     private QnaAnswerService qnaAnswerService;
 
@@ -63,6 +72,9 @@ class QnaAnswerServiceTest {
 
         given(qnaAnswerRepository.save(any()))
             .willReturn(getQnaAnswer());
+
+        given(notificationInfoRepository.findByMemberId(getMember().getId()))
+            .willReturn(Optional.ofNullable(getNotificationInfo()));
 
         ArgumentCaptor<QnaAnswer> captor = ArgumentCaptor.forClass(
             QnaAnswer.class);
@@ -83,6 +95,15 @@ class QnaAnswerServiceTest {
             captor.getValue().getQnaAnswerStatus());
         assertEquals("userId", answer);
 
+    }
+
+    private NotificationInfo getNotificationInfo() {
+        return NotificationInfo.builder()
+            .member(getMember())
+            .fcmToken("fcmToken")
+            .isPostPushAvailable(true)
+            .isFollowPushAvailable(true)
+            .build();
     }
 
     @Test
