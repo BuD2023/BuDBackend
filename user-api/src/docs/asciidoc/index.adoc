@@ -432,7 +432,7 @@ include::{snippets}/post-controller-test/success_remove-post-scrap/http-response
 include::{snippets}/post-controller-test/success_remove-post-scrap/response-body.adoc[]
 
 
-=== 10. 댓글 좋아요 성공
+=== 10. 댓글 좋아요 및 좋아요 취소
 .request
 include::{snippets}/post-controller-test/success-comment-like/http-request.adoc[]
 
@@ -452,7 +452,7 @@ include::{snippets}/post-controller-test/success-comment-like/http-response.adoc
 |400|CANNOT_LIKE_WRITER_SELF|자신의 댓글을 좋아요 할 수 없습니다.
 |===
 
-=== 11. 댓글 핀 성공
+=== 11. 댓글 핀 및 댓글 핀 변경
 .request
 include::{snippets}/post-controller-test/success-comment-pin/http-request.adoc[]
 
@@ -472,7 +472,7 @@ include::{snippets}/post-controller-test/success-comment-pin/http-response.adoc[
 |400|NOT_POST_OWNER|게시글의 작성자가 아닙니다.
 |===
 
-=== 12. 댓글 핀 취소 성공
+=== 12. 댓글 핀 취소
 .request
 include::{snippets}/post-controller-test/success-cancel-comment-pin/http-request.adoc[]
 
