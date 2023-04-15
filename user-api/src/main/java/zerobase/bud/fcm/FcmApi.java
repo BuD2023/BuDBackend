@@ -37,13 +37,14 @@ public class FcmApi {
     public void sendNotificationByToken(NotificationDto dto) {
         //TODO: 토큰 값이 정상적으로 채워지면 로직 수정
 //        List<String> tokens = dto.getTokens();
+//        String token = tokens.get(0);
         String token = fcmTempToken;
         if (Objects.nonNull(token)) {
 
             WebpushConfig webpushConfig = WebpushConfig.builder()
-                .setNotification( new WebpushNotification(
-                        dto.getNotificationType().name()
-                        , dto.getNotificationDetailType().getMessage())).build();
+                .setNotification(new WebpushNotification(
+                    dto.getNotificationType().name()
+                    , dto.getNotificationDetailType().getMessage())).build();
 
             String now = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));

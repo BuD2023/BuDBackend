@@ -11,8 +11,10 @@ import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION_INFO;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 import static zerobase.bud.post.type.PostStatus.INACTIVE;
 
@@ -26,7 +28,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zerobase.bud.common.exception.BudException;
-import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
 import zerobase.bud.fcm.FcmApi;
 import zerobase.bud.notification.domain.NotificationInfo;
@@ -41,6 +42,7 @@ import zerobase.bud.post.repository.QnaAnswerPinRepository;
 import zerobase.bud.post.repository.QnaAnswerRepository;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
+import zerobase.bud.repository.MemberRepository;
 
 @ExtendWith(MockitoExtension.class)
 class QnaAnswerServiceTest {
@@ -58,6 +60,9 @@ class QnaAnswerServiceTest {
     private NotificationInfoRepository notificationInfoRepository;
 
     @Mock
+    private MemberRepository memberRepository;
+
+    @Mock
     private FcmApi fcmApi;
 
     @InjectMocks
@@ -73,14 +78,17 @@ class QnaAnswerServiceTest {
         given(qnaAnswerRepository.save(any()))
             .willReturn(getQnaAnswer());
 
-        given(notificationInfoRepository.findByMemberId(getMember().getId()))
+        given(notificationInfoRepository.findByMemberId(getSender().getId()))
             .willReturn(Optional.ofNullable(getNotificationInfo()));
+
+        given(memberRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(getReceiver()));
 
         ArgumentCaptor<QnaAnswer> captor = ArgumentCaptor.forClass(
             QnaAnswer.class);
 
         //when
-        String answer = qnaAnswerService.createQnaAnswer(getMember(),
+        String answer = qnaAnswerService.createQnaAnswer(getSender(),
             Request.builder()
                 .postId(1L)
                 .content("content")
@@ -93,13 +101,13 @@ class QnaAnswerServiceTest {
         assertEquals("content", captor.getValue().getContent());
         assertEquals(QnaAnswerStatus.ACTIVE,
             captor.getValue().getQnaAnswerStatus());
-        assertEquals("userId", answer);
+        assertEquals("sender", answer);
 
     }
 
     private NotificationInfo getNotificationInfo() {
         return NotificationInfo.builder()
-            .member(getMember())
+            .member(getSender())
             .fcmToken("fcmToken")
             .isPostPushAvailable(true)
             .isFollowPushAvailable(true)
@@ -115,7 +123,7 @@ class QnaAnswerServiceTest {
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getMember(),
+            () -> qnaAnswerService.createQnaAnswer(getSender(),
                 Request.builder()
                     .postId(1L)
                     .content("content")
@@ -129,7 +137,7 @@ class QnaAnswerServiceTest {
     void INVALID_POST_TYPE_FOR_ANSWER_createQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
         Post post = Post.builder()
-            .member(getMember())
+            .member(getSender())
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)
@@ -141,7 +149,7 @@ class QnaAnswerServiceTest {
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getMember(),
+            () -> qnaAnswerService.createQnaAnswer(getSender(),
                 Request.builder()
                     .postId(1L)
                     .content("content")
@@ -155,7 +163,7 @@ class QnaAnswerServiceTest {
     void INVALID_POST_STATUS_createQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
         Post post = Post.builder()
-            .member(getMember())
+            .member(getSender())
             .title("title")
             .content("postContent")
             .postStatus(INACTIVE)
@@ -167,13 +175,68 @@ class QnaAnswerServiceTest {
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getMember(),
+            () -> qnaAnswerService.createQnaAnswer(getSender(),
                 Request.builder()
                     .postId(1L)
                     .content("content")
                     .build()));
         //then 이런 결과가 나온다.
         assertEquals(INVALID_POST_STATUS, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("NOT_FOUND_NOTIFICATION_INFO_createQnaAnswer")
+    void NOT_FOUND_NOTIFICATION_INFO_createQnaAnswer() {
+        //given
+
+        given(postRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(getPost()));
+
+        given(qnaAnswerRepository.save(any()))
+            .willReturn(getQnaAnswer());
+
+        given(notificationInfoRepository.findByMemberId(getSender().getId()))
+            .willReturn(Optional.empty());
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.createQnaAnswer(getSender(),
+                Request.builder()
+                    .postId(1L)
+                    .content("content")
+                    .build()));
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_FOUND_NOTIFICATION_INFO, budException.getErrorCode());
+
+    }
+
+    @Test
+    @DisplayName("NOT_REGISTERED_MEMBER_createQnaAnswer")
+    void NOT_REGISTERED_MEMBER_createQnaAnswer() {
+        //given
+
+        given(postRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(getPost()));
+
+        given(qnaAnswerRepository.save(any()))
+            .willReturn(getQnaAnswer());
+
+        given(notificationInfoRepository.findByMemberId(getSender().getId()))
+            .willReturn(Optional.ofNullable(getNotificationInfo()));
+
+        given(memberRepository.findById(anyLong()))
+            .willReturn(Optional.empty());
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.createQnaAnswer(getSender(),
+                Request.builder()
+                    .postId(1L)
+                    .content("content")
+                    .build()));
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_REGISTERED_MEMBER, budException.getErrorCode());
+
     }
 
     @Test
@@ -219,7 +282,7 @@ class QnaAnswerServiceTest {
     void INVALID_QNA_ANSWER_STATUS_updateQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
         QnaAnswer qnaAnswer = QnaAnswer.builder()
-            .member(getMember())
+            .member(getSender())
             .post(getPost())
             .content("content")
             .qnaAnswerStatus(QnaAnswerStatus.INACTIVE)
@@ -271,7 +334,7 @@ class QnaAnswerServiceTest {
 
     private static QnaAnswer getQnaAnswer() {
         return QnaAnswer.builder()
-            .member(getMember())
+            .member(getSender())
             .post(getPost())
             .content("content")
             .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
@@ -280,7 +343,7 @@ class QnaAnswerServiceTest {
 
     private static Post getPost() {
         return Post.builder()
-            .member(getMember())
+            .member(getSender())
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)
@@ -288,21 +351,22 @@ class QnaAnswerServiceTest {
             .build();
     }
 
-    private static Member getMember() {
+    private static Member getSender() {
         return Member.builder()
-            .nickname("nick")
-            .level(getLevel())
-            .userId("userId")
+            .id(1L)
+            .nickname("sender")
+            .userId("sender")
             .createdAt(LocalDateTime.now().minusDays(1))
             .build();
     }
 
-    private static Level getLevel() {
-        return Level.builder()
-            .levelCode("씩씩한_새싹")
-            .levelStartCommitCount(0)
-            .nextLevelStartCommitCount(17)
-            .levelNumber(1)
+    private static Member getReceiver() {
+        return Member.builder()
+            .id(2L)
+            .nickname("receiver")
+            .userId("receiver")
+            .createdAt(LocalDateTime.now().minusDays(1))
             .build();
     }
+
 }

@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.domain.Notification;
 import zerobase.bud.notification.dto.GetNotifications.Response;
 import zerobase.bud.notification.repository.NotificationRepository;
 import zerobase.bud.notification.type.NotificationStatus;
@@ -19,13 +18,12 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     public Slice<Response> getNotifications(Member member, Pageable pageable) {
-        Slice<Notification> notifications = notificationRepository
+        return notificationRepository
             .findAllByReceiverIdAndNotificationStatusNot(
                 member.getId()
                 , NotificationStatus.DELETED
-                , pageable);
-
-        return notifications.map(Response::fromEntity);
+                , pageable)
+            .map(Response::fromEntity);
     }
 
 }
