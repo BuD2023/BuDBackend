@@ -1,6 +1,7 @@
 package zerobase.bud.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -30,6 +31,7 @@ import static zerobase.bud.util.Constants.ALLOW_IMAGE_CODES;
 import static zerobase.bud.util.Constants.CHATS;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ChatService {
     private final ChatRepository chatRepository;
