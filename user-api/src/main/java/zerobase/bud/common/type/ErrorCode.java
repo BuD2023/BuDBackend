@@ -16,6 +16,11 @@ public enum ErrorCode {
     INVALID_POST_TYPE_FOR_ANSWER("답변을 달기에 유효하지 않은 게시글 타입입니다."),
     FAILED_UPLOAD_FILE("파일 업로드에 실패하였습니다"),
     NOT_FOUND_POST("존재하지 않는 게시물입니다."),
+
+    CANNOT_LIKE_WRITER_SELF("자신의 댓글을 좋아요 할 수 없습니다."),
+
+    NOT_POST_OWNER("게시글의 작성자가 아닙니다."),
+    COMMENT_NOT_FOUND("존재하지 않는 댓글입니다."),
     INVALID_INITIAL_VALUE("잘못된 초기값입니다."),
     INVALID_TOTAL_COMMIT_COUNT("유효하지 않은 총 커밋 수 입니다."),
     CANNOT_FOLLOW_YOURSELF("자기 자신을 팔로우할 수 없습니다."),

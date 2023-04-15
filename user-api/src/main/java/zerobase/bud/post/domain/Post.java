@@ -1,17 +1,13 @@
 package zerobase.bud.post.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import zerobase.bud.comment.domain.CommentPin;
 import zerobase.bud.domain.BaseEntity;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.dto.UpdatePost.Request;
@@ -50,6 +46,9 @@ public class Post extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private PostType postType;
+
+    @OneToOne(mappedBy = "post")
+    private CommentPin commentPin;
 
     public void update(Request request) {
         this.title = request.getTitle();
