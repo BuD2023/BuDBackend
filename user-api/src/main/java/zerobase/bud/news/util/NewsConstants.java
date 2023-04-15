@@ -1,14 +1,6 @@
-package zerobase.bud.common.util;
+package zerobase.bud.news.util;
 
-public abstract class Constants {
-
-    public static final String TOKEN_PREFIX = "Bearer ";
-
-    public static final String MAXIMUM_LEVEL_CODE = "찬란한_나무";
-
-    public static final String SESSION = "CHATROOM_SESSION";
-
-    public static final String CHATROOM = "CHATROOM";
+public abstract class NewsConstants {
 
     public static final String[] NAVER_NEWS_API_KEYWORDS = {
             "자바", "자바스크립트", "파이썬", "알고리즘",

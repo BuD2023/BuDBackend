@@ -59,12 +59,7 @@ public class QnaAnswerService {
 
         validateCreateQnaAnswer(post);
 
-        qnaAnswerRepository.save(QnaAnswer.builder()
-            .member(member)
-            .post(post)
-            .content(request.getContent())
-            .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
-            .build());
+        qnaAnswerRepository.save(QnaAnswer.of(member, post, request.getContent()));
 
         post.plusCommentCount();
         //TODO: 추후 토큰 관련 로직들이 생기면 작성
