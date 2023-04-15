@@ -41,13 +41,13 @@ public class FcmApi {
         if (Objects.nonNull(token)) {
 
             WebpushConfig webpushConfig = WebpushConfig.builder()
-                .setNotification(
-                    new WebpushNotification(dto.getNotificationType().name()
-                        , dto.getNotificationDetailType().getMessage()))
-                .build();
+                .setNotification( new WebpushNotification(
+                        dto.getNotificationType().name()
+                        , dto.getNotificationDetailType().getMessage())).build();
 
             String now = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+
             String notificationId = UUID.randomUUID().toString()
                 .replaceAll(REPLACE_EXPRESSION, "")
                 .concat(now);

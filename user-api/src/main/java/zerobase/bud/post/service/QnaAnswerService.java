@@ -7,6 +7,7 @@ import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION_INFO;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,6 +36,7 @@ import zerobase.bud.post.repository.QnaAnswerRepository;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
+import zerobase.bud.repository.MemberRepository;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,6 +44,8 @@ import zerobase.bud.post.type.QnaAnswerStatus;
 public class QnaAnswerService {
 
     private final FcmApi fcmApi;
+
+    private final MemberRepository memberRepository;
 
     private final PostRepository postRepository;
 
@@ -67,21 +71,43 @@ public class QnaAnswerService {
             .build());
 
         post.plusCommentCount();
-        //TODO: 추후 토큰 관련 로직들이 생기면 작성
-        NotificationInfo notificationInfo = notificationInfoRepository.findByMemberId(
-                post.getMember().getId())
-            .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
 
-        if (notificationInfo.isPostPushAvailable()) {
-            sendNotification(notificationInfo.getFcmToken(), member, post);
-        }
+        validateSendNotificationAndSend(member, post);
 
         return member.getUserId();
     }
 
-    private void sendNotification(String token, Member sender, Post post) {
+    private void validateSendNotificationAndSend(Member member, Post post) {
+        Long receiverId = post.getMember().getId();
+        NotificationInfo notificationInfo = notificationInfoRepository
+            .findByMemberId(receiverId)
+            .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
+
+        Member receiver = memberRepository.findById(receiverId)
+            .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
+
+        //테스트를 위해 우선 주석처리 해두었음.
+//        if (!Objects.equals(receiver.getId(), member.getId())
+//            && notificationInfo.isPostPushAvailable()) {
+//            sendNotification(notificationInfo.getFcmToken(), receiver, member,
+//                post);
+//        }
+
+        if (notificationInfo.isPostPushAvailable()) {
+            sendNotification(notificationInfo.getFcmToken(), receiver, member,
+                post);
+        }
+    }
+
+    private void sendNotification(
+        String token
+        , Member receiver
+        , Member sender
+        , Post post
+    ) {
         fcmApi.sendNotificationByToken(NotificationDto.builder()
             .tokens(List.of(token))
+            .receiver(receiver)
             .sender(sender)
             .notificationType(NotificationType.POST)
             .pageType(PageType.QNA)

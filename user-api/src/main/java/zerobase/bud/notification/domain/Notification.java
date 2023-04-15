@@ -35,6 +35,9 @@ public class Notification extends BaseEntity {
     private Long id;
 
     @ManyToOne
+    private Member receiver;
+
+    @ManyToOne
     private Member sender;
 
     @Column(unique = true)
@@ -58,6 +61,7 @@ public class Notification extends BaseEntity {
 
     public static Notification of(String notificationId, NotificationDto dto) {
         return Notification.builder()
+            .receiver(dto.getReceiver())
             .sender(dto.getSender())
             .notificationId(notificationId)
             .notificationType(dto.getNotificationType())
