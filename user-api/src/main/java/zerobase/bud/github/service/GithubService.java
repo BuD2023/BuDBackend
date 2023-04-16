@@ -3,12 +3,10 @@ package zerobase.bud.github.service;
 import static zerobase.bud.common.type.ErrorCode.INVALID_INITIAL_VALUE;
 import static zerobase.bud.common.type.ErrorCode.INVALID_TOTAL_COMMIT_COUNT;
 import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_GITHUB_USER_ID;
-import static zerobase.bud.common.util.Constants.MAXIMUM_LEVEL_CODE;
+import static zerobase.bud.member.util.MemberConstants.MAXIMUM_LEVEL_CODE;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +49,7 @@ public class GithubService {
             .orElseThrow(() -> new BudException(NOT_REGISTERED_GITHUB_USER_ID));
 
         List<CommitHistory> commitHistories = commitHistoryRepository
-            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(
+            .findAllByGithubInfoIdAndCommitDateBetween(
                 githubInfo.getId()
                 , LocalDate.now().minusWeeks(WEEKS_FOR_COMMIT_HISTORY)
                 , LocalDate.now()
@@ -61,16 +59,10 @@ public class GithubService {
             Level level = levelRepository.findByLevelStartCommitCount(0)
                 .orElseThrow(() -> new BudException(INVALID_INITIAL_VALUE));
 
-            return CommitHistoryInfo.builder()
-                .nickName(member.getNickname())
-                .levelCode(level.getLevelCode())
-                .remainCommitCountNextLevel(
-                    level.getNextLevelStartCommitCount())
-                .todayCommitCount(0)
-                .thisWeekCommitCount(0)
-                .consecutiveCommitDays(0)
-                .commits(new ArrayList<>())
-                .build();
+            return CommitHistoryInfo.of(
+                member.getNickname()
+                , level.getLevelCode()
+                , level.getNextLevelStartCommitCount());
         }
 
         long totalCommitCount;
@@ -79,7 +71,8 @@ public class GithubService {
         long consecutiveCommitDays = 0;
         long thisWeekCommitCount;
 
-        CommitHistory latestCommitHistory = commitHistories.get(0);
+        CommitHistory latestCommitHistory =
+            commitHistories.get(commitHistories.size() - 1);
 
         if (LocalDate.now().isEqual(latestCommitHistory.getCommitDate())) {
             todayCommitCount = latestCommitHistory.getCommitCount();
@@ -87,27 +80,40 @@ public class GithubService {
                 .getConsecutiveCommitDays();
         }
 
-        thisWeekCommitCount = getThisWeekCommitCount(commitHistories);
+        LocalDate firstDayOfWeek = LocalDate.now().with(DayOfWeek.MONDAY);
 
-        List<CommitCountByDate> commits = getCommits(commitHistories);
+        thisWeekCommitCount = commitHistories.stream()
+            .filter(commitHistory -> !commitHistory.getCommitDate()
+                .isBefore(firstDayOfWeek))
+            .mapToLong(CommitHistory::getCommitCount).sum();
 
-        totalCommitCount = getTotalCommitCount(member, commits);
-        Level level = saveAndGetLevel(member, totalCommitCount);
+        List<CommitCountByDate> commits = commitHistories.stream()
+            .map(CommitCountByDate::from)
+            .collect(Collectors.toList());
+
+        totalCommitCount = commits.stream()
+            .filter(x -> !x.getCommitDate()
+                .isBefore(member.getCreatedAt().toLocalDate()))
+            .map(CommitCountByDate::getCommitCount)
+            .reduce(0L, Long::sum);
+
+        Level level = getLevel(member, totalCommitCount);
+        member.updateLevel(level);
+
         remainCommitCountNextLevel =
             level.getNextLevelStartCommitCount() - totalCommitCount;
 
-        return CommitHistoryInfo.builder()
-            .nickName(member.getNickname())
-            .levelCode(level.getLevelCode())
-            .remainCommitCountNextLevel(remainCommitCountNextLevel)
-            .todayCommitCount(todayCommitCount)
-            .thisWeekCommitCount(thisWeekCommitCount)
-            .consecutiveCommitDays(consecutiveCommitDays)
-            .commits(commits)
-            .build();
+        return CommitHistoryInfo.of(member.getNickname()
+            , level.getLevelCode()
+            , remainCommitCountNextLevel
+            , todayCommitCount
+            , thisWeekCommitCount
+            , consecutiveCommitDays
+            , commits);
     }
 
-    private Level saveAndGetLevel(Member member, long totalCommitCount) {
+    //이부분 수정 방법 생각하기
+    private Level getLevel(Member member, long totalCommitCount) {
         Level level = member.getLevel();
         if (!MAXIMUM_LEVEL_CODE.equals(level.getLevelCode())) {
             level = levelRepository.
@@ -115,8 +121,6 @@ public class GithubService {
                     totalCommitCount, totalCommitCount)
                 .orElseThrow(
                     () -> new BudException(INVALID_TOTAL_COMMIT_COUNT));
-
-            member.setLevel(level);
         }
 
         return level;
@@ -135,48 +139,10 @@ public class GithubService {
     private LocalDate getLastCommitDate(GithubInfo githubInfo) {
         return commitHistoryRepository.findFirstByGithubInfoIdOrderByCommitDateDesc(
                 githubInfo.getId())
-                .stream()
-                .map(CommitHistory::getCommitDate)
-                .findFirst()
-                .orElse(LocalDate.now().minusWeeks(WEEKS_FOR_COMMIT_HISTORY));
-    }
-
-
-    private Long getTotalCommitCount(Member member,
-        List<CommitCountByDate> commits) {
-        LocalDate registeredDate = member.getCreatedAt().toLocalDate();
-
-        return commits.stream()
-            .filter(x -> x.getCommitDate().isAfter(registeredDate)
-                || x.getCommitDate().isEqual(registeredDate)
-            )
-            .map(CommitCountByDate::getCommitCount)
-            .reduce(0L, Long::sum);
-    }
-
-    private List<CommitCountByDate> getCommits(
-        List<CommitHistory> commitHistories
-    ) {
-        return commitHistories
             .stream()
-            .map(CommitCountByDate::from)
-            .sorted(Comparator.comparing(CommitCountByDate::getCommitDate))
-            .collect(Collectors.toList());
+            .map(CommitHistory::getCommitDate)
+            .findFirst()
+            .orElse(LocalDate.now().minusWeeks(WEEKS_FOR_COMMIT_HISTORY));
     }
 
-    private long getThisWeekCommitCount(List<CommitHistory> commitHistories) {
-
-        LocalDate firstDayOfWeek = LocalDate.now().with(DayOfWeek.MONDAY);
-        long thisWeekCommitCount = 0;
-
-        for (CommitHistory commitHistory : commitHistories) {
-            LocalDate commitDate = commitHistory.getCommitDate();
-            if (commitDate.isBefore(firstDayOfWeek)) {
-                break;
-            }
-            thisWeekCommitCount += commitHistory.getCommitCount();
-        }
-
-        return thisWeekCommitCount;
-    }
 }

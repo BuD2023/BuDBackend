@@ -57,6 +57,10 @@ public class Member extends BaseEntity implements UserDetails {
         return this;
     }
 
+    public void updateLevel(Level level) {
+        this.level = level;
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -48,4 +48,13 @@ public class QnaAnswer extends BaseEntity {
     public void updateContent(String content) {
         this.content = content;
     }
+
+    public static QnaAnswer of(Member member, Post post, String content) {
+        return QnaAnswer.builder()
+            .member(member)
+            .post(post)
+            .content(content)
+            .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
+            .build();
+    }
 }

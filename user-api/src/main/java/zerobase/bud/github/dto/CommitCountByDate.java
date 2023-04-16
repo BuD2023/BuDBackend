@@ -14,8 +14,8 @@ import zerobase.bud.domain.CommitHistory;
 @AllArgsConstructor
 @Builder
 public class CommitCountByDate {
-    LocalDate commitDate;
-    long commitCount;
+    private LocalDate commitDate;
+    private long commitCount;
 
     public static CommitCountByDate from(CommitHistory commitHistory){
         return CommitCountByDate.builder()

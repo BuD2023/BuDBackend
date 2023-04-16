@@ -8,7 +8,6 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.ChatRoomStatusDto;
@@ -23,9 +22,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
-import static zerobase.bud.common.util.Constants.CHATROOM;
-import static zerobase.bud.common.util.Constants.SESSION;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
+import static zerobase.bud.util.Constants.CHATROOM;
+import static zerobase.bud.util.Constants.SESSION;
 
 
 @Slf4j
@@ -37,13 +36,10 @@ public class ChatRoomService {
 
     private final ChatRepository chatRepository;
 
-    private final RedisTemplate redisTemplate;
-
-    private static HashOperations<String, String, ChatRoomSession> hashOperations;
+    private final RedisTemplate<String, Integer> redisTemplate;
 
     private static ValueOperations<String, Integer> valueOperations;
 
-    @Transactional
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
 
         String hastStr = "";
@@ -61,7 +57,6 @@ public class ChatRoomService {
                         .build()).getId();
     }
 
-    @Transactional(readOnly = true)
     public Slice<ChatRoomDto> searchChatRooms(String keyword, int page, int size) {
 
         valueOperations = redisTemplate.opsForValue();
@@ -74,7 +69,6 @@ public class ChatRoomService {
                 ));
     }
 
-    @Transactional(readOnly = true)
     public Slice<ChatRoomDto> readChatRooms(int page, int size) {
 
         valueOperations = redisTemplate.opsForValue();
@@ -86,7 +80,6 @@ public class ChatRoomService {
                 ));
     }
 
-    @Transactional(readOnly = true)
     public ChatRoomDto readChatRoom(Long chatroomId) {
 
         valueOperations = redisTemplate.opsForValue();
@@ -102,7 +95,6 @@ public class ChatRoomService {
         return Optional.ofNullable(valueOperations.get(CHATROOM + chatroomId)).orElse(1);
     }
 
-    @Transactional(readOnly = true)
     public Slice<ChatDto> readChats(Long chatroomId, int page, int size) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
@@ -112,9 +104,8 @@ public class ChatRoomService {
                 .map(ChatDto::from);
     }
 
-    @Transactional(readOnly = true)
     public ChatRoomStatusDto chatRoomsStatus() {
-        hashOperations = redisTemplate.opsForHash();
+        HashOperations<String, String, ChatRoomSession> hashOperations = redisTemplate.opsForHash();
         return ChatRoomStatusDto.of(
                 chatRoomRepository.countByStatus(ACTIVE),
                 hashOperations.size(SESSION));

@@ -433,14 +433,14 @@ class UserServiceTest {
         Stream<Follow> follows = Stream.of(
                 Follow.builder()
                         .id(1L)
-                        .target(member)
-                        .member(profileMember)
+                        .target(profileMember)
+                        .member(member)
                         .build(),
 
                 Follow.builder()
                         .id(1L)
-                        .target(targetMember)
-                        .member(profileMember)
+                        .target(profileMember)
+                        .member(targetMember)
                         .build()
         );
 
