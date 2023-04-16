@@ -1,9 +1,13 @@
 package zerobase.bud.jwt;
 
+import static zerobase.bud.jwt.util.JwtConstants.TOKEN_PREFIX;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import java.util.Date;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,15 +18,10 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import zerobase.bud.jwt.dto.JwtDto;
 import zerobase.bud.domain.Member;
+import zerobase.bud.jwt.dto.JwtDto;
 import zerobase.bud.member.service.MemberService;
 import zerobase.bud.repository.MemberRepository;
-
-import java.util.Date;
-import java.util.Optional;
-
-import static zerobase.bud.common.util.Constants.TOKEN_PREFIX;
 
 @Slf4j
 @Component

@@ -56,7 +56,7 @@ class GithubServiceTest {
             .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(commitHistoryRepository
-            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(
+            .findAllByGithubInfoIdAndCommitDateBetween(
                 anyLong(), any(), any()))
             .willReturn(List.of(getCommitHistory()));
 
@@ -85,7 +85,7 @@ class GithubServiceTest {
             .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(commitHistoryRepository
-            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(
+            .findAllByGithubInfoIdAndCommitDateBetween(
                 anyLong(), any(), any()))
             .willReturn(List.of());
 
@@ -127,7 +127,7 @@ class GithubServiceTest {
             .willReturn(Optional.ofNullable(getGithubInfo()));
 
         given(commitHistoryRepository
-            .findAllByGithubInfoIdAndCommitDateBetweenOrderByCommitDateDesc(
+            .findAllByGithubInfoIdAndCommitDateBetween(
                 anyLong(), any(), any()))
             .willReturn(List.of());
 

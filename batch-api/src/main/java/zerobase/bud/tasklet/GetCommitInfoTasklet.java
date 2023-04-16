@@ -32,10 +32,14 @@ public class GetCommitInfoTasklet {
                     info.getUserId())
                 .orElseThrow(() -> new BudException(NOT_REGISTERED_MEMBER));
 
-            githubApi.saveCommitInfoFromLastCommitDate(
-                githubInfo
-                , LocalDate.now().minusDays(1)
-            );
+            try {
+                githubApi.saveCommitInfoFromLastCommitDate(
+                    githubInfo
+                    , LocalDate.now().minusDays(1)
+                );
+            } catch (Exception e) {
+                log.error(githubInfo.getUsername() + "님의 깃헙 연동에 실패하였습니다.");
+            }
         }
 
         log.info("complete getCommitInfo..." + LocalDateTime.now());
