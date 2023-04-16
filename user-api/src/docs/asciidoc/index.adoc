@@ -157,14 +157,14 @@ Authorization: Bearer accestokenvlaue
 |===
 ----
 {
-"chatId": 24,
-"chatroomId" : 1,
-"message": "/chats/feafsfdsaf.jpg",
-"chatType": "IMAGE",
-"createdAt": "0초 전",
-"userProfileUrl": null,
-"userName": "haden",
-"userId": 24
+  "chatroomId": 10,
+  "chatId": 33,
+  "message": "chats/2023-04-15/5b02874e83cf4f1b88b231316a2add61_20230415214940577.jpeg",
+  "chatType": "IMAGE",
+  "createdAt": "0초 전",
+  "userName": "haden",
+  "numberOfMembers": 0,
+  "userId": 33
 }
 ----
 
@@ -432,8 +432,65 @@ include::{snippets}/post-controller-test/success_remove-post-scrap/http-response
 include::{snippets}/post-controller-test/success_remove-post-scrap/response-body.adoc[]
 
 
+=== 10. 댓글 좋아요 및 좋아요 취소
+.request
+include::{snippets}/post-controller-test/success-comment-like/http-request.adoc[]
 
+.request field
+|===
+|필드명|타입|필수여부|설명
+|commentId|Number|Y|대상 댓글 아이디, path variable
+|===
 
+.response
+include::{snippets}/post-controller-test/success-comment-like/http-response.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
+|400|CANNOT_LIKE_WRITER_SELF|자신의 댓글을 좋아요 할 수 없습니다.
+|===
+
+=== 11. 댓글 핀 및 댓글 핀 변경
+.request
+include::{snippets}/post-controller-test/success-comment-pin/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|commentId|Number|Y|대상 댓글 아이디, path variable
+|===
+
+.response
+include::{snippets}/post-controller-test/success-comment-pin/http-response.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
+|400|NOT_POST_OWNER|게시글의 작성자가 아닙니다.
+|===
+
+=== 12. 댓글 핀 취소
+.request
+include::{snippets}/post-controller-test/success-cancel-comment-pin/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|postId|Number|Y|대상 게시글 아이디, path variable
+|===
+
+.response
+include::{snippets}/post-controller-test/success-cancel-comment-pin/http-response.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
+|400|NOT_POST_OWNER|게시글의 작성자가 아닙니다.
+|===
 
 == 유저 API
 === 1. 유저 팔로우 / 팔로우 취소
