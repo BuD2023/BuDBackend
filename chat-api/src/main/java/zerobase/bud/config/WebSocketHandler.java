@@ -56,7 +56,9 @@ public class WebSocketHandler implements ChannelInterceptor {
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             String rawToken = Optional.ofNullable((String) accessor.getHeader("Authorization"))
                     .orElse(null);
-            log.error(rawToken);
+            String rawToken2 = accessor.getFirstNativeHeader("Authorization");
+            log.error("token1" + rawToken);
+            log.error("token2" + rawToken2);
 
             if (tokenProvider.validateRawToken(rawToken)) {
                 throw new MemberException(ErrorCode.INVALID_TOKEN);
