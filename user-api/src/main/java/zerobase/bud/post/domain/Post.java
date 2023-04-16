@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 import zerobase.bud.comment.domain.CommentPin;
 import zerobase.bud.domain.BaseEntity;
 import zerobase.bud.domain.Member;
+import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.dto.UpdatePost.Request;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
@@ -49,6 +50,16 @@ public class Post extends BaseEntity {
 
     @OneToOne(mappedBy = "post")
     private CommentPin commentPin;
+
+    public static Post of(Member member, CreatePost.Request request){
+        return Post.builder()
+                .member(member)
+                .title(request.getTitle())
+                .content(request.getContent())
+                .postStatus(PostStatus.ACTIVE)
+                .postType(request.getPostType())
+                .build();
+    }
 
     public void update(Request request) {
         this.title = request.getTitle();

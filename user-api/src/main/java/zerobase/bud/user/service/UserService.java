@@ -2,6 +2,7 @@ package zerobase.bud.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
@@ -25,6 +26,7 @@ public class UserService {
 
     private final PostRepository postRepository;
 
+    @Transactional
     public Long follow(Long memberId, Member member) {
         Member targetMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
@@ -70,18 +72,21 @@ public class UserService {
         return UserDto.of(member, numberOfFollowers, numberOfFollows, numberOfPosts);
     }
 
+    @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowings(Member member) {
         return followRepository.findByMember(member)
                 .map(follow -> FollowDto.of(follow.getTarget()))
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowers(Member member) {
         return followRepository.findByTarget(member)
                 .map(follow -> FollowDto.of(follow.getMember()))
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<FollowDto> readFollowings(Long userId, Member reader) {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
@@ -91,6 +96,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<FollowDto> readFollowers(Long userId, Member reader) {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));

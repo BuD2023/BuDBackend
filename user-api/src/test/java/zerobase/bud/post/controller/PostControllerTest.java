@@ -702,4 +702,26 @@ class PostControllerTest {
                         )
                 );
     }
+
+    @Test
+    @WithMockUser
+    @DisplayName("댓글 삭제 성공")
+    void successDeleteComment() throws Exception {
+        //given
+        given(commentService.delete(anyLong(), any()))
+                .willReturn(2L);
+        //when
+        //then
+        this.mockMvc.perform(delete("/posts/comments/{commentId}", 1)
+                        .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+    }
 }

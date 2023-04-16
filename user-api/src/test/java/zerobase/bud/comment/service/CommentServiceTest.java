@@ -267,6 +267,49 @@ class CommentServiceTest {
     }
 
     @Test
+    @DisplayName("댓글 핀 실패 - 대댓글에 핀 요청")
+    void failCommentPinWhenCommentIsRecomment() {
+        //given
+        Member writer = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .profileImg("aaaaaa.jpg")
+                .nickname("비가와")
+                .job("풀스택개발자")
+                .oAuthAccessToken("tokenvalue")
+                .build();
+
+        Post post = Post.builder()
+                .id(1L)
+                .member(writer)
+                .build();
+
+        Comment parentComment = Comment.builder()
+                .member(writer)
+                .post(post)
+                .commentCount(3)
+                .id(2L)
+                .build();
+
+        Comment comment = Comment.builder()
+                .member(member)
+                .parent(parentComment)
+                .post(post)
+                .commentCount(0)
+                .id(3L)
+                .build();
+
+        given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
+                .willReturn(Optional.of(comment));
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> commentService.commentPin(123L, member));
+        //then
+        assertEquals(ErrorCode.CANNOT_PIN_RECOMMENT, exception.getErrorCode());
+    }
+
+    @Test
     @DisplayName("댓글 핀 취소 성공")
     void successCancelCommentPinTest() {
         //given
@@ -532,6 +575,68 @@ class CommentServiceTest {
                 () -> commentService.comments(123L, member, 0, 10));
         //then
         assertEquals(ErrorCode.NOT_FOUND_POST, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 성공")
+    void successDeleteWhenCommentNotFoundTest() {
+        //given
+        Comment comment = Comment.builder()
+                .member(member)
+                .createdAt(LocalDateTime.now())
+                .commentCount(1)
+                .id(3L)
+                .build();
+
+        given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
+                .willReturn(Optional.of(comment));
+        //when
+        Long result = commentService.delete(123L, member);
+        //then
+        verify(commentRepository, times(1)).delete(any());
+        assertEquals(result, 123L);
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 대상 댓글 없음")
+    void failDeleteWhenCommentNotFoundTest() {
+        //given
+        given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
+                .willReturn(Optional.empty());
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> commentService.delete(123L, member));
+        //then
+        assertEquals(ErrorCode.COMMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 요청한 유저가 댓글 작성자가 아님")
+    void failDeleteWhenNotRequestersPostTest() {
+        //given
+        Member commentWriter = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .profileImg("aaaaaa.jpg")
+                .nickname("비가와")
+                .job("풀스택개발자")
+                .oAuthAccessToken("tokenvalue")
+                .build();
+
+        Comment comment = Comment.builder()
+                .member(commentWriter)
+                .commentCount(1)
+                .id(3L)
+                .build();
+
+        given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
+                .willReturn(Optional.of(comment));
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> commentService.delete(123L, member));
+        //then
+        assertEquals(ErrorCode.NOT_COMMENT_OWNER, exception.getErrorCode());
     }
 
 }

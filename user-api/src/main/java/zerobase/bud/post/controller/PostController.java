@@ -129,5 +129,11 @@ public class PostController {
                                                       @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(commentService.comments(postId, member, page, size));
     }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Long> deleteComment(@PathVariable Long commentId,
+                                                 @AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(commentService.delete(commentId, member));
+    }
 }
 

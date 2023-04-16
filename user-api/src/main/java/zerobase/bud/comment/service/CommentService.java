@@ -66,6 +66,10 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
+        if(comment.getParent() != null){
+            throw new BudException(ErrorCode.CANNOT_PIN_RECOMMENT);
+        }
+
         Post post = comment.getPost();
 
         if (!post.getMember().equals(member)) {
@@ -82,6 +86,7 @@ public class CommentService {
         return commentId;
     }
 
+    @Transactional
     public Long cancelCommentPin(Long postId, Member member) {
 
         Post post = postRepository.findByIdAndPostStatus(postId, PostStatus.ACTIVE)
@@ -96,6 +101,7 @@ public class CommentService {
         return postId;
     }
 
+    @Transactional(readOnly = true)
     public Slice<CommentDto> comments(Long postId, Member member, int page, int size) {
         Post post = postRepository.findByIdAndPostStatus(postId, PostStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
@@ -145,5 +151,19 @@ public class CommentService {
 
 
         return new SliceImpl<>(commentDtos, comments.getPageable(), comments.hasNext());
+    }
+
+    @Transactional
+    public Long delete(Long commentId, Member member) {
+        Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
+                .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if(!comment.getMember().equals(member)){
+            throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
+        }
+
+        commentRepository.delete(comment);
+
+        return commentId;
     }
 }
