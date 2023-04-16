@@ -7,8 +7,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.comment.domain.CommentLike;
+import zerobase.bud.comment.domain.CommentPin;
 import zerobase.bud.comment.repository.CommentLikeRepository;
 import zerobase.bud.comment.repository.CommentPinRepository;
 import zerobase.bud.comment.repository.CommentRepository;
@@ -16,10 +19,12 @@ import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Post;
+import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.type.MemberStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -328,6 +333,205 @@ class CommentServiceTest {
                 () -> commentService.cancelCommentPin(123L, member));
         //then
         assertEquals(ErrorCode.NOT_POST_OWNER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 조회 성공 - 게시물에 댓글 핀이 존재하지만 페이지가 0임")
+    void successCommentsTestWhenPageIs0AndCommentPinIsExisting() {
+        //given
+        Member postWriter = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .profileImg("aaaaaa.jpg")
+                .nickname("비가와")
+                .job("풀스택개발자")
+                .oAuthAccessToken("tokenvalue")
+                .build();
+
+        Member commentWriter = Member.builder()
+                .id(3L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .profileImg("bbbbbbb.jpg")
+                .nickname("디비왕")
+                .job("데이터베이스관리자")
+                .oAuthAccessToken("tokenvalue")
+                .build();
+
+        Post post = Post.builder()
+                .id(1L)
+                .build();
+
+        Comment comment = Comment.builder()
+                .member(commentWriter)
+                .post(post)
+                .createdAt(LocalDateTime.now())
+                .commentCount(1)
+                .id(3L)
+                .build();
+
+        CommentPin commentPin = CommentPin.builder()
+                .comment(comment)
+                .post(post)
+                .build();
+
+        post = Post.builder()
+                .id(1L)
+                .commentPin(commentPin)
+                .member(postWriter)
+                .build();
+
+        List<Comment> comments = List.of(
+                Comment.builder()
+                        .id(1L)
+                        .member(member)
+                        .createdAt(LocalDateTime.now())
+                        .commentCount(0)
+                        .likeCount(3)
+                        .content("댓글을 답니다")
+                        .build(),
+                Comment.builder()
+                        .id(2L)
+                        .createdAt(LocalDateTime.now())
+                        .member(commentWriter)
+                        .commentCount(0)
+                        .likeCount(3)
+                        .content("댓글을 답니다2")
+                        .build(),
+                Comment.builder()
+                        .id(4L)
+                        .member(postWriter)
+                        .createdAt(LocalDateTime.now())
+                        .commentCount(0)
+                        .likeCount(5)
+                        .content("여기댓글이요")
+                        .build()
+        );
+
+        given(postRepository.findByIdAndPostStatus(anyLong(), any()))
+                .willReturn(Optional.of(post));
+
+        given(commentLikeRepository.existsByCommentAndAndMember(any(), any()))
+                .willReturn(true);
+
+        given(commentRepository
+                .findByPostAndParentIsNullAndIdIsNotCommentStatus(any(), anyLong(), any(), any()))
+                .willReturn(new SliceImpl<>(comments));
+        //when
+        Slice<CommentDto> dtos = commentService.comments(123L, member, 0, 10);
+        //then
+        assertEquals(3L, dtos.getContent().get(0).getCommentId());
+        assertEquals(true, dtos.getContent().get(0).getIsPinned());
+        assertEquals(1L, dtos.getContent().get(1).getCommentId());
+        assertEquals(false, dtos.getContent().get(1).getIsPinned());
+        assertEquals(true, dtos.getContent().get(1).getIsReader());
+        assertEquals(true, dtos.getContent().get(2).getIsReaderLiked());
+    }
+
+    @Test
+    @DisplayName("댓글 조회 성공 - 게시물에 댓글 핀이 존재하지만 페이지가 0이 아님")
+    void successCommentsTestWhenPageIsNot0AndCommentPinIsExisting() {
+        //given
+        Member postWriter = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .profileImg("aaaaaa.jpg")
+                .nickname("비가와")
+                .job("풀스택개발자")
+                .oAuthAccessToken("tokenvalue")
+                .build();
+
+        Member commentWriter = Member.builder()
+                .id(3L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .profileImg("bbbbbbb.jpg")
+                .nickname("디비왕")
+                .job("데이터베이스관리자")
+                .oAuthAccessToken("tokenvalue")
+                .build();
+
+        Post post = Post.builder()
+                .id(1L)
+                .build();
+
+        Comment comment = Comment.builder()
+                .member(commentWriter)
+                .post(post)
+                .createdAt(LocalDateTime.now())
+                .commentCount(1)
+                .id(3L)
+                .build();
+
+        CommentPin commentPin = CommentPin.builder()
+                .comment(comment)
+                .post(post)
+                .build();
+
+        post = Post.builder()
+                .id(1L)
+                .commentPin(commentPin)
+                .member(postWriter)
+                .build();
+
+        List<Comment> comments = List.of(
+                Comment.builder()
+                        .id(1L)
+                        .member(member)
+                        .createdAt(LocalDateTime.now())
+                        .commentCount(0)
+                        .likeCount(3)
+                        .content("댓글을 답니다")
+                        .build(),
+                Comment.builder()
+                        .id(2L)
+                        .createdAt(LocalDateTime.now())
+                        .member(commentWriter)
+                        .commentCount(0)
+                        .likeCount(3)
+                        .content("댓글을 답니다2")
+                        .build(),
+                Comment.builder()
+                        .id(4L)
+                        .member(postWriter)
+                        .createdAt(LocalDateTime.now())
+                        .commentCount(0)
+                        .likeCount(5)
+                        .content("여기댓글이요")
+                        .build()
+        );
+
+        given(postRepository.findByIdAndPostStatus(anyLong(), any()))
+                .willReturn(Optional.of(post));
+
+        given(commentLikeRepository.existsByCommentAndAndMember(any(), any()))
+                .willReturn(true);
+
+        given(commentRepository
+                .findByPostAndParentIsNullAndIdIsNotCommentStatus(any(), anyLong(), any(), any()))
+                .willReturn(new SliceImpl<>(comments));
+        //when
+        Slice<CommentDto> dtos = commentService.comments(123L, member, 1, 10);
+        //then
+        assertEquals(1L, dtos.getContent().get(0).getCommentId());
+        assertEquals(false, dtos.getContent().get(0).getIsPinned());
+        assertEquals(true, dtos.getContent().get(0).getIsReader());
+        assertEquals(true, dtos.getContent().get(1).getIsReaderLiked());
+    }
+
+    @Test
+    @DisplayName("댓글 조회 실패 - 해당 게시물 없음")
+    void successCommentsTestWhenPostNotFoundTest() {
+        //given
+        given(postRepository.findByIdAndPostStatus(anyLong(), any()))
+                .willReturn(Optional.empty());
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> commentService.comments(123L, member, 0, 10));
+        //then
+        assertEquals(ErrorCode.NOT_FOUND_POST, exception.getErrorCode());
     }
 
 }

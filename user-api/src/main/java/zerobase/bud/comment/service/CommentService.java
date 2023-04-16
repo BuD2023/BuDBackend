@@ -102,7 +102,7 @@ public class CommentService {
 
         List<CommentDto> commentDtos = new ArrayList<>();
 
-        Long pinCommentId = null;
+        Long pinCommentId = -1L;
 
         if (post.getCommentPin() != null && page == 0) {
             Comment pinComment = post.getCommentPin().getComment();
