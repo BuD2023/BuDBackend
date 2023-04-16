@@ -53,12 +53,15 @@ public class WebSocketHandler implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
+        String rawToken = Optional.ofNullable((String) accessor.getHeader("Authorization"))
+                .orElse(null);
+        String rawToken2 = accessor.getFirstNativeHeader("Authorization");
+        log.error("token1" + rawToken);
+        log.error("token2" + rawToken2);
+
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            String rawToken = Optional.ofNullable((String) accessor.getHeader("Authorization"))
-                    .orElse(null);
-            String rawToken2 = accessor.getFirstNativeHeader("Authorization");
-            log.error("token1" + rawToken);
-            log.error("token2" + rawToken2);
+//            rawToken = accessor.getFirstNativeHeader("Authorization");
+//            log.error("token1" + rawToken);
 
             if (tokenProvider.validateRawToken(rawToken)) {
                 throw new MemberException(ErrorCode.INVALID_TOKEN);
