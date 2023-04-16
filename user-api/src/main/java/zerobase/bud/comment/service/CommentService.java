@@ -130,7 +130,7 @@ public class CommentService {
 
 
         Slice<Comment> comments = commentRepository
-                .findByPostAndParentIsNullAndIdIsNotCommentStatus(post, pinCommentId,
+                .findByPostAndParentIsNullAndIdIsNotAndCommentStatus(post, pinCommentId,
                         CommentStatus.ACTIVE, PageRequest.of(page, size));
 
         comments.getContent().stream()

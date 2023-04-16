@@ -459,7 +459,7 @@ class CommentServiceTest {
                 .willReturn(true);
 
         given(commentRepository
-                .findByPostAndParentIsNullAndIdIsNotCommentStatus(any(), anyLong(), any(), any()))
+                .findByPostAndParentIsNullAndIdIsNotAndCommentStatus(any(), anyLong(), any(), any()))
                 .willReturn(new SliceImpl<>(comments));
         //when
         Slice<CommentDto> dtos = commentService.comments(123L, member, 0, 10);
@@ -553,7 +553,7 @@ class CommentServiceTest {
                 .willReturn(true);
 
         given(commentRepository
-                .findByPostAndParentIsNullAndIdIsNotCommentStatus(any(), anyLong(), any(), any()))
+                .findByPostAndParentIsNullAndIdIsNotAndCommentStatus(any(), anyLong(), any(), any()))
                 .willReturn(new SliceImpl<>(comments));
         //when
         Slice<CommentDto> dtos = commentService.comments(123L, member, 1, 10);

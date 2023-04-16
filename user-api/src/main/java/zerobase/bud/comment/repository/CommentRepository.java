@@ -15,6 +15,6 @@ import java.util.stream.Stream;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     Optional<Comment> findByIdAndCommentStatus(Long id, CommentStatus commentStatus);
 
-    Slice<Comment> findByPostAndParentIsNullAndIdIsNotCommentStatus(Post post, Long pinCommentId, CommentStatus commentStatus, Pageable pageable);
+    Slice<Comment> findByPostAndParentIsNullAndIdIsNotAndCommentStatus(Post post, Long pinCommentId, CommentStatus commentStatus, Pageable pageable);
 
 }
