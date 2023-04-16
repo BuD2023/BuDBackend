@@ -5,9 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.Member;
@@ -20,7 +19,6 @@ import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.ErrorCode;
-import zerobase.bud.util.AwsS3Api;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.File;

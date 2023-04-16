@@ -17,4 +17,6 @@ public class Constants {
 
     public static final String CHATROOM = "CHATROOM";
 
+    public static final String TOKEN_PREFIX = "Bearer ";
+
 }

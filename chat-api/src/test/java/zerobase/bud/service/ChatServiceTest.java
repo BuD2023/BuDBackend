@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.Member;
@@ -21,7 +22,6 @@ import zerobase.bud.type.ChatRoomStatus;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.ErrorCode;
 import zerobase.bud.type.MemberStatus;
-import zerobase.bud.util.AwsS3Api;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
