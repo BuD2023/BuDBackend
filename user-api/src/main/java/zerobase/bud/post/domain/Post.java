@@ -1,5 +1,7 @@
 package zerobase.bud.post.domain;
 
+import static zerobase.bud.post.type.PostStatus.ACTIVE;
+
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -14,7 +16,8 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import zerobase.bud.domain.BaseEntity;
 import zerobase.bud.domain.Member;
-import zerobase.bud.post.dto.UpdatePost.Request;
+import zerobase.bud.post.dto.CreatePost;
+import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 
@@ -51,7 +54,17 @@ public class Post extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PostType postType;
 
-    public void update(Request request) {
+    public static Post of(Member member, CreatePost.Request request){
+        return Post.builder()
+            .member(member)
+            .title(request.getTitle())
+            .content(request.getContent())
+            .postStatus(ACTIVE)
+            .postType(request.getPostType())
+            .build();
+    }
+
+    public void update(UpdatePost.Request request) {
         this.title = request.getTitle();
         this.content = request.getContent();
         this.postType = request.getPostType();

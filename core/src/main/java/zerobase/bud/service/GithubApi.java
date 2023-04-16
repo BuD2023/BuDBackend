@@ -1,14 +1,7 @@
 package zerobase.bud.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.kohsuke.github.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import zerobase.bud.domain.CommitHistory;
-import zerobase.bud.domain.GithubInfo;
-import zerobase.bud.exception.BudException;
-import zerobase.bud.repository.CommitHistoryRepository;
+import static zerobase.bud.type.ErrorCode.FAILED_CONNECT_GITHUB;
+import static zerobase.bud.type.ErrorCode.FAILED_GET_COMMIT_INFO;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -16,12 +9,26 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
-import static zerobase.bud.type.ErrorCode.FAILED_CONNECT_GITHUB;
-import static zerobase.bud.type.ErrorCode.FAILED_GET_COMMIT_INFO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHCommitQueryBuilder;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHUser;
+import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GitHubBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import zerobase.bud.domain.CommitHistory;
+import zerobase.bud.domain.GithubInfo;
+import zerobase.bud.exception.BudException;
+import zerobase.bud.repository.CommitHistoryRepository;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,12 +41,12 @@ public class GithubApi {
 
     @Transactional
     public String saveCommitInfoFromLastCommitDate(
-            GithubInfo githubInfo
-            , LocalDate lastCommitDate
+        GithubInfo githubInfo
+        , LocalDate lastCommitDate
     ) {
 
         log.info(
-                "start saveCommitInfoFromLastCommitDate... " + LocalDateTime.now()
+            "start saveCommitInfoFromLastCommitDate... " + LocalDateTime.now()
         );
 
         connectGithub(githubInfo.getAccessToken());
@@ -49,53 +56,49 @@ public class GithubApi {
         Map<LocalDate, Long> commitDateCountMap = new HashMap<>();
 
         getCommitInfoFromGithub(githubInfo.getUsername(), commitDateCountMap,
-                lastCommitDate);
+            lastCommitDate);
 
         saveCommitHistory(githubInfo, commitDateCountMap);
 
         log.info("complete saveCommitInfoFromLastCommitDate... "
-                + LocalDateTime.now());
+            + LocalDateTime.now());
 
         return githubInfo.getUsername();
     }
 
     private void saveCommitHistory(
-            GithubInfo githubInfo
-            , Map<LocalDate, Long> commitDateCountMap
+        GithubInfo githubInfo
+        , Map<LocalDate, Long> commitDateCountMap
     ) {
         List<Entry<LocalDate, Long>> commitDateCountList =
-                new ArrayList<>(commitDateCountMap.entrySet());
+            new ArrayList<>(commitDateCountMap.entrySet());
 
         if (commitDateCountMap.size() > 1) {
             commitDateCountList = commitDateCountMap.entrySet()
-                    .stream().sorted(Entry.comparingByKey())
-                    .collect(Collectors.toList());
+                .stream().sorted(Entry.comparingByKey())
+                .collect(Collectors.toList());
         }
 
         for (Entry<LocalDate, Long> entry : commitDateCountList) {
-            Optional<CommitHistory> byCommitDate =
-                    commitHistoryRepository.findByGithubInfoIdAndCommitDate(
-                            githubInfo.getId()
-                            , entry.getKey()
-                    );
-
-            if (byCommitDate.isPresent()) {
-                byCommitDate.get().setCommitCount(entry.getValue());
-            } else {
-                saveCommitHistory(githubInfo, entry);
-            }
+            commitHistoryRepository.findByGithubInfoIdAndCommitDate(
+                githubInfo.getId()
+                , entry.getKey()
+            ).ifPresentOrElse(
+                commitHistory -> commitHistory.setCommitCount(entry.getValue()),
+                () -> saveCommitHistory(githubInfo, entry)
+            );
         }
     }
 
     private void getCommitInfoFromGithub(
-            String username
-            , Map<LocalDate, Long> commitDateCountMap
-            , LocalDate lastCommitDate
+        String username
+        , Map<LocalDate, Long> commitDateCountMap
+        , LocalDate lastCommitDate
     ) {
         try {
             GHUser user = github.getUser(username);
             log.info(
-                    username + " 님의 CommitLog를 가져옵니다... " + LocalDateTime.now()
+                username + " 님의 CommitLog를 가져옵니다... " + LocalDateTime.now()
             );
 
             List<GHRepository> repositories = user.listRepositories().toList();
@@ -112,14 +115,14 @@ public class GithubApi {
                 for (GHCommit commit : commits) {
 
                     Instant instant = commit.getCommitShortInfo()
-                            .getCommitDate()
-                            .toInstant();
+                        .getCommitDate()
+                        .toInstant();
 
                     LocalDate localDate = instant.atZone(ZoneId.systemDefault())
-                            .toLocalDate();
+                        .toLocalDate();
 
                     commitDateCountMap.put(localDate,
-                            commitDateCountMap.getOrDefault(localDate, 0L) + 1);
+                        commitDateCountMap.getOrDefault(localDate, 0L) + 1);
                 }
             }
         } catch (IOException e) {
@@ -139,31 +142,31 @@ public class GithubApi {
     }
 
     private void saveCommitHistory(
-            GithubInfo githubInfo
-            , Entry<LocalDate, Long> entry
+        GithubInfo githubInfo
+        , Entry<LocalDate, Long> entry
     ) {
         commitHistoryRepository.save(CommitHistory.builder()
-                .githubInfo(githubInfo)
-                .commitDate(entry.getKey())
-                .commitCount(entry.getValue())
-                .consecutiveCommitDays(
-                        getConsecutiveCommitDays(
-                                githubInfo.getId()
-                                , entry.getKey()
-                        )
+            .githubInfo(githubInfo)
+            .commitDate(entry.getKey())
+            .commitCount(entry.getValue())
+            .consecutiveCommitDays(
+                getConsecutiveCommitDays(
+                    githubInfo.getId()
+                    , entry.getKey()
                 )
-                .build());
+            )
+            .build());
     }
 
     private long getConsecutiveCommitDays(
-            Long githubInfoId
-            , LocalDate commitDate
+        Long githubInfoId
+        , LocalDate commitDate
     ) {
         return commitHistoryRepository.findByGithubInfoIdAndCommitDate(
-                        githubInfoId
-                        , commitDate.minusDays(1)
-                )
-                .map(CommitHistory::getConsecutiveCommitDays)
-                .orElse(0L) + 1;
+                githubInfoId
+                , commitDate.minusDays(1)
+            )
+            .map(CommitHistory::getConsecutiveCommitDays)
+            .orElse(0L) + 1;
     }
 }

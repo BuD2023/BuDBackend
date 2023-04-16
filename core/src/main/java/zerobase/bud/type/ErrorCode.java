@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    FAILED_UPLOAD_FILE("파일 업로드에 실패하였습니다"),
     NOT_SUPPORTED_IMAGE("지원하지 않는 이미지 타입입니다."),
 
     CANNOT_COVERT_IMAGE("이미지를 변환하는 데 에러가 발생했습니다."),

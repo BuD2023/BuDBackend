@@ -27,7 +27,7 @@ import java.util.*;
 
 import static zerobase.bud.common.type.ErrorCode.ELEMENT_NOT_EXIST;
 import static zerobase.bud.common.type.ErrorCode.URL_ILLEGAL_ARGUMENT;
-import static zerobase.bud.common.util.Constants.*;
+import static zerobase.bud.news.util.NewsConstants.*;
 
 
 @Slf4j

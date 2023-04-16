@@ -63,12 +63,7 @@ public class QnaAnswerService {
 
         validateCreateQnaAnswer(post);
 
-        qnaAnswerRepository.save(QnaAnswer.builder()
-            .member(member)
-            .post(post)
-            .content(request.getContent())
-            .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
-            .build());
+        qnaAnswerRepository.save(QnaAnswer.of(member, post, request.getContent()));
 
         post.plusCommentCount();
 

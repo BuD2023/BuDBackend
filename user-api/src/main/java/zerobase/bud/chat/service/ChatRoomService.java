@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
-import static zerobase.bud.common.util.Constants.CHATROOM;
-import static zerobase.bud.common.util.Constants.SESSION;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
+import static zerobase.bud.util.Constants.CHATROOM;
+import static zerobase.bud.util.Constants.SESSION;
 
 
 @Slf4j

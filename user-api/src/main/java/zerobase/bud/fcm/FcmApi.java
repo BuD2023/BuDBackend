@@ -2,6 +2,7 @@ package zerobase.bud.fcm;
 
 import static zerobase.bud.common.type.ErrorCode.FIREBASE_SEND_MESSAGE_FAILED;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_TOKEN;
+import static zerobase.bud.fcm.FcmConstants.*;
 import static zerobase.bud.util.Constants.REPLACE_EXPRESSION;
 
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -54,18 +55,8 @@ public class FcmApi {
                 .concat(now);
 
             // 메시지 만들기
-            Message message = Message.builder()
-                .setToken(token)
-                .setWebpushConfig(webpushConfig)
-                .putData("notificationId", notificationId)
-                .putData("senderNickname", dto.getSender().getNickname())
-                .putData("notificationType", dto.getNotificationType().name())
-                .putData("pageType", dto.getPageType().name())
-                .putData("pageId", dto.getPageId().toString())
-                .putData("notificationDetailType",
-                    dto.getNotificationDetailType().name())
-                .putData("notifiedAt", dto.getNotifiedAt().toString())
-                .build();
+            Message message = makeMessage(dto, token, webpushConfig,
+                notificationId);
 
             // 요청에 대한 응답을 받을 response
             try {
@@ -84,5 +75,25 @@ public class FcmApi {
         } else {
             throw new BudException(NOT_FOUND_TOKEN);
         }
+    }
+
+    private static Message makeMessage(
+        NotificationDto dto
+        , String token
+        , WebpushConfig webpushConfig
+        , String notificationId
+    ) {
+        return Message.builder()
+            .setToken(token)
+            .setWebpushConfig(webpushConfig)
+            .putData(NOTIFICATION_ID, notificationId)
+            .putData(SENDER_NICKNAME, dto.getSender().getNickname())
+            .putData(NOTIFICATION_TYPE, dto.getNotificationType().name())
+            .putData(PAGE_TYPE, dto.getPageType().name())
+            .putData(PAGE_ID, dto.getPageId().toString())
+            .putData(NOTIFICATION_DETAIL_TYPE,
+                dto.getNotificationDetailType().name())
+            .putData(NOTIFIED_AT, dto.getNotifiedAt().toString())
+            .build();
     }
 }
