@@ -66,11 +66,10 @@ public class AwsS3Api {
     public String uploadFileImage(File file, String domain) {
         String filePath = FileUtil.createFilePath(domain);
         String fileName = FileUtil.createFileName(file.getName());
-        amazonS3Client.putObject(
-            new PutObjectRequest(bucket, filePath + fileName, file)
+        amazonS3Client.putObject(new PutObjectRequest(bucket, filePath + fileName, file)
                 .withCannedAcl(CannedAccessControlList.PublicRead));
         log.info("uploadImage finished " + LocalDateTime.now() + " ImagePath : "
-            + filePath + fileName);
+                + filePath + fileName);
         return filePath + fileName;
     }
 
