@@ -1,5 +1,6 @@
 package zerobase.bud.notification.repository;
 
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,6 @@ public interface NotificationRepository extends
         , NotificationStatus deleted
         , Pageable pageable
     );
+
+    Optional<Notification> findByNotificationId(String notificationId);
 }
