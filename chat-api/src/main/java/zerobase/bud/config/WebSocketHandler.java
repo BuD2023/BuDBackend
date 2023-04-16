@@ -67,7 +67,9 @@ public class WebSocketHandler implements ChannelInterceptor {
             addSessionCount(chatroomId);
             saveSession(chatRoom, userId, sessionId);
             notifyChatroomStatus(chatRoom.getId(), ChatType.ENTER);
+
         } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+
             String sessionId = accessor.getSessionId();
             hashOperations = redisTemplate.opsForHash();
             ChatRoomSession session = hashOperations.get(SESSION, sessionId);
@@ -91,6 +93,7 @@ public class WebSocketHandler implements ChannelInterceptor {
                 hashOperations.delete(SESSION, sessionId);
             }
         }
+
         return message;
     }
 
@@ -125,13 +128,7 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private void notifyChatroomStatus(Long chatroomId, ChatType chatType) {
         redisTemplate.convertAndSend(channelTopic.getTopic(),
-                ChatDto.builder()
-                        .chatType(chatType)
-                        .chatroomId(chatroomId)
-                        .numberOfMembers(
-                                getNumberOfMembers(chatroomId)
-                        )
-                        .build());
+                ChatDto.of(chatType, chatroomId, getNumberOfMembers(chatroomId)));
     }
 
     private Integer getNumberOfMembers(Long chatroomId) {

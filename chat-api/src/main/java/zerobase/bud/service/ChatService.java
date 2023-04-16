@@ -44,14 +44,12 @@ public class ChatService {
 
     private final ChannelTopic channelTopic;
 
-    @Transactional
     public void chatting(String message, Long roomId, Long senderId) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(roomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(ErrorCode.CHATROOM_NOT_FOUND));
 
         Member member = memberRepository.findById(senderId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
-
 
         ChatDto dto = ChatDto.from(
                 chatRepository.save(
@@ -65,7 +63,6 @@ public class ChatService {
         redisTemplate.convertAndSend(channelTopic.getTopic(), dto);
     }
 
-    @Transactional
     public void image(String imageStr, Long roomId, Long senderId) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(roomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(ErrorCode.CHATROOM_NOT_FOUND));
@@ -86,12 +83,9 @@ public class ChatService {
         String filepath;
 
         try {
-            byte[] imageByte = DatatypeConverter.parseBase64Binary(imageCodes[1]);
-            File temp = File.createTempFile("image", "." + extension);
-            FileUtils.writeByteArrayToFile(temp, imageByte);
-
-            filepath = awsS3Api.uploadFileImage(temp, CHATS);
-            FileUtils.delete(temp);
+            File imageFile = getFile(imageCodes[1], extension);
+            filepath = awsS3Api.uploadFileImage(imageFile, CHATS);
+            FileUtils.delete(imageFile);
         } catch (IOException e) {
             throw new ChatException(ErrorCode.CANNOT_COVERT_IMAGE);
         }
@@ -107,5 +101,12 @@ public class ChatService {
         );
 
         redisTemplate.convertAndSend(channelTopic.getTopic(), dto);
+    }
+
+    private File getFile(String imageCode, String extension) throws IOException {
+        byte[] imageByte = DatatypeConverter.parseBase64Binary(imageCode);
+        File file = File.createTempFile("image", "." + extension);
+        FileUtils.writeByteArrayToFile(file, imageByte);
+        return file;
     }
 }
