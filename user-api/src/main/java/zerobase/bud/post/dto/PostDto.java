@@ -39,7 +39,7 @@ public class PostDto {
         String[] imageUrls = new String[images.size()];
 
         for (int i = 0; i < images.size(); i++) {
-            imageUrls[i] = images.get(0).getImagePath();
+            imageUrls[i] = images.get(i).getImagePath();
         }
 
         return PostDto.builder()
