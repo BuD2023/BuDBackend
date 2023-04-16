@@ -22,6 +22,8 @@ public class NotificationDto {
 
     private List<String> tokens;
 
+    private Member receiver;
+
     private Member sender;
 
     private NotificationType notificationType;
