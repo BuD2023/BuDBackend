@@ -470,6 +470,7 @@ include::{snippets}/post-controller-test/success-comment-pin/http-response.adoc[
 |status|ErrorCode|message
 |400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
 |400|NOT_POST_OWNER|게시글의 작성자가 아닙니다.
+|400|CANNOT_PIN_RECOMMENT|대댓글에는 핀을 할 수 없습니다.
 |===
 
 === 12. 댓글 핀 취소
