@@ -49,19 +49,23 @@ public class WebSocketHandler implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        log.error(accessor.getCommand().toString());
 
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            String rawToken = accessor.getNativeHeader(HttpHeaders.AUTHORIZATION).get(0);
+            String rawToken = accessor.getFirstNativeHeader("Authorization");
+            log.error(rawToken);
 
             if (tokenProvider.validateRawToken(rawToken)) {
                 throw new MemberException(ErrorCode.INVALID_TOKEN);
             }
 
             String userId = tokenProvider.getUserIdInRawToken(rawToken);
+            log.error(userId);
             Long chatroomId = getChatroomIdFromDestination(accessor.getDestination());
             String sessionId = accessor.getSessionId();
 
             ChatRoom chatRoom = getChatRoom(chatroomId);
+            log.error(chatRoom.getId().toString());
 
             hashOperations = redisTemplate.opsForHash();
             addSessionCount(chatroomId);
