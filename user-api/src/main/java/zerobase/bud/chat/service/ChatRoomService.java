@@ -62,7 +62,7 @@ public class ChatRoomService {
         valueOperations = redisTemplate.opsForValue();
 
         return chatRoomRepository
-                .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatus(
+                .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatusOrderByCreatedAtDesc(
                         keyword, "#" + keyword + "#", ACTIVE, PageRequest.of(page, size))
                 .map(chatRoom -> ChatRoomDto.of(chatRoom,
                         getNumberOfMembers(chatRoom.getId())
@@ -73,7 +73,7 @@ public class ChatRoomService {
 
         valueOperations = redisTemplate.opsForValue();
 
-        return chatRoomRepository.findAllByStatus(ACTIVE,
+        return chatRoomRepository.findAllByStatusOrderByCreatedAtDesc(ACTIVE,
                         PageRequest.of(page, size))
                 .map(chatRoom -> ChatRoomDto.of(chatRoom,
                         getNumberOfMembers(chatRoom.getId())

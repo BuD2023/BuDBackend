@@ -157,7 +157,7 @@ class ChatRoomServiceTest {
         );
 
         given(chatRoomRepository
-                .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatus(anyString(), anyString(), any(), any()))
+                .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatusOrderByCreatedAtDesc(anyString(), anyString(), any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
 
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
@@ -211,7 +211,7 @@ class ChatRoomServiceTest {
         );
 
         given(chatRoomRepository
-                .findAllByStatus(any(), any()))
+                .findAllByStatusOrderByCreatedAtDesc(any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
 
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
