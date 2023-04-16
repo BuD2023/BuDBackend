@@ -1,7 +1,5 @@
 package zerobase.bud.post.domain;
 
-import javax.persistence.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +11,8 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.post.dto.UpdatePost.Request;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
+
+import javax.persistence.*;
 
 @Getter
 @Setter

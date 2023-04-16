@@ -1,9 +1,6 @@
 package zerobase.bud.comment.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import zerobase.bud.comment.type.CommentStatus;
 import zerobase.bud.domain.BaseEntity;
@@ -11,6 +8,8 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Post;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,7 +32,14 @@ public class Comment extends BaseEntity {
 
     private int likeCount;
     private int commentCount;
-    private Long parentCommentId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", referencedColumnName = "id")
+    private Comment parent;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "parent", orphanRemoval = true)
+    private List<Comment> reComments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private CommentStatus commentStatus;
