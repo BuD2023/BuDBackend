@@ -9,10 +9,12 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.ChatRoomSession;
 import zerobase.bud.dto.ChatDto;
@@ -23,6 +25,7 @@ import zerobase.bud.type.ChatType;
 import zerobase.bud.type.ErrorCode;
 import zerobase.bud.util.TokenProvider;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
@@ -49,10 +52,10 @@ public class WebSocketHandler implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-        log.error(accessor.getCommand().toString());
 
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            String rawToken = accessor.getFirstNativeHeader("Authorization");
+            String rawToken = Optional.ofNullable((String) accessor.getHeader("Authorization"))
+                    .orElse(null);
             log.error(rawToken);
 
             if (tokenProvider.validateRawToken(rawToken)) {
@@ -60,12 +63,11 @@ public class WebSocketHandler implements ChannelInterceptor {
             }
 
             String userId = tokenProvider.getUserIdInRawToken(rawToken);
-            log.error(userId);
+
             Long chatroomId = getChatroomIdFromDestination(accessor.getDestination());
             String sessionId = accessor.getSessionId();
 
             ChatRoom chatRoom = getChatRoom(chatroomId);
-            log.error(chatRoom.getId().toString());
 
             hashOperations = redisTemplate.opsForHash();
             addSessionCount(chatroomId);
