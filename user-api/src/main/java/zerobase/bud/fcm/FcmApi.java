@@ -1,7 +1,6 @@
 package zerobase.bud.fcm;
 
 import static zerobase.bud.common.type.ErrorCode.FIREBASE_SEND_MESSAGE_FAILED;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_TOKEN;
 import static zerobase.bud.fcm.FcmConstants.*;
 import static zerobase.bud.util.Constants.REPLACE_EXPRESSION;
 
@@ -12,11 +11,9 @@ import com.google.firebase.messaging.WebpushConfig;
 import com.google.firebase.messaging.WebpushNotification;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.notification.domain.Notification;
@@ -30,22 +27,14 @@ public class FcmApi {
 
     private final NotificationRepository notificationRepository;
 
-    //임시로 fcmToken 받도록 함.
-    //이 토큰의 주인이 알림을 받을 사람을 의미한다.
-    @Value("${fcm.temp.token}")
-    private String fcmTempToken;
-
     public void sendNotificationByToken(NotificationDto dto) {
-        //TODO: 토큰 값이 정상적으로 채워지면 로직 수정
-//        List<String> tokens = dto.getTokens();
-//        String token = tokens.get(0);
-        String token = fcmTempToken;
-        if (Objects.nonNull(token)) {
-
+        log.info("start send notification... " + LocalDateTime.now());
+        for (String token : dto.getTokens()) {
             WebpushConfig webpushConfig = WebpushConfig.builder()
                 .setNotification(new WebpushNotification(
                     dto.getNotificationType().name()
-                    , dto.getNotificationDetailType().getMessage())).build();
+                    , dto.getNotificationDetailType().getMessage()))
+                .build();
 
             String now = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
@@ -61,8 +50,9 @@ public class FcmApi {
             // 요청에 대한 응답을 받을 response
             try {
                 // 알림 발송
-                String response = FirebaseMessaging.getInstance().send(message);
-                log.info(response);
+                String response = FirebaseMessaging.getInstance()
+                    .send(message);
+                log.info("send message success response: " + response);
 
                 notificationRepository.save(
                     Notification.of(notificationId, dto));
@@ -72,8 +62,6 @@ public class FcmApi {
                     e.getMessage());
                 throw new BudException(FIREBASE_SEND_MESSAGE_FAILED);
             }
-        } else {
-            throw new BudException(NOT_FOUND_TOKEN);
         }
     }
 
