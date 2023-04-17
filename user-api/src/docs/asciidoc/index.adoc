@@ -338,7 +338,7 @@ include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-re
 .response field
 include::{snippets}/qna-answer-controller-test/success_create-qna-answer/response-body.adoc[]
 
-=== 7. QNA 답변 수성
+=== 7. QNA 답변 수정
 .request
 include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-request.adoc[]
 
@@ -698,3 +698,24 @@ include::{snippets}/user-controller-test/success-delete-scrap/http-request.adoc[
 
 .response
 include::{snippets}/user-controller-test/success-delete-scrap/http-response.adoc[]
+
+== 알림 API
+=== 1. 알림 조회
+.request
+include::{snippets}/notification-controller-test/success_get-notifications/http-request.adoc[]
+
+.response
+include::{snippets}/notification-controller-test/success_get-notifications/http-response.adoc[]
+
+.response field
+include::{snippets}/notification-controller-test/success_get-notifications/response-fields.adoc[]
+
+=== 2. 알림 읽음으로 상태 변경
+.request
+include::{snippets}/notification-controller-test/success_update-notification-status-read/http-request.adoc[]
+
+.response
+include::{snippets}/notification-controller-test/success_update-notification-status-read/http-response.adoc[]
+
+.response field
+include::{snippets}/notification-controller-test/success_update-notification-status-read/response-body.adoc[]

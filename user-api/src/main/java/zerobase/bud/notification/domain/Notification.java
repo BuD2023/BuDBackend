@@ -72,4 +72,8 @@ public class Notification extends BaseEntity {
             .notifiedAt(dto.getNotifiedAt())
             .build();
     }
+
+    public void updateStatus() {
+        this.notificationStatus = NotificationStatus.READ;
+    }
 }

@@ -96,22 +96,22 @@ class PostServiceTest {
         //when 어떤 경우에
         String result = postService.createPost(getMember(), images,
             CreatePost.Request.builder()
-                .title("t")
-                .content("c")
+                .title("resultTitle")
+                .content("resultContent")
                 .postType(PostType.FEED)
                 .build());
 
         //then 이런 결과가 나온다.
         verify(postRepository, times(1)).save(captor.capture());
         verify(imageRepository, times(1)).save(imageCaptor.capture());
-        assertEquals("t", captor.getValue().getTitle());
-        assertEquals("c", captor.getValue().getContent());
+        assertEquals("resultTitle", captor.getValue().getTitle());
+        assertEquals("resultContent", captor.getValue().getContent());
         assertEquals(ACTIVE, captor.getValue().getPostStatus());
         assertEquals(PostType.FEED, captor.getValue().getPostType());
         assertEquals("awsS3Image", imageCaptor.getValue().getImagePath());
         assertEquals("title", imageCaptor.getValue().getPost().getTitle());
         assertEquals("content", imageCaptor.getValue().getPost().getContent());
-        assertEquals("t", result);
+        assertEquals("resultTitle", result);
     }
 
     @Test
@@ -127,18 +127,18 @@ class PostServiceTest {
         //when 어떤 경우에
         String result = postService.createPost(getMember(), images,
             CreatePost.Request.builder()
-                .title("t")
-                .content("c")
-                .postType(PostType.QNA)
+                .title("resultTitle")
+                .content("resultContent")
+                .postType(PostType.FEED)
                 .build());
 
         //then 이런 결과가 나온다.
         verify(postRepository, times(1)).save(captor.capture());
-        assertEquals("t", captor.getValue().getTitle());
-        assertEquals("c", captor.getValue().getContent());
+        assertEquals("resultTitle", captor.getValue().getTitle());
+        assertEquals("resultContent", captor.getValue().getContent());
         assertEquals(ACTIVE, captor.getValue().getPostStatus());
-        assertEquals(PostType.QNA, captor.getValue().getPostType());
-        assertEquals("t", result);
+        assertEquals(PostType.FEED, captor.getValue().getPostType());
+        assertEquals("resultTitle", result);
     }
 
     @Test
@@ -164,19 +164,19 @@ class PostServiceTest {
         String result = postService.updatePost(images,
             UpdatePost.Request.builder()
                 .postId(1L)
-                .title("t")
-                .content("c")
+                .title("resultTitle")
+                .content("resultContent")
                 .postType(PostType.QNA)
                 .build());
 
         //then 이런 결과가 나온다.
         verify(imageRepository, times(1)).save(imageCaptor.capture());
         assertEquals("awsS3Image", imageCaptor.getValue().getImagePath());
-        assertEquals("t", imageCaptor.getValue().getPost().getTitle());
-        assertEquals("c", imageCaptor.getValue().getPost().getContent());
+        assertEquals("resultTitle", imageCaptor.getValue().getPost().getTitle());
+        assertEquals("resultContent", imageCaptor.getValue().getPost().getContent());
         assertEquals(PostType.QNA,
             imageCaptor.getValue().getPost().getPostType());
-        assertEquals("t", result);
+        assertEquals("resultTitle", result);
     }
 
     @Test
@@ -191,8 +191,8 @@ class PostServiceTest {
             () -> postService.updatePost(getMockMultipartFiles(),
                 UpdatePost.Request.builder()
                     .postId(1L)
-                    .title("t")
-                    .content("c")
+                    .title("resultTitle")
+                    .content("resultContent")
                     .postType(PostType.FEED)
                     .build()));
 

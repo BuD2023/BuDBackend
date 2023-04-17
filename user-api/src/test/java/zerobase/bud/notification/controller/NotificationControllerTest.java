@@ -1,6 +1,7 @@
 package zerobase.bud.notification.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -8,6 +9,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,12 +60,7 @@ class NotificationControllerTest {
     @WithMockUser
     void success_getNotifications() throws Exception {
         //given
-        String now = LocalDateTime.now()
-            .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
-
-        String notificationId = UUID.randomUUID().toString()
-            .replaceAll(REPLACE_EXPRESSION, "")
-            .concat(now);
+        String notificationId = makeNotificationId();
 
         given(notificationService.getNotifications(any(), any()))
             .willReturn(new SliceImpl<>(
@@ -105,5 +102,38 @@ class NotificationControllerTest {
                     preprocessResponse(prettyPrint()))
             );
 
+    }
+
+    @Test
+    @WithMockUser
+    void success_updateNotificationStatusRead() throws Exception {
+        //given
+        String notificationId = makeNotificationId();
+        given(notificationService.updateNotificationStatusRead(anyString(), any()))
+            .willReturn(notificationId);
+
+        //when 어떤 경우에
+        //then 이런 결과가 나온다.
+        mockMvc.perform(put("/notifications/"+notificationId+"/read")
+                .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(
+                jsonPath("$").value(notificationId))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()))
+            );
+
+    }
+
+    private static String makeNotificationId() {
+        return UUID.randomUUID().toString()
+            .replaceAll(REPLACE_EXPRESSION, "")
+            .concat(LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")));
     }
 }

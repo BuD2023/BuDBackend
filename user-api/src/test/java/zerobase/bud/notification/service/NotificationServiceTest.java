@@ -1,13 +1,20 @@
 package zerobase.bud.notification.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static zerobase.bud.common.type.ErrorCode.DELETED_NOTIFICATION;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION;
+import static zerobase.bud.common.type.ErrorCode.NOT_RECEIVED_NOTIFICATION_MEMBER;
 import static zerobase.bud.util.Constants.REPLACE_EXPRESSION;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.notification.domain.Notification;
 import zerobase.bud.notification.dto.GetNotifications.Response;
@@ -37,12 +45,7 @@ class NotificationServiceTest {
     @Test
     void success_getNotifications() {
         //given
-        String now = LocalDateTime.now()
-            .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
-
-        String notificationId = UUID.randomUUID().toString()
-            .replaceAll(REPLACE_EXPRESSION, "")
-            .concat(now);
+        String notificationId = makeNotificationId();
 
         given(
             notificationRepository.findAllByReceiverIdAndNotificationStatusNot(
@@ -50,17 +53,7 @@ class NotificationServiceTest {
                 Pageable.ofSize(1)
             )).willReturn(
             new SliceImpl<>(
-                List.of(Notification.builder()
-                    .receiver(getReceiver())
-                    .sender(getSender())
-                    .notificationId(notificationId)
-                    .notificationType(NotificationType.POST)
-                    .pageType(PageType.QNA)
-                    .pageId(1L)
-                    .notificationDetailType(NotificationDetailType.ANSWER)
-                    .notificationStatus(NotificationStatus.UNREAD)
-                    .notifiedAt(LocalDateTime.now())
-                    .build())
+                List.of(getNotification(notificationId))
             )
         );
         //when
@@ -80,6 +73,104 @@ class NotificationServiceTest {
             notificationResponse.getNotificationDetailType());
         assertEquals(NotificationStatus.UNREAD,
             notificationResponse.getNotificationStatus());
+    }
+
+    @Test
+    void success_updateNotificationStatusRead() {
+        //given 어떤 데이터가 주어졌을 때
+        String notificationId = makeNotificationId();
+        given(notificationRepository.findByNotificationId(anyString()))
+            .willReturn(Optional.ofNullable(getNotification(notificationId)));
+        //when 어떤 경우에
+        String statusRead = notificationService.updateNotificationStatusRead(
+            notificationId,
+            getReceiver());
+        //then 이런 결과가 나온다.
+        assertEquals(notificationId, statusRead);
+    }
+
+    @Test
+    @DisplayName("NOT_FOUND_NOTIFICATION_updateNotificationStatusRead")
+    void NOT_FOUND_NOTIFICATION_updateNotificationStatusRead() {
+        //given 어떤 데이터가 주어졌을 때
+        String notificationId = makeNotificationId();
+
+        given(notificationRepository.findByNotificationId(anyString()))
+            .willReturn(Optional.empty());
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> notificationService.updateNotificationStatusRead(
+                notificationId,
+                getReceiver()));
+
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_FOUND_NOTIFICATION, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("NOT_FOUND_NOTIFICATION_updateNotificationStatusRead")
+    void DELETED_NOTIFICATION_updateNotificationStatusRead() {
+        //given 어떤 데이터가 주어졌을 때
+        String notificationId = makeNotificationId();
+        Notification notification = getNotification(notificationId);
+        notification.setNotificationStatus(NotificationStatus.DELETED);
+
+        given(notificationRepository.findByNotificationId(anyString()))
+            .willReturn(Optional.of(notification));
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> notificationService.updateNotificationStatusRead(
+                notificationId,
+                getReceiver()));
+
+        //then 이런 결과가 나온다.
+        assertEquals(DELETED_NOTIFICATION, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("NOT_RECEIVED_NOTIFICATION_MEMBER_updateNotificationStatusRead")
+    void NOT_RECEIVED_NOTIFICATION_MEMBER_updateNotificationStatusRead() {
+        //given 어떤 데이터가 주어졌을 때
+        String notificationId = makeNotificationId();
+        Notification notification = getNotification(notificationId);
+        notification.setReceiver(Member.builder()
+            .id(2L)
+            .build());
+        given(notificationRepository.findByNotificationId(anyString()))
+            .willReturn(Optional.of(notification));
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> notificationService.updateNotificationStatusRead(
+                notificationId,
+                getReceiver()));
+
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_RECEIVED_NOTIFICATION_MEMBER,
+            budException.getErrorCode());
+    }
+
+    private static String makeNotificationId() {
+        return UUID.randomUUID().toString()
+            .replaceAll(REPLACE_EXPRESSION, "")
+            .concat(LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")));
+    }
+
+    private Notification getNotification(String notificationId) {
+        return Notification.builder()
+            .receiver(getReceiver())
+            .sender(getSender())
+            .notificationId(notificationId)
+            .notificationType(NotificationType.POST)
+            .pageType(PageType.QNA)
+            .pageId(1L)
+            .notificationDetailType(NotificationDetailType.ANSWER)
+            .notificationStatus(NotificationStatus.UNREAD)
+            .notifiedAt(LocalDateTime.now())
+            .build();
     }
 
     private Member getReceiver() {
