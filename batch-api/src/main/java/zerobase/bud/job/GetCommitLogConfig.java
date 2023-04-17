@@ -2,7 +2,6 @@ package zerobase.bud.job;
 
 import java.time.LocalDate;
 import java.util.Collections;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -64,17 +63,14 @@ public class GetCommitLogConfig {
 
     @Bean
     public ItemProcessor<GithubInfo, GithubInfo> githubInfoProcessor() {
-        return new ItemProcessor<GithubInfo, GithubInfo>() {
-            @Override
-            public GithubInfo process(@NonNull GithubInfo githubInfo) {
-                try {
-                    githubApi.saveCommitInfoFromLastCommitDate(githubInfo,
-                        LocalDate.now().minusDays(1));
-                } catch (Exception e) {
-                    log.error(githubInfo.getUsername() + "님의 깃헙 연동에 실패하였습니다.");
-                }
-                return githubInfo;
+        return githubInfo -> {
+            try {
+                githubApi.saveCommitInfoFromLastCommitDate(githubInfo,
+                    LocalDate.now().minusDays(1));
+            } catch (Exception e) {
+                log.error(githubInfo.getUsername() + "님의 깃헙 연동에 실패하였습니다.");
             }
+            return githubInfo;
         };
     }
 
