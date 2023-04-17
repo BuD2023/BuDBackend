@@ -3,12 +3,14 @@ package zerobase.bud.post.controller;
 import com.querydsl.core.types.Order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.comment.service.CommentService;
 import zerobase.bud.domain.Member;
+import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.UpdatePost;
@@ -109,14 +111,29 @@ public class PostController {
 
     @PostMapping("/comments/{commentId}/pin")
     public ResponseEntity<Long> commentPin(@PathVariable Long commentId,
-                                     @AuthenticationPrincipal Member member) {
+                                           @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(commentService.commentPin(commentId, member));
     }
 
     @DeleteMapping("/{postId}/comments/pin")
     public ResponseEntity<Long> cancelCommentPin(@PathVariable Long postId,
-                                          @AuthenticationPrincipal Member member) {
+                                                 @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(commentService.cancelCommentPin(postId, member));
+    }
+
+
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<Slice<CommentDto>> comments(@PathVariable Long postId,
+                                                      @AuthenticationPrincipal Member member,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(commentService.comments(postId, member, page, size));
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Long> deleteComment(@PathVariable Long commentId,
+                                                 @AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(commentService.delete(commentId, member));
     }
 }
 

@@ -357,6 +357,7 @@ class ChatRoomControllerTest {
         List<ChatDto> dtos = Arrays.asList(
                 ChatDto.builder()
                         .chatId(1L)
+                        .chatroomId(32L)
                         .chatType(ChatType.MESSAGE)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .message("어쩌구저쩌구~")
@@ -366,6 +367,7 @@ class ChatRoomControllerTest {
                         .build(),
                 ChatDto.builder()
                         .chatId(2L)
+                        .chatroomId(32L)
                         .chatType(ChatType.IMAGE)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .imageUrl("/s3/fdsa.jpg")
@@ -376,6 +378,7 @@ class ChatRoomControllerTest {
                 ChatDto.builder()
                         .chatId(3L)
                         .chatType(ChatType.MESSAGE)
+                        .chatroomId(32L)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .message("아그랬구나아하")
                         .userId(1L)

@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -22,13 +23,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.comment.service.CommentService;
 import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
+import zerobase.bud.util.TimeUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -553,6 +557,162 @@ class PostControllerTest {
         //when
         //then
         this.mockMvc.perform(delete("/posts/{postId}/comments/pin", 1)
+                        .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("게시물 댓글 가져오기 성공")
+    void successComments() throws Exception {
+        List<CommentDto> recomments = List.of(
+                CommentDto.builder()
+                        .commentId(2L)
+                        .content("이것은 댓글입니다")
+                        .numberOfLikes(0)
+                        .memberName("아디다스")
+                        .memberProfileUrl("profiles/images.jpg")
+                        .memberId(2L)
+                        .createdAt("0 초전")
+                        .isReader(false)
+                        .isReaderLiked(false)
+                        .build(),
+                CommentDto.builder()
+                        .commentId(3L)
+                        .content("mystacksmytreasure")
+                        .numberOfLikes(3)
+                        .memberName("먼지")
+                        .memberProfileUrl("profiles/images.jpg")
+                        .memberId(2L)
+                        .createdAt("0 초전")
+                        .isReader(false)
+                        .isReaderLiked(false)
+                        .build(),
+                CommentDto.builder()
+                        .commentId(2L)
+                        .content("이것은 대댓글입니다")
+                        .numberOfLikes(3)
+                        .memberName("캉골정품")
+                        .memberProfileUrl("profiles/images.jpg")
+                        .memberId(3L)
+                        .createdAt("0 초전")
+                        .isReader(false)
+                        .isReaderLiked(true)
+                        .build()
+        );
+
+        List<CommentDto> dtos = List.of(
+                CommentDto.builder()
+                        .commentId(1L)
+                        .content("지금터미널임좀기달")
+                        .numberOfLikes(0)
+                        .memberName("갈팡질팡")
+                        .memberProfileUrl("profiles/images.jpg")
+                        .memberId(2L)
+                        .createdAt("0 초전")
+                        .isReader(true)
+                        .isPinned(true)
+                        .isReaderLiked(false)
+                        .reComments(recomments)
+                        .build(),
+                CommentDto.builder()
+                        .commentId(2L)
+                        .content("구제바지줄여가지고구바")
+                        .numberOfLikes(3)
+                        .memberName("멀라")
+                        .memberProfileUrl("profiles/images.jpg")
+                        .memberId(4L)
+                        .createdAt("0 초전")
+                        .isReader(true)
+                        .isReaderLiked(false)
+                        .isPinned(false)
+                        .build(),
+                CommentDto.builder()
+                        .commentId(2L)
+                        .content("어떤건보풀하나도없더라공,,ㅋ")
+                        .numberOfLikes(3)
+                        .memberName("쓰레기")
+                        .memberProfileUrl("profiles/images.jpg")
+                        .memberId(4L)
+                        .createdAt("0 초전")
+                        .isReader(true)
+                        .isPinned(false)
+                        .isReaderLiked(false)
+                        .build()
+
+        );
+
+
+        given(commentService.comments(anyLong(), any(), anyInt(), anyInt()))
+                .willReturn(new SliceImpl<>(dtos));
+
+
+        this.mockMvc.perform(get("/posts/{postId}/comments",1)
+                        .param("page", "0")
+                        .param("size", "5")
+                        .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                relaxedResponseFields(
+                                        fieldWithPath("content[].commentId").type(JsonFieldType.NUMBER)
+                                                .description("댓글의 id"),
+                                        fieldWithPath("content[].content").type(JsonFieldType.STRING)
+                                                .description("댓글 내용"),
+                                        fieldWithPath("content[].numberOfLikes").type(JsonFieldType.NUMBER)
+                                                .description("좋아요 수"),
+                                        fieldWithPath("content[].memberName").type(JsonFieldType.STRING)
+                                                .description("작성자 닉네임"),
+                                        fieldWithPath("content[].memberProfileUrl").type(JsonFieldType.STRING)
+                                                .description("작성자 프로필 이미지"),
+                                        fieldWithPath("content[].memberId").type(JsonFieldType.NUMBER)
+                                                .description("작성자 아이디"),
+                                        fieldWithPath("content[].createdAt").type(JsonFieldType.STRING)
+                                                .description("댓글 단 시간"),
+                                        fieldWithPath("content[].isPinned").type(JsonFieldType.BOOLEAN).optional()
+                                                .description("핀 된 댓글인지"),
+                                        fieldWithPath("content[].isReader").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 사람인지"),
+                                        fieldWithPath("content[].isReaderLiked").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 사람이 좋아요를 누른 댓글인지"),
+                                        fieldWithPath("content[].reComments").type(JsonFieldType.ARRAY).optional()
+                                                .description("대댓글"),
+                                        fieldWithPath("first").type(JsonFieldType.BOOLEAN)
+                                                .description("첫번째 페이지인지 여부"),
+                                        fieldWithPath("last").type(JsonFieldType.BOOLEAN)
+                                                .description("마지막 페이지인지 여부"),
+                                        fieldWithPath("number").type(JsonFieldType.NUMBER)
+                                                .description("현재 몇번째 페이지인지"),
+                                        fieldWithPath("size").type(JsonFieldType.NUMBER)
+                                                .description("하나의 페이지 안에 몇개의 채팅룸이 들어갔는지")
+                                )
+                        )
+                );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("댓글 삭제 성공")
+    void successDeleteComment() throws Exception {
+        //given
+        given(commentService.delete(anyLong(), any()))
+                .willReturn(2L);
+        //when
+        //then
+        this.mockMvc.perform(delete("/posts/comments/{commentId}", 1)
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                 )

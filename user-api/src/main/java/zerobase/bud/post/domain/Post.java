@@ -1,15 +1,5 @@
 package zerobase.bud.post.domain;
 
-import javax.persistence.*;
-import static zerobase.bud.post.type.PostStatus.ACTIVE;
-
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,9 +9,11 @@ import zerobase.bud.comment.domain.CommentPin;
 import zerobase.bud.domain.BaseEntity;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.dto.CreatePost;
-import zerobase.bud.post.dto.UpdatePost;
+import zerobase.bud.post.dto.UpdatePost.Request;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
+
+import javax.persistence.*;
 
 @Getter
 @Setter
@@ -56,22 +48,20 @@ public class Post extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PostType postType;
 
-
     @OneToOne(mappedBy = "post")
     private CommentPin commentPin;
 
-   
     public static Post of(Member member, CreatePost.Request request){
         return Post.builder()
-            .member(member)
-            .title(request.getTitle())
-            .content(request.getContent())
-            .postStatus(ACTIVE)
-            .postType(request.getPostType())
-            .build();
+                .member(member)
+                .title(request.getTitle())
+                .content(request.getContent())
+                .postStatus(PostStatus.ACTIVE)
+                .postType(request.getPostType())
+                .build();
     }
 
-    public void update(UpdatePost.Request request) {
+    public void update(Request request) {
         this.title = request.getTitle();
         this.content = request.getContent();
         this.postType = request.getPostType();

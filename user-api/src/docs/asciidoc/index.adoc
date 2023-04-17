@@ -470,6 +470,7 @@ include::{snippets}/post-controller-test/success-comment-pin/http-response.adoc[
 |status|ErrorCode|message
 |400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
 |400|NOT_POST_OWNER|게시글의 작성자가 아닙니다.
+|400|CANNOT_PIN_RECOMMENT|대댓글에는 핀을 할 수 없습니다.
 |===
 
 === 12. 댓글 핀 취소
@@ -491,6 +492,46 @@ include::{snippets}/post-controller-test/success-cancel-comment-pin/http-respons
 |400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
 |400|NOT_POST_OWNER|게시글의 작성자가 아닙니다.
 |===
+
+=== 13. 댓글 조회
+.request
+include::{snippets}/post-controller-test/success-comments/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|keyword|String|Y|
+|page|Number|N|page값 입력 안할시 0
+|size|Number|N|size값 입력 안할시 10
+|===
+
+.response
+include::{snippets}/post-controller-test/success-comments/http-response.adoc[]
+
+.response field
+include::{snippets}/post-controller-test/success-comments/response-fields.adoc[]
+
+
+=== 14. 댓글 삭제
+.request
+include::{snippets}/post-controller-test/success-delete-comment/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|postId|Number|Y|대상 댓글 아이디, path variable
+|===
+
+.response
+include::{snippets}/post-controller-test/success-delete-comment/http-response.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
+|400|NOT_COMMENT_OWNER|댓글의 작성자가 아닙니다.
+|===
+
 
 == 유저 API
 === 1. 유저 팔로우 / 팔로우 취소
