@@ -53,7 +53,6 @@ public class WebSocketHandler implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             String rawToken = accessor.getFirstNativeHeader("Authorization");
 
