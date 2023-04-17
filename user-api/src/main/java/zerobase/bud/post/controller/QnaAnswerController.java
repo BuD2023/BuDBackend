@@ -1,18 +1,18 @@
 package zerobase.bud.post.controller;
 
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import zerobase.bud.comment.service.QnaAnswerCommentService;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.dto.CreateQnaAnswer;
+import zerobase.bud.post.dto.QnaAnswerCommentDto;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
 import zerobase.bud.post.service.QnaAnswerService;
+
+import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,22 +21,57 @@ public class QnaAnswerController {
 
     private final QnaAnswerService qnaAnswerService;
 
+    private final QnaAnswerCommentService qnaAnswerCommentService;
+
     @PostMapping
     public ResponseEntity<String> createQnaAnswer(
-        @RequestBody @Valid CreateQnaAnswer.Request request,
-        @AuthenticationPrincipal Member member
+            @RequestBody @Valid CreateQnaAnswer.Request request,
+            @AuthenticationPrincipal Member member
     ) {
         return ResponseEntity.ok(qnaAnswerService.createQnaAnswer(
-                member
-                , request
-            )
+                        member
+                        , request
+                )
         );
     }
 
     @PutMapping
     public ResponseEntity<Long> updateQnaAnswer(
-        @RequestBody @Valid UpdateQnaAnswer.Request request
+            @RequestBody @Valid UpdateQnaAnswer.Request request
     ) {
         return ResponseEntity.ok(qnaAnswerService.updateQnaAnswer(request));
+    }
+
+    @PostMapping("/qna-comments/{qnaCommentId}/like")
+    public ResponseEntity<Long> commentLike(@PathVariable Long qnaCommentId,
+                                            @AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(qnaAnswerCommentService.commentLike(qnaCommentId, member));
+    }
+
+    @PostMapping("/qna-comments/{qnaCommentId}/pin")
+    public ResponseEntity<Long> commentPin(@PathVariable Long qnaCommentId,
+                                           @AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(qnaAnswerCommentService.commentPin(qnaCommentId, member));
+    }
+
+    @DeleteMapping("/{qnaAnswerId}/qna-comments/pin")
+    public ResponseEntity<Long> cancelCommentPin(@PathVariable Long qnaAnswerId,
+                                                 @AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(qnaAnswerCommentService.cancelCommentPin(qnaAnswerId, member));
+    }
+
+
+    @GetMapping("/{qnaAnswerId}/qna-comments")
+    public ResponseEntity<Slice<QnaAnswerCommentDto>> comments(@PathVariable Long qnaAnswerId,
+                                                               @AuthenticationPrincipal Member member,
+                                                               @RequestParam(defaultValue = "0") int page,
+                                                               @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(qnaAnswerCommentService.comments(qnaAnswerId, member, page, size));
+    }
+
+    @DeleteMapping("/qna-comments/{qnaCommentId}")
+    public ResponseEntity<Long> deleteComment(@PathVariable Long qnaCommentId,
+                                              @AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(qnaAnswerCommentService.delete(qnaCommentId, member));
     }
 }
