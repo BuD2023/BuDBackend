@@ -18,8 +18,6 @@ import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
-import zerobase.bud.Listener.CustomChunkListener;
-import zerobase.bud.Listener.GetCommitLogSkipListener;
 import zerobase.bud.domain.GithubInfo;
 import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.service.GithubApi;
@@ -36,10 +34,6 @@ public class GetCommitLogConfig {
 
     private final GithubApi githubApi;
 
-    private final GetCommitLogSkipListener getCommitLogSkipListener;
-
-    private final CustomChunkListener customChunkListener;
-
     @Bean
     public Job getCommitLogJob() {
         return jobBuilderFactory.get("getCommitLog")
@@ -51,7 +45,6 @@ public class GetCommitLogConfig {
     @Bean
     public Step getCommitLogStep() {
         return stepBuilderFactory.get("step")
-            .listener(getCommitLogSkipListener)
             .<GithubInfo, GithubInfo>chunk(1)
             .reader(githubInfoReader())
             .processor(githubInfoProcessor())
