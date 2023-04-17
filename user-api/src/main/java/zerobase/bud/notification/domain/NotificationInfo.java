@@ -12,6 +12,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import zerobase.bud.domain.BaseEntity;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.dto.SaveNotificationInfo;
 
 @Getter
 @Setter
@@ -33,6 +34,16 @@ public class NotificationInfo extends BaseEntity {
     private boolean isPostPushAvailable;
 
     private boolean isFollowPushAvailable;
+
+
+    public static NotificationInfo of(SaveNotificationInfo.Request request, Member member){
+        return NotificationInfo.builder()
+            .member(member)
+            .fcmToken(request.getFcmToken())
+            .isFollowPushAvailable(request.getIsFollowPushAvailable())
+            .isPostPushAvailable(request.getIsPostPushAvailable())
+            .build();
+    }
 
 
 }
