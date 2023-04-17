@@ -66,7 +66,7 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if(comment.getParent() != null){
+        if (comment.getParent() != null) {
             throw new BudException(ErrorCode.CANNOT_PIN_RECOMMENT);
         }
 
@@ -112,45 +112,33 @@ public class CommentService {
 
         if (post.getCommentPin() != null && page == 0) {
             Comment pinComment = post.getCommentPin().getComment();
-
             pinCommentId = pinComment.getId();
-            commentDtos.add(
-                    CommentDto.of(pinComment,
-                            member.equals(pinComment.getMember()),
-                            commentLikeRepository.existsByCommentAndAndMember(pinComment, member),
-                            true,
-                            pinComment.getReComments().stream()
-                                    .map(reComment ->
-                                            CommentDto.of(reComment,
-                                                    member.equals(reComment.getMember()),
-                                                    commentLikeRepository.existsByCommentAndAndMember(reComment, member))
-                                    ).collect(Collectors.toList())
-                    ));
+            commentDtos.add(toCommentDto(member, pinComment, true));
         }
-
 
         Slice<Comment> comments = commentRepository
                 .findByPostAndParentIsNullAndIdIsNotAndCommentStatus(post, pinCommentId,
                         CommentStatus.ACTIVE, PageRequest.of(page, size));
 
-        comments.getContent().stream()
-                .forEach(comment -> {
-                    commentDtos.add(
-                            CommentDto.of(comment,
-                                    member.equals(comment.getMember()),
-                                    commentLikeRepository.existsByCommentAndAndMember(comment, member),
-                                    false,
-                                    comment.getReComments().stream()
-                                            .map(reComment ->
-                                                    CommentDto.of(reComment,
-                                                            member.equals(reComment.getMember()),
-                                                            commentLikeRepository.existsByCommentAndAndMember(reComment, member))
-                                            ).collect(Collectors.toList())
-                            ));
-                });
+        comments.getContent()
+                .forEach(comment -> commentDtos.add(toCommentDto(member, comment, false)));
 
 
         return new SliceImpl<>(commentDtos, comments.getPageable(), comments.hasNext());
+    }
+
+    private CommentDto toCommentDto(Member member, Comment comment, boolean isPinned) {
+        return CommentDto.of(comment,
+                member.equals(comment.getMember()),
+                commentLikeRepository.existsByCommentAndAndMember(comment, member),
+                isPinned,
+                comment.getReComments().stream()
+                        .map(reComment ->
+                                CommentDto.of(reComment,
+                                        member.equals(reComment.getMember()),
+                                        commentLikeRepository.existsByCommentAndAndMember(reComment, member))
+                        ).collect(Collectors.toList())
+        );
     }
 
     @Transactional
@@ -158,7 +146,7 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if(!comment.getMember().equals(member)){
+        if (!comment.getMember().equals(member)) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
