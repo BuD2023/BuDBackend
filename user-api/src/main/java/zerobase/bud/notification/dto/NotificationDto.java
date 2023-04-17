@@ -37,4 +37,26 @@ public class NotificationDto {
     private NotificationStatus notificationStatus;
 
     private LocalDateTime notifiedAt;
+
+    public static NotificationDto of(
+        String token
+        , Member receiver
+        , Member sender
+        , NotificationType notificationType
+        , PageType pageType
+        , Long pageId
+        , NotificationDetailType notificationDetailType
+    ){
+        return NotificationDto.builder()
+            .tokens(List.of(token))
+            .receiver(receiver)
+            .sender(sender)
+            .notificationType(notificationType)
+            .pageType(pageType)
+            .pageId(pageId)
+            .notificationDetailType(notificationDetailType)
+            .notificationStatus(NotificationStatus.UNREAD)
+            .notifiedAt(LocalDateTime.now())
+            .build();
+    }
 }

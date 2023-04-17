@@ -8,6 +8,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -115,6 +116,32 @@ class NotificationControllerTest {
         //when 어떤 경우에
         //then 이런 결과가 나온다.
         mockMvc.perform(put("/notifications/"+notificationId+"/read")
+                .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(
+                jsonPath("$").value(notificationId))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()))
+            );
+
+    }
+
+    @Test
+    @WithMockUser
+    void success_deleteNotification() throws Exception {
+        //given
+        String notificationId = makeNotificationId();
+        given(notificationService.deleteNotification(anyString(), any()))
+            .willReturn(notificationId);
+
+        //when 어떤 경우에
+        //then 이런 결과가 나온다.
+        mockMvc.perform(delete("/notifications/"+notificationId)
                 .header(HttpHeaders.AUTHORIZATION, TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))

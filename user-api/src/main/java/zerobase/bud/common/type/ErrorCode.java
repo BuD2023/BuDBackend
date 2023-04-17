@@ -8,7 +8,6 @@ import lombok.Getter;
 public enum ErrorCode {
 
     NOT_RECEIVED_NOTIFICATION_MEMBER("알림을 수신한 회원이 아닙니다."),
-    DELETED_NOTIFICATION("삭제된 알람입니다."),
     NOT_FOUND_NOTIFICATION("존재하지 않는 알림입니다."),
     NOT_FOUND_NOTIFICATION_INFO("알림 정보가 없습니다."),
     NOT_FOUND_TOKEN("Firebase 토큰을 발견하지 못했습니다."),
