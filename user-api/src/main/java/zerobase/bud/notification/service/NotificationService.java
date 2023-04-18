@@ -1,6 +1,5 @@
 package zerobase.bud.notification.service;
 
-import static zerobase.bud.common.type.ErrorCode.DELETED_NOTIFICATION;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION;
 import static zerobase.bud.common.type.ErrorCode.NOT_RECEIVED_NOTIFICATION_MEMBER;
 
@@ -16,7 +15,6 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.notification.domain.Notification;
 import zerobase.bud.notification.dto.GetNotifications.Response;
 import zerobase.bud.notification.repository.NotificationRepository;
-import zerobase.bud.notification.type.NotificationStatus;
 
 @Slf4j
 @Service
@@ -25,18 +23,17 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
+
     public Slice<Response> getNotifications(Member member, Pageable pageable) {
         return notificationRepository
-            .findAllByReceiverIdAndNotificationStatusNot(
-                member.getId()
-                , NotificationStatus.DELETED
-                , pageable)
+            .findAllByReceiverId(member.getId(), pageable)
             .map(Response::fromEntity);
     }
 
 
     @Transactional
-    public String updateNotificationStatusRead(String notificationId , Member member) {
+    public String updateNotificationStatusRead(String notificationId,
+        Member member) {
 
         Notification notification = notificationRepository.findByNotificationId(
                 notificationId)
@@ -49,12 +46,27 @@ public class NotificationService {
         return notificationId;
     }
 
-    private void validateUpdateNotificationStatus(Notification notification, Member member) {
-        if(Objects.equals(NotificationStatus.DELETED, notification.getNotificationStatus())){
-            throw new BudException(DELETED_NOTIFICATION);
+    public String deleteNotification(String notificationId, Member member) {
+
+        Notification notification = notificationRepository.findByNotificationId(
+                notificationId)
+            .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION));
+
+        if (!Objects.equals(notification.getReceiver().getId(),
+            member.getId())) {
+            throw new BudException(NOT_RECEIVED_NOTIFICATION_MEMBER);
         }
 
-        if(!Objects.equals(notification.getReceiver().getId(), member.getId())){
+        notificationRepository.delete(notification);
+
+        return notificationId;
+    }
+
+    private void validateUpdateNotificationStatus(Notification notification,
+        Member member) {
+
+        if (!Objects.equals(notification.getReceiver().getId(),
+            member.getId())) {
             throw new BudException(NOT_RECEIVED_NOTIFICATION_MEMBER);
         }
     }
