@@ -33,7 +33,7 @@ public class UserService {
         Member targetMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        if (member.equals(targetMember)) {
+        if (Objects.equals(member.getId(), targetMember.getId())) {
             throw new MemberException(ErrorCode.CANNOT_FOLLOW_YOURSELF);
         }
 
@@ -56,10 +56,10 @@ public class UserService {
         Member targetMember = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        Long numberOfFollowers = followRepository.countByTarget(member);
-        Long numberOfFollows = followRepository.countByMember(member);
-        Long numberOfPosts = postRepository.countByMember(member);
-        boolean isReader = member.equals(targetMember);
+        Long numberOfFollowers = followRepository.countByTarget(targetMember);
+        Long numberOfFollows = followRepository.countByMember(targetMember);
+        Long numberOfPosts = postRepository.countByMember(targetMember);
+        boolean isReader = Objects.equals(member.getId(), targetMember.getId());
         boolean isFollowing = followRepository.existsByTargetAndMember(targetMember, member);
 
         return UserDto.of(targetMember, isReader, isFollowing,
