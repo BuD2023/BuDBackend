@@ -633,7 +633,43 @@ include::{snippets}/qna-answer-controller-test/success-delete-comment/http-respo
 |400|NOT_COMMENT_OWNER|댓글의 작성자가 아닙니다.
 |===
 
+=== 20. Q&A 답변 핀 기능
+.request
+include::{snippets}/qna-answer-controller-test/success_qna-answer-pin/http-request.adoc[]
 
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable, QnA답글의 Id
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success_qna-answer-pin/http-response.adoc[]
+
+.response field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable, QnA답글의 Id
+|===
+
+=== 21. Q&A 답변 핀 취소
+.request
+include::{snippets}/qna-answer-controller-test/success_cancel-qna-answer-pin/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerPinId|Number|Y|path variable, QnA답글 핀의 Id
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success_cancel-qna-answer-pin/http-response.adoc[]
+
+.response field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerPinId|Number|Y|path variable, QnA답글 핀의 Id
+|===
 
 == 유저 API
 === 1. 유저 팔로우 / 팔로우 취소
