@@ -19,6 +19,7 @@ import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
@@ -95,13 +96,13 @@ public class ChatRoomService {
         return Optional.ofNullable(valueOperations.get(CHATROOM + chatroomId)).orElse(1);
     }
 
-    public Slice<ChatDto> readChats(Long chatroomId, int page, int size) {
+    public Slice<ChatDto> readChats(Long chatroomId, Member member, int page, int size) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
 
         return chatRepository.findAllByChatRoomOrderByCreatedAtDesc(chatRoom,
                         PageRequest.of(page, size))
-                .map(ChatDto::from);
+                .map(chat -> ChatDto.of(chat, Objects.equals(member.getId(), chat.getMember().getId())));
     }
 
     public ChatRoomStatusDto chatRoomsStatus() {
