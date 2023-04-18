@@ -10,4 +10,7 @@ public interface QnaAnswerPinRepository extends
     JpaRepository<QnaAnswerPin, Long> {
 
     Optional<QnaAnswerPin> findByQnaAnswerId(Long qnaAnswerId);
+
+    void deleteByPostId(Long postId);
+
 }

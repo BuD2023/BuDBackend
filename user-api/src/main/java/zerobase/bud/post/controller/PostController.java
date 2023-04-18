@@ -56,11 +56,7 @@ public class PostController {
             @RequestPart(value = IMAGES, required = false) List<MultipartFile> images,
             @RequestPart(value = UPDATE_POST_REQUEST) @Valid UpdatePost.Request request
     ) {
-        return ResponseEntity.ok(postService.updatePost(
-                        images
-                        , request
-                )
-        );
+        return ResponseEntity.ok(postService.updatePost(images, request));
     }
 
     @GetMapping

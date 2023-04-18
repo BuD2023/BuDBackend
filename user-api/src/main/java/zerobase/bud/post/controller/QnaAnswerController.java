@@ -16,7 +16,7 @@ import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/posts/qna-answer")
+@RequestMapping("/posts/qna-answers")
 public class QnaAnswerController {
 
     private final QnaAnswerService qnaAnswerService;
@@ -73,5 +73,21 @@ public class QnaAnswerController {
     public ResponseEntity<Long> deleteComment(@PathVariable Long qnaCommentId,
                                               @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(qnaAnswerCommentService.delete(qnaCommentId, member));
+    }
+
+    @PostMapping("/{qnaAnswerId}/pin")
+    public ResponseEntity<Long> qnaAnswerPin(
+        @PathVariable Long qnaAnswerId,
+        @AuthenticationPrincipal Member member
+    ){
+        return ResponseEntity.ok(qnaAnswerService.qnaAnswerPin(qnaAnswerId, member));
+    }
+
+    @DeleteMapping("/pin/{qnaAnswerPinId}")
+    public ResponseEntity<Long> cancelQnaAnswerPin(
+        @PathVariable Long qnaAnswerPinId,
+        @AuthenticationPrincipal Member member
+    ) {
+        return ResponseEntity.ok(qnaAnswerService.cancelQnaAnswerPin(qnaAnswerPinId, member));
     }
 }

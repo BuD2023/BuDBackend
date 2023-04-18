@@ -51,6 +51,9 @@ public class Post extends BaseEntity {
     @OneToOne(mappedBy = "post")
     private CommentPin commentPin;
 
+    @OneToOne(mappedBy = "post")
+    private QnaAnswerPin qnaAnswerPin;
+
     public static Post of(Member member, CreatePost.Request request){
         return Post.builder()
                 .member(member)
