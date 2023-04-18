@@ -31,7 +31,9 @@ import zerobase.bud.notification.type.NotificationStatus;
 import zerobase.bud.notification.type.NotificationType;
 import zerobase.bud.notification.type.PageType;
 import zerobase.bud.post.domain.Post;
+import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.type.PostType;
+import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.user.domain.Follow;
 import zerobase.bud.user.repository.FollowRepository;
 
@@ -90,7 +92,7 @@ class SendNotificationServiceTest {
 
         //when
         sendNotificationService.sendCreateQnaAnswerNotification(
-            getSender(), getPost()
+            getSender(), getPost(), getQnaAnswer()
         );
     }
 
@@ -103,10 +105,47 @@ class SendNotificationServiceTest {
         //when
         BudException budException = assertThrows(BudException.class,
             () -> sendNotificationService.sendCreateQnaAnswerNotification(
-                getSender(), getPost()
+                getSender(), getPost(), getQnaAnswer()
             ));
 
         assertEquals(NOT_FOUND_NOTIFICATION_INFO, budException.getErrorCode());
+    }
+
+    @Test
+    void success_sendQnaAnswerPinNotification() {
+        //given
+        given(notificationInfoRepository.findByMemberId(anyLong()))
+            .willReturn(Optional.ofNullable(getNotificationInfo()));
+
+        //when
+        sendNotificationService.sendQnaAnswerPinNotification(
+            getSender(), getQnaAnswer()
+        );
+    }
+
+    @Test
+    @DisplayName("NOT_FOUND_NOTIFICATION_INFO_sendQnaAnswerPinNotification")
+    void NOT_FOUND_NOTIFICATION_INFO_sendQnaAnswerPinNotification() {
+        //given
+        given(notificationInfoRepository.findByMemberId(anyLong()))
+            .willReturn(Optional.empty());
+        //when
+        BudException budException = assertThrows(BudException.class,
+            () -> sendNotificationService.sendQnaAnswerPinNotification(
+                getSender(), getQnaAnswer()
+            ));
+
+        assertEquals(NOT_FOUND_NOTIFICATION_INFO, budException.getErrorCode());
+    }
+
+    private QnaAnswer getQnaAnswer() {
+        return QnaAnswer.builder()
+            .id(1L)
+            .member(getSender())
+            .post(getPost())
+            .content("content")
+            .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
+            .build();
     }
 
     private Post getPost() {

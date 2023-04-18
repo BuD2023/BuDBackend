@@ -50,11 +50,12 @@ public class QnaAnswerService {
 
         validateCreateQnaAnswer(post);
 
-        qnaAnswerRepository.save(QnaAnswer.of(member, post, request.getContent()));
+        QnaAnswer qnaAnswer = qnaAnswerRepository.save(
+            QnaAnswer.of(member, post, request.getContent()));
 
         post.plusCommentCount();
 
-        sendNotificationService.sendCreateQnaAnswerNotification(member, post);
+        sendNotificationService.sendCreateQnaAnswerNotification(member, post, qnaAnswer);
 
         return member.getUserId();
     }
@@ -112,6 +113,8 @@ public class QnaAnswerService {
         qnaAnswerPinRepository.deleteByPostId(post.getId());
 
         qnaAnswerPinRepository.save(QnaAnswerPin.of(qnaAnswer, post));
+
+        sendNotificationService.sendQnaAnswerPinNotification(member, qnaAnswer);
 
         return qnaAnswerId;
     }
