@@ -1,6 +1,28 @@
 package zerobase.bud.post.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,21 +50,6 @@ import zerobase.bud.post.dto.CreateQnaAnswer;
 import zerobase.bud.post.dto.QnaAnswerCommentDto;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
 import zerobase.bud.post.service.QnaAnswerService;
-
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith({RestDocumentationExtension.class})
 @WebMvcTest(QnaAnswerController.class)
@@ -95,7 +102,7 @@ class QnaAnswerControllerTest {
 
         //when
         //then
-        mockMvc.perform(post("/posts/qna-answer")
+        mockMvc.perform(post("/posts/qna-answers")
                         .header("Authorization", TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -122,7 +129,7 @@ class QnaAnswerControllerTest {
 
         //when
         //then
-        mockMvc.perform(put("/posts/qna-answer")
+        mockMvc.perform(put("/posts/qna-answers")
                         .header("Authorization", TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -149,7 +156,7 @@ class QnaAnswerControllerTest {
                 .willReturn(1L);
         //when
         //then
-        this.mockMvc.perform(RestDocumentationRequestBuilders.post("/posts/qna-answer/qna-comments/{qnaCommentId}/like", 1)
+        this.mockMvc.perform(RestDocumentationRequestBuilders.post("/posts/qna-answers/qna-comments/{qnaCommentId}/like", 1)
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -172,7 +179,7 @@ class QnaAnswerControllerTest {
                 .willReturn(1L);
         //when
         //then
-        this.mockMvc.perform(RestDocumentationRequestBuilders.post("/posts/qna-answer/qna-comments/{qnaCommentId}/pin", 1)
+        this.mockMvc.perform(RestDocumentationRequestBuilders.post("/posts/qna-answers/qna-comments/{qnaCommentId}/pin", 1)
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -194,7 +201,7 @@ class QnaAnswerControllerTest {
                 .willReturn(1L);
         //when
         //then
-        this.mockMvc.perform(delete("/posts/qna-answer/{qnaAnswerId}/qna-comments/pin", 1)
+        this.mockMvc.perform(delete("/posts/qna-answers/{qnaAnswerId}/qna-comments/pin", 1)
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -293,7 +300,7 @@ class QnaAnswerControllerTest {
                 .willReturn(new SliceImpl<>(dtos));
 
 
-        this.mockMvc.perform(get("/posts/qna-answer/{qnaAnswerId}/qna-comments", 1)
+        this.mockMvc.perform(get("/posts/qna-answers/{qnaAnswerId}/qna-comments", 1)
                         .param("page", "0")
                         .param("size", "5")
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
@@ -350,7 +357,7 @@ class QnaAnswerControllerTest {
                 .willReturn(2L);
         //when
         //then
-        this.mockMvc.perform(delete("/posts/qna-answer/qna-comments/{qnaCommentId}", 1)
+        this.mockMvc.perform(delete("/posts/qna-answers/qna-comments/{qnaCommentId}", 1)
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -361,5 +368,51 @@ class QnaAnswerControllerTest {
                                 preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
                                 preprocessResponse(prettyPrint()))
                 );
+    }
+
+    @Test
+    @WithMockUser
+    void success_qnaAnswerPin() throws Exception {
+        //given
+        given(qnaAnswerService.qnaAnswerPin(anyLong(), any()))
+            .willReturn(3L);
+
+        //when
+        //then
+        mockMvc.perform(post("/posts/qna-answers/3/pin")
+                .header("Authorization", TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(3))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()))
+            );
+    }
+
+    @Test
+    @WithMockUser
+    void success_cancelQnaAnswerPin() throws Exception {
+        //given
+        given(qnaAnswerService.cancelQnaAnswerPin(anyLong(), any()))
+            .willReturn(1L);
+
+        //when
+        //then
+        mockMvc.perform(delete("/posts/qna-answers/pin/1")
+                .header("Authorization", TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(1))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()))
+            );
     }
 }

@@ -6,6 +6,8 @@ import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER_PIN;
+import static zerobase.bud.common.type.ErrorCode.NOT_POST_OWNER;
 
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
+import zerobase.bud.post.domain.QnaAnswerPin;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
 import zerobase.bud.post.repository.PostRepository;
@@ -47,8 +50,7 @@ public class QnaAnswerService {
 
         validateCreateQnaAnswer(post);
 
-        qnaAnswerRepository.save(
-            QnaAnswer.of(member, post, request.getContent()));
+        qnaAnswerRepository.save(QnaAnswer.of(member, post, request.getContent()));
 
         post.plusCommentCount();
 
@@ -95,4 +97,39 @@ public class QnaAnswerService {
         }
     }
 
+    @Transactional
+    public Long qnaAnswerPin(Long qnaAnswerId, Member member) {
+        QnaAnswer qnaAnswer = qnaAnswerRepository.findByIdAndQnaAnswerStatus(
+            qnaAnswerId, QnaAnswerStatus.ACTIVE
+        ).orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
+
+        Post post = qnaAnswer.getPost();
+
+        if(!Objects.equals(post.getMember().getId(), member.getId())){
+            throw new BudException(NOT_POST_OWNER);
+        }
+
+        qnaAnswerPinRepository.deleteByPostId(post.getId());
+
+        qnaAnswerPinRepository.save(QnaAnswerPin.of(qnaAnswer, post));
+
+        return qnaAnswerId;
+    }
+
+    @Transactional
+    public Long cancelQnaAnswerPin(Long qnaAnswerPinId, Member member) {
+        QnaAnswerPin qnaAnswerPin = qnaAnswerPinRepository.findById(
+                qnaAnswerPinId)
+            .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER_PIN));
+
+        Post post = qnaAnswerPin.getPost();
+
+        if(!Objects.equals(post.getMember().getId(), member.getId())){
+            throw new BudException(NOT_POST_OWNER);
+        }
+
+        qnaAnswerPinRepository.deleteById(qnaAnswerPinId);
+
+        return qnaAnswerPinId;
+    }
 }

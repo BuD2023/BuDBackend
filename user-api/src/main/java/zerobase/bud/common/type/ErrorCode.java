@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    NOT_FOUND_QNA_ANSWER_PIN("존재하지 않는 QnA 답변 핀입니다."),
     NOT_RECEIVED_NOTIFICATION_MEMBER("알림을 수신한 회원이 아닙니다."),
     NOT_FOUND_NOTIFICATION("존재하지 않는 알림입니다."),
     NOT_FOUND_NOTIFICATION_INFO("알림 정보가 없습니다."),
