@@ -13,6 +13,7 @@ import zerobase.bud.domain.Member;
 @NoArgsConstructor
 public class FollowDto {
     private Long id;
+    private Long memberId;
     private String userId;
     private String nickName;
     private String description;
@@ -24,6 +25,7 @@ public class FollowDto {
 
     public static FollowDto of(Member member, boolean isReader, boolean isFollowing){
         return FollowDto.builder()
+                .memberId(member.getId())
                 .id(member.getId())
                 .userId(member.getUserId())
                 .nickName(member.getNickname())
@@ -36,6 +38,7 @@ public class FollowDto {
 
     public static FollowDto of(Member member){
         return FollowDto.builder()
+                .memberId(member.getId())
                 .id(member.getId())
                 .userId(member.getUserId())
                 .nickName(member.getNickname())
