@@ -272,6 +272,12 @@ class ChatRoomServiceTest {
                 .status(ChatRoomStatus.ACTIVE)
                 .build();
 
+        Member chatUser = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .build();
+
         List<Chat> chats = Arrays.asList(
                 Chat.builder()
                         .chatRoom(chatRoom)
@@ -284,7 +290,7 @@ class ChatRoomServiceTest {
                         .chatRoom(chatRoom)
                         .id(2L)
                         .createdAt(LocalDateTime.now())
-                        .member(member)
+                        .member(chatUser)
                         .message("이것은두번째메세지")
                         .type(ChatType.MESSAGE).build()
         );
@@ -294,9 +300,11 @@ class ChatRoomServiceTest {
         given(chatRepository.findAllByChatRoomOrderByCreatedAtDesc(any(), any()))
                 .willReturn(new SliceImpl<>(chats));
         //when
-        Slice<ChatDto> dtos = chatRoomService.readChats(12L, 1, 15);
+        Slice<ChatDto> dtos = chatRoomService.readChats(12L, member, 1, 15);
         //then
         assertEquals(1L, dtos.getContent().get(0).getChatId());
+        assertEquals(false, dtos.getContent().get(1).isReader());
+        assertEquals(true, dtos.getContent().get(0).isReader());
         assertEquals("이것은메세지", dtos.getContent().get(0).getMessage());
         assertEquals(ChatType.MESSAGE, dtos.getContent().get(0).getChatType());
         assertEquals(1L, dtos.getContent().get(0).getUserId());
@@ -311,7 +319,7 @@ class ChatRoomServiceTest {
                 .willReturn(Optional.empty());
         //when
         ChatRoomException exception = assertThrows(ChatRoomException.class,
-                () -> chatRoomService.readChats(12L, 1, 10));
+                () -> chatRoomService.readChats(12L, member, 1, 10));
         //then
         assertEquals(ErrorCode.CHATROOM_NOT_FOUND, exception.getErrorCode());
     }

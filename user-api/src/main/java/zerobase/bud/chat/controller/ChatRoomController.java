@@ -56,8 +56,9 @@ public class ChatRoomController {
     @GetMapping("/chatrooms/{chatroomId}/chats")
     private ResponseEntity<Slice<ChatDto>> readChats(@PathVariable Long chatroomId,
                                                      @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "10") int size){
-        return ResponseEntity.ok(chatRoomService.readChats(chatroomId, page, size));
+                                                     @RequestParam(defaultValue = "10") int size,
+                                                     @AuthenticationPrincipal Member member){
+        return ResponseEntity.ok(chatRoomService.readChats(chatroomId, member, page, size));
     }
 
     @GetMapping("/chatrooms/status")

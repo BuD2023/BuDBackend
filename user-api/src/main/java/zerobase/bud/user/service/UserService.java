@@ -3,6 +3,7 @@ package zerobase.bud.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
@@ -14,6 +15,7 @@ import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.repository.FollowRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -107,7 +109,7 @@ public class UserService {
     }
 
     private FollowDto toFollowDto(Member reader, Member profileMember) {
-        return FollowDto.of(profileMember, reader.equals(profileMember),
+        return FollowDto.of(profileMember, Objects.equals(reader.getId(), profileMember.getId()),
                 followRepository.existsByTargetAndMember(profileMember, reader));
     }
 }

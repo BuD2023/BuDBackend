@@ -23,6 +23,7 @@ import zerobase.bud.post.type.PostStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -129,7 +130,7 @@ public class CommentService {
 
     private CommentDto toCommentDto(Member member, Comment comment, boolean isPinned) {
         return CommentDto.of(comment,
-                member.equals(comment.getMember()),
+                Objects.equals(member.getId(), comment.getMember().getId()),
                 commentLikeRepository.existsByCommentAndAndMember(comment, member),
                 isPinned,
                 comment.getReComments().stream()

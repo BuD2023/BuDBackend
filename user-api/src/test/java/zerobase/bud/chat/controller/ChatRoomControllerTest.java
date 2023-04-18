@@ -361,6 +361,7 @@ class ChatRoomControllerTest {
                         .chatType(ChatType.MESSAGE)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .message("어쩌구저쩌구~")
+                        .isReader(true)
                         .userId(1L)
                         .userName("닉넴")
                         .userProfileUrl("/image.jpg")
@@ -369,6 +370,7 @@ class ChatRoomControllerTest {
                         .chatId(2L)
                         .chatroomId(32L)
                         .chatType(ChatType.IMAGE)
+                        .isReader(false)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
                         .imageUrl("/s3/fdsa.jpg")
                         .userId(1L)
@@ -377,6 +379,7 @@ class ChatRoomControllerTest {
                         .build(),
                 ChatDto.builder()
                         .chatId(3L)
+                        .isReader(true)
                         .chatType(ChatType.MESSAGE)
                         .chatroomId(32L)
                         .createdAt(TimeUtil.caculateTerm(LocalDateTime.now()))
@@ -386,7 +389,7 @@ class ChatRoomControllerTest {
                         .userProfileUrl("/image.jpg")
                         .build()
         );
-        given(chatRoomService.readChats(anyLong(), anyInt(), anyInt()))
+        given(chatRoomService.readChats(anyLong(), any(), anyInt(), anyInt()))
                 .willReturn(new SliceImpl<>(dtos));
         //when
         //then
@@ -408,6 +411,8 @@ class ChatRoomControllerTest {
                                         .description("메세지"),
                                 fieldWithPath("content[].imageUrl").type(JsonFieldType.STRING).optional()
                                         .description("이미지 url"),
+                                fieldWithPath("content[].isReader").type(JsonFieldType.BOOLEAN).optional()
+                                        .description("읽는 유저가 보낸 채팅인지"),
                                 fieldWithPath("content[].chatType").type(JsonFieldType.STRING)
                                         .description("채팅 타입"),
                                 fieldWithPath("content[].createdAt").type(JsonFieldType.STRING)

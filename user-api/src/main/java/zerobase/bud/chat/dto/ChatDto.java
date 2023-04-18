@@ -27,8 +27,9 @@ public class ChatDto implements Serializable {
     private String userProfileUrl;
     private String userName;
     private Long userId;
+    private boolean isReader;
 
-    public static ChatDto from(Chat chat) {
+    public static ChatDto of(Chat chat, boolean isReader) {
         return ChatDto.builder()
                 .chatroomId(chat.getChatRoom().getId())
                 .chatId(chat.getId())
@@ -38,6 +39,7 @@ public class ChatDto implements Serializable {
                 .userName(chat.getMember().getNickname())
                 .userProfileUrl(chat.getMember().getProfileImg())
                 .userId(chat.getId())
+                .isReader(isReader)
                 .build();
     }
 }
