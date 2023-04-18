@@ -303,8 +303,8 @@ class ChatRoomServiceTest {
         Slice<ChatDto> dtos = chatRoomService.readChats(12L, member, 1, 15);
         //then
         assertEquals(1L, dtos.getContent().get(0).getChatId());
-        assertEquals(false, dtos.getContent().get(1).isReader());
-        assertEquals(true, dtos.getContent().get(0).isReader());
+        assertEquals(false, dtos.getContent().get(1).getIsReader());
+        assertEquals(true, dtos.getContent().get(0).getIsReader());
         assertEquals("이것은메세지", dtos.getContent().get(0).getMessage());
         assertEquals(ChatType.MESSAGE, dtos.getContent().get(0).getChatType());
         assertEquals(1L, dtos.getContent().get(0).getUserId());
