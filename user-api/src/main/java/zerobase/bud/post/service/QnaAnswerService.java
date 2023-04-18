@@ -1,19 +1,10 @@
 package zerobase.bud.post.service;
 
-import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
-import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION_INFO;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.BudException;
@@ -29,14 +20,24 @@ import zerobase.bud.notification.type.PageType;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
+import zerobase.bud.post.dto.QnaAnswerDto;
+import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.repository.QnaAnswerPinRepository;
 import zerobase.bud.post.repository.QnaAnswerRepository;
+import zerobase.bud.post.repository.QnaAnswerRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.repository.MemberRepository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static zerobase.bud.common.type.ErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,6 +55,8 @@ public class QnaAnswerService {
     private final QnaAnswerPinRepository qnaAnswerPinRepository;
 
     private final NotificationInfoRepository notificationInfoRepository;
+
+    private final QnaAnswerRepositoryQuerydslImpl qnaAnswerRepositoryQuerydsl;
 
     @Transactional
     public String createQnaAnswer(Member member, Request request) {
@@ -151,4 +154,37 @@ public class QnaAnswerService {
         }
     }
 
+    public Page<SearchQnaAnswer.Response> searchQnaAnswers(Long postId,
+                                                     Pageable pageable) {
+        Page<QnaAnswerDto> qnaAnswerDtos = qnaAnswerRepositoryQuerydsl
+                .findAllByPostIdAndQnaAnswerStatusNotLike(postId, pageable);
+
+        return new PageImpl<>(
+                qnaAnswerDtos.stream()
+                        .map(SearchQnaAnswer.Response::from)
+                        .collect(Collectors.toList()),
+                qnaAnswerDtos.getPageable(),
+                qnaAnswerDtos.getTotalElements());
+    }
+
+    public void deleteQnaAnswer(Long qnaAnswerId) {
+        QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
+                .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
+
+        validateDeleteQnaAnswer(qnaAnswer);
+
+        qnaAnswer.setQnaAnswerStatus(QnaAnswerStatus.INACTIVE);
+        qnaAnswerRepository.save(qnaAnswer);
+    }
+
+    private void validateDeleteQnaAnswer(QnaAnswer qnaAnswer) {
+        qnaAnswerPinRepository.findByQnaAnswerId(qnaAnswer.getId())
+                .ifPresent(ap -> {
+                    throw new BudException(CHANGE_IMPOSSIBLE_PINNED_ANSWER);
+                });
+
+        if (Objects.equals(qnaAnswer.getQnaAnswerStatus(), QnaAnswerStatus.INACTIVE)) {
+            throw new BudException(ALREADY_DELETE_QNA_ANSWER);
+        }
+    }
 }
