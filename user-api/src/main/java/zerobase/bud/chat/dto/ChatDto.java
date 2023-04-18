@@ -27,7 +27,7 @@ public class ChatDto implements Serializable {
     private String userProfileUrl;
     private String userName;
     private Long userId;
-    private boolean isReader;
+    private Boolean isReader;
 
     public static ChatDto of(Chat chat, boolean isReader) {
         return ChatDto.builder()
