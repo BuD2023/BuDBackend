@@ -50,12 +50,11 @@ public class QnaAnswerService {
 
         validateCreateQnaAnswer(post);
 
-        QnaAnswer qnaAnswer = qnaAnswerRepository.save(
-            QnaAnswer.of(member, post, request.getContent()));
+        qnaAnswerRepository.save(QnaAnswer.of(member, post, request.getContent()));
 
         post.plusCommentCount();
 
-        sendNotificationService.sendCreateQnaAnswerNotification(member, post, qnaAnswer);
+        sendNotificationService.sendCreateQnaAnswerNotification(member, post);
 
         return member.getUserId();
     }
