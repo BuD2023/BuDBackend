@@ -23,6 +23,7 @@ import zerobase.bud.post.type.QnaAnswerStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -128,7 +129,7 @@ public class QnaAnswerCommentService {
 
     private QnaAnswerCommentDto toQnaCommentDto(Member member, QnaAnswerComment comment, boolean isPinned) {
         return QnaAnswerCommentDto.of(comment,
-                member.equals(comment.getMember()),
+                Objects.equals(member.getId(), comment.getMember().getId()),
                 qnaAnswerCommentLikeRepository.existsByQnaAnswerCommentAndMember(comment, member),
                 isPinned,
                 comment.getReComments().stream()
