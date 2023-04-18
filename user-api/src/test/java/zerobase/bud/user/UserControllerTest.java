@@ -382,7 +382,6 @@ class UserControllerTest {
                 FollowDto.builder()
                         .id(1L)
                         .userId("haden")
-                        .memberId(2L)
                         .nickName("닉넴")
                         .description("안뇽이건한줄소개")
                         .profileUrl("affd.jpg")
@@ -391,7 +390,6 @@ class UserControllerTest {
                 FollowDto.builder()
                         .id(2L)
                         .userId("thddd")
-                        .memberId(4L)
                         .nickName("사과")
                         .description("안녕하세요 ~~~ 저는")
                         .profileUrl("affd.jpg")
@@ -400,7 +398,6 @@ class UserControllerTest {
                 FollowDto.builder()
                         .id(3L)
                         .userId("agvdg")
-                        .memberId(5L)
                         .nickName("알수없음")
                         .description("안뇽이건한줄소개")
                         .profileUrl("affd.jpg")
@@ -423,8 +420,6 @@ class UserControllerTest {
                                         fieldWithPath("[].userId").type(JsonFieldType.STRING)
                                                 .description("깃허브 유저 아이디"),
                                         fieldWithPath("[].id").type(JsonFieldType.NUMBER)
-                                                .description("팔로우 식별값"),
-                                        fieldWithPath("[].memberId").type(JsonFieldType.NUMBER)
                                                 .description("회원 고유값"),
                                         fieldWithPath("[].description").type(JsonFieldType.STRING)
                                                 .description("한줄 소개"),
@@ -450,7 +445,6 @@ class UserControllerTest {
                         .nickName("닉넴")
                         .description("안뇽이건한줄소개")
                         .profileUrl("affd.jpg")
-                        .memberId(4L)
                         .isFollowing(false)
                         .isReader(true)
                         .build(),
@@ -458,7 +452,6 @@ class UserControllerTest {
                         .id(2L)
                         .userId("thddd")
                         .nickName("사과")
-                        .memberId(2L)
                         .description("안녕하세요 ~~~ 저는")
                         .profileUrl("affd.jpg")
                         .isFollowing(false)
@@ -468,7 +461,6 @@ class UserControllerTest {
                         .id(3L)
                         .userId("agvdg")
                         .nickName("알수없음")
-                        .memberId(6L)
                         .description("안뇽이건한줄소개")
                         .profileUrl("affd.jpg")
                         .isFollowing(true)
@@ -490,10 +482,8 @@ class UserControllerTest {
                                 relaxedResponseFields(
                                         fieldWithPath("[].userId").type(JsonFieldType.STRING)
                                                 .description("깃허브 유저 아이디"),
-                                        fieldWithPath("[].memberId").type(JsonFieldType.NUMBER)
-                                                .description("회원 고유값"),
                                         fieldWithPath("[].id").type(JsonFieldType.NUMBER)
-                                                .description("팔로우 식별값"),
+                                                .description("회원 고유값"),
                                         fieldWithPath("[].description").type(JsonFieldType.STRING)
                                                 .description("한줄 소개"),
                                         fieldWithPath("[].nickName").type(JsonFieldType.STRING)
