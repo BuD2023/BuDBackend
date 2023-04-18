@@ -31,4 +31,8 @@ public class Level extends BaseEntity {
     private long levelStartCommitCount;
 
     private long nextLevelStartCommitCount;
+
+    private String imagePath;
+
+    private String blankImagePath;
 }

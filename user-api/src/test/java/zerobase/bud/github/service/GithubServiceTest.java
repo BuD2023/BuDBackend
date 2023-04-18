@@ -65,11 +65,11 @@ class GithubServiceTest {
                 anyLong(), anyLong()))
             .willReturn(Optional.ofNullable(getLevel()));
         //when
-        CommitHistoryInfo info = githubService.getCommitInfo(
-            getMember());
+        CommitHistoryInfo info = githubService.getCommitInfo(getMember());
         //then
         assertEquals("nick", info.getNickName());
         assertEquals("씩씩한_새싹", info.getLevelCode());
+        assertEquals("images/test.png", info.getImagePath());
         assertEquals(14, info.getRemainCommitCountNextLevel());
         assertEquals(3, info.getTodayCommitCount());
         assertEquals(3, info.getThisWeekCommitCount());
@@ -97,6 +97,7 @@ class GithubServiceTest {
         //then
         assertEquals("nick", info.getNickName());
         assertEquals("씩씩한_새싹", info.getLevelCode());
+        assertEquals("images/test.png", info.getImagePath());
         assertEquals(17, info.getRemainCommitCountNextLevel());
         assertEquals(0, info.getTodayCommitCount());
         assertEquals(0, info.getThisWeekCommitCount());
@@ -190,6 +191,7 @@ class GithubServiceTest {
     private static Level getLevel() {
         return Level.builder()
             .levelCode("씩씩한_새싹")
+            .imagePath("images/test.png")
             .levelStartCommitCount(0)
             .nextLevelStartCommitCount(17)
             .levelNumber(1)
