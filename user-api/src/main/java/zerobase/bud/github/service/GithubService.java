@@ -59,10 +59,7 @@ public class GithubService {
             Level level = levelRepository.findByLevelStartCommitCount(0)
                 .orElseThrow(() -> new BudException(INVALID_INITIAL_VALUE));
 
-            return CommitHistoryInfo.of(
-                member.getNickname()
-                , level.getLevelCode()
-                , level.getNextLevelStartCommitCount());
+            return CommitHistoryInfo.of(member.getNickname(), level);
         }
 
         long totalCommitCount;
@@ -105,6 +102,7 @@ public class GithubService {
 
         return CommitHistoryInfo.of(member.getNickname()
             , level.getLevelCode()
+            , level.getImagePath()
             , remainCommitCountNextLevel
             , todayCommitCount
             , thisWeekCommitCount
