@@ -11,10 +11,8 @@ import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION_INFO;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.NOT_REGISTERED_MEMBER;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 import static zerobase.bud.post.type.PostStatus.INACTIVE;
 
@@ -29,9 +27,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
-import zerobase.bud.fcm.FcmApi;
 import zerobase.bud.notification.domain.NotificationInfo;
-import zerobase.bud.notification.repository.NotificationInfoRepository;
+import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.domain.QnaAnswerPin;
@@ -42,7 +39,6 @@ import zerobase.bud.post.repository.QnaAnswerPinRepository;
 import zerobase.bud.post.repository.QnaAnswerRepository;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
-import zerobase.bud.repository.MemberRepository;
 
 @ExtendWith(MockitoExtension.class)
 class QnaAnswerServiceTest {
@@ -57,13 +53,7 @@ class QnaAnswerServiceTest {
     private QnaAnswerPinRepository qnaAnswerPinRepository;
 
     @Mock
-    private NotificationInfoRepository notificationInfoRepository;
-
-    @Mock
-    private MemberRepository memberRepository;
-
-    @Mock
-    private FcmApi fcmApi;
+    private SendNotificationService sendNotificationService;
 
     @InjectMocks
     private QnaAnswerService qnaAnswerService;
@@ -77,12 +67,6 @@ class QnaAnswerServiceTest {
 
         given(qnaAnswerRepository.save(any()))
             .willReturn(getQnaAnswer());
-
-        given(notificationInfoRepository.findByMemberId(getSender().getId()))
-            .willReturn(Optional.ofNullable(getNotificationInfo()));
-
-        given(memberRepository.findById(anyLong()))
-            .willReturn(Optional.ofNullable(getReceiver()));
 
         ArgumentCaptor<QnaAnswer> captor = ArgumentCaptor.forClass(
             QnaAnswer.class);
@@ -182,61 +166,6 @@ class QnaAnswerServiceTest {
                     .build()));
         //then 이런 결과가 나온다.
         assertEquals(INVALID_POST_STATUS, budException.getErrorCode());
-    }
-
-    @Test
-    @DisplayName("NOT_FOUND_NOTIFICATION_INFO_createQnaAnswer")
-    void NOT_FOUND_NOTIFICATION_INFO_createQnaAnswer() {
-        //given
-
-        given(postRepository.findById(anyLong()))
-            .willReturn(Optional.ofNullable(getPost()));
-
-        given(qnaAnswerRepository.save(any()))
-            .willReturn(getQnaAnswer());
-
-        given(notificationInfoRepository.findByMemberId(getSender().getId()))
-            .willReturn(Optional.empty());
-
-        //when 어떤 경우에
-        BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getSender(),
-                Request.builder()
-                    .postId(1L)
-                    .content("content")
-                    .build()));
-        //then 이런 결과가 나온다.
-        assertEquals(NOT_FOUND_NOTIFICATION_INFO, budException.getErrorCode());
-
-    }
-
-    @Test
-    @DisplayName("NOT_REGISTERED_MEMBER_createQnaAnswer")
-    void NOT_REGISTERED_MEMBER_createQnaAnswer() {
-        //given
-
-        given(postRepository.findById(anyLong()))
-            .willReturn(Optional.ofNullable(getPost()));
-
-        given(qnaAnswerRepository.save(any()))
-            .willReturn(getQnaAnswer());
-
-        given(notificationInfoRepository.findByMemberId(getSender().getId()))
-            .willReturn(Optional.ofNullable(getNotificationInfo()));
-
-        given(memberRepository.findById(anyLong()))
-            .willReturn(Optional.empty());
-
-        //when 어떤 경우에
-        BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getSender(),
-                Request.builder()
-                    .postId(1L)
-                    .content("content")
-                    .build()));
-        //then 이런 결과가 나온다.
-        assertEquals(NOT_REGISTERED_MEMBER, budException.getErrorCode());
-
     }
 
     @Test

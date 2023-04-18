@@ -821,3 +821,25 @@ include::{snippets}/notification-controller-test/success_update-notification-sta
 
 .response field
 include::{snippets}/notification-controller-test/success_update-notification-status-read/response-body.adoc[]
+
+=== 3. 알림 삭제
+.request
+include::{snippets}/notification-controller-test/success_delete-notification/http-request.adoc[]
+
+.response
+include::{snippets}/notification-controller-test/success_delete-notification/http-response.adoc[]
+
+.response field
+include::{snippets}/notification-controller-test/success_delete-notification/response-body.adoc[]
+
+
+== 파이어베이스토큰 API
+=== 1. 파이어베이스토큰 저장
+.request
+include::{snippets}/notification-info-controller-test/success_save-notification-info/http-request.adoc[]
+
+.response
+include::{snippets}/notification-info-controller-test/success_save-notification-info/http-response.adoc[]
+
+.response field
+include::{snippets}/notification-info-controller-test/success_save-notification-info/response-body.adoc[]

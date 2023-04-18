@@ -35,6 +35,7 @@ import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;
@@ -66,6 +67,9 @@ class PostServiceTest {
 
     @Mock
     private AwsS3Api awsS3Api;
+
+    @Mock
+    private SendNotificationService sendNotificationService;
 
     @InjectMocks
     private PostService postService;

@@ -7,6 +7,7 @@ import com.querydsl.core.types.Order;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;
@@ -30,8 +32,6 @@ import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostSortType;
 import zerobase.bud.post.type.PostStatus;
-
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -48,6 +48,9 @@ public class PostService {
 
     private final AwsS3Api awsS3Api;
 
+    private final SendNotificationService sendNotificationService;
+
+
     @Transactional
     public String createPost(Member member, List<MultipartFile> images,
         Request request) {
@@ -55,6 +58,8 @@ public class PostService {
         Post post = postRepository.save(Post.of(member, request));
 
         saveImageWithPost(images, post);
+
+        sendNotificationService.sendCreatePostNotification(member, post);
 
         return request.getTitle();
     }
