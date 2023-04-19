@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static zerobase.bud.common.type.ErrorCode.DELETED_NOTIFICATION;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION;
 import static zerobase.bud.common.type.ErrorCode.NOT_RECEIVED_NOTIFICATION_MEMBER;
 import static zerobase.bud.util.Constants.REPLACE_EXPRESSION;
@@ -48,9 +47,8 @@ class NotificationServiceTest {
         String notificationId = makeNotificationId();
 
         given(
-            notificationRepository.findAllByReceiverIdAndNotificationStatusNot(
-                getReceiver().getId(), NotificationStatus.DELETED,
-                Pageable.ofSize(1)
+            notificationRepository.findAllByReceiverId(
+                getReceiver().getId(), Pageable.ofSize(1)
             )).willReturn(
             new SliceImpl<>(
                 List.of(getNotification(notificationId))
@@ -109,27 +107,6 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("NOT_FOUND_NOTIFICATION_updateNotificationStatusRead")
-    void DELETED_NOTIFICATION_updateNotificationStatusRead() {
-        //given 어떤 데이터가 주어졌을 때
-        String notificationId = makeNotificationId();
-        Notification notification = getNotification(notificationId);
-        notification.setNotificationStatus(NotificationStatus.DELETED);
-
-        given(notificationRepository.findByNotificationId(anyString()))
-            .willReturn(Optional.of(notification));
-
-        //when 어떤 경우에
-        BudException budException = assertThrows(BudException.class,
-            () -> notificationService.updateNotificationStatusRead(
-                notificationId,
-                getReceiver()));
-
-        //then 이런 결과가 나온다.
-        assertEquals(DELETED_NOTIFICATION, budException.getErrorCode());
-    }
-
-    @Test
     @DisplayName("NOT_RECEIVED_NOTIFICATION_MEMBER_updateNotificationStatusRead")
     void NOT_RECEIVED_NOTIFICATION_MEMBER_updateNotificationStatusRead() {
         //given 어떤 데이터가 주어졌을 때
@@ -147,6 +124,53 @@ class NotificationServiceTest {
                 notificationId,
                 getReceiver()));
 
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_RECEIVED_NOTIFICATION_MEMBER,
+            budException.getErrorCode());
+    }
+
+    @Test
+    void success_deleteNotification() {
+        //given 어떤 데이터가 주어졌을 때
+        String notificationId = makeNotificationId();
+        given(notificationRepository.findByNotificationId(anyString()))
+            .willReturn(Optional.ofNullable(getNotification(notificationId)));
+        //when 어떤 경우에
+        String statusRead = notificationService.deleteNotification(
+            notificationId,
+            getReceiver());
+        //then 이런 결과가 나온다.
+        assertEquals(notificationId, statusRead);
+    }
+
+    @Test
+    @DisplayName("NOT_FOUND_NOTIFICATION_deleteNotification")
+    void NOT_FOUND_NOTIFICATION_deleteNotification() {
+        //given 어떤 데이터가 주어졌을 때
+        String notificationId = makeNotificationId();
+        given(notificationRepository.findByNotificationId(anyString()))
+            .willReturn(Optional.empty());
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> notificationService.deleteNotification(
+                notificationId,
+                getReceiver()));
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_FOUND_NOTIFICATION, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("NOT_RECEIVED_NOTIFICATION_MEMBER_deleteNotification")
+    void NOT_RECEIVED_NOTIFICATION_MEMBER_deleteNotification() {
+        //given 어떤 데이터가 주어졌을 때
+        String notificationId = makeNotificationId();
+        given(notificationRepository.findByNotificationId(anyString()))
+            .willReturn(Optional.ofNullable(getNotification(notificationId)));
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> notificationService.deleteNotification(
+                notificationId,
+                getSender()));
         //then 이런 결과가 나온다.
         assertEquals(NOT_RECEIVED_NOTIFICATION_MEMBER,
             budException.getErrorCode());

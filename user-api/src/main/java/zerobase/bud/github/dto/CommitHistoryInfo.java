@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import zerobase.bud.domain.Level;
 
 @Getter
 @Setter
@@ -17,6 +18,7 @@ public class CommitHistoryInfo {
 
     private String nickName;
     private String levelCode;
+    private String imagePath;
     private long remainCommitCountNextLevel;
     private long todayCommitCount;
     private long thisWeekCommitCount;
@@ -25,18 +27,20 @@ public class CommitHistoryInfo {
     private List<CommitCountByDate> commits = new ArrayList<>();
 
     public static CommitHistoryInfo of(
-        String nickname, String levelCode, long nextLevelStartCommitCount
+        String nickname, Level level
     ) {
         return CommitHistoryInfo.builder()
             .nickName(nickname)
-            .levelCode(levelCode)
-            .remainCommitCountNextLevel(nextLevelStartCommitCount)
+            .levelCode(level.getLevelCode())
+            .imagePath(level.getImagePath())
+            .remainCommitCountNextLevel(level.getNextLevelStartCommitCount())
             .build();
     }
 
     public static CommitHistoryInfo of(
         String nickname
         , String levelCode
+        , String imagePath
         , long nextLevelStartCommitCount
         , long todayCommitCount
         , long thisWeekCommitCount
@@ -46,6 +50,7 @@ public class CommitHistoryInfo {
         return CommitHistoryInfo.builder()
             .nickName(nickname)
             .levelCode(levelCode)
+            .imagePath(imagePath)
             .remainCommitCountNextLevel(nextLevelStartCommitCount)
             .todayCommitCount(todayCommitCount)
             .thisWeekCommitCount(thisWeekCommitCount)

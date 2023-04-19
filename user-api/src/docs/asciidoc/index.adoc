@@ -571,6 +571,144 @@ include::{snippets}/post-controller-test/success-delete-comment/http-response.ad
 |===
 
 
+=== 15. Q&A 댓글 좋아요 및 좋아요 취소
+.request
+include::{snippets}/qna-answer-controller-test/success-comment-like/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaCommentId|Number|Y|대상 댓글 아이디, path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success-comment-like/http-response.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
+|400|CANNOT_LIKE_WRITER_SELF|자신의 댓글을 좋아요 할 수 없습니다.
+|===
+
+=== 16. Q&A 댓글 핀 및 댓글 핀 변경
+.request
+include::{snippets}/qna-answer-controller-test/success-comment-pin/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaCommentId|Number|Y|대상 댓글 아이디, path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success-comment-pin/http-response.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
+|400|NOT_QNA_ANSWER_OWNER|게시글의 작성자가 아닙니다.
+|400|CANNOT_PIN_RECOMMENT|대댓글에는 핀을 할 수 없습니다.
+|===
+
+=== 17. Q&A 댓글 핀 취소
+.request
+include::{snippets}/qna-answer-controller-test/success-cancel-comment-pin/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|대상 게시글 아이디, path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success-cancel-comment-pin/http-response.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
+|400|NOT_QNA_ANSWER_OWNER|게시글의 작성자가 아닙니다.
+|===
+
+=== 18. Q&A 댓글 조회
+.request
+include::{snippets}/qna-answer-controller-test/success-comments/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|keyword|String|Y|
+|page|Number|N|page값 입력 안할시 0
+|size|Number|N|size값 입력 안할시 10
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success-comments/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success-comments/response-fields.adoc[]
+
+
+=== 19. Q&A 댓글 삭제
+.request
+include::{snippets}/qna-answer-controller-test/success-delete-comment/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaCommentId|Number|Y|대상 댓글 아이디, path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success-delete-comment/http-response.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|COMMENT_NOT_FOUND|존재하지 않는 댓글입니다.
+|400|NOT_COMMENT_OWNER|댓글의 작성자가 아닙니다.
+|===
+
+=== 20. Q&A 답변 핀 기능
+.request
+include::{snippets}/qna-answer-controller-test/success_qna-answer-pin/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable, QnA답글의 Id
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success_qna-answer-pin/http-response.adoc[]
+
+.response field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable, QnA답글의 Id
+|===
+
+=== 21. Q&A 답변 핀 취소
+.request
+include::{snippets}/qna-answer-controller-test/success_cancel-qna-answer-pin/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerPinId|Number|Y|path variable, QnA답글 핀의 Id
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success_cancel-qna-answer-pin/http-response.adoc[]
+
+.response field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerPinId|Number|Y|path variable, QnA답글 핀의 Id
+|===
+
 == 유저 API
 === 1. 유저 팔로우 / 팔로우 취소
 .request
@@ -606,7 +744,7 @@ include::{snippets}/user-controller-test/success-read-profile-test/response-fiel
 |===
 |status|ErrorCode|message
 |400|NOT_REGISTERED_MEMBER|해당 유저가 없습니다.
-|400|CANNOT_FOLLOW_YOURSELF|자기 자신을 팔로우할 수 없습니다."
+|400|CANNOT_FOLLOW_YOURSELF|자기 자신을 팔로우할 수 없습니다.
 |===
 
 === 3. 나의 프로필 조회
@@ -757,3 +895,25 @@ include::{snippets}/notification-controller-test/success_update-notification-sta
 
 .response field
 include::{snippets}/notification-controller-test/success_update-notification-status-read/response-body.adoc[]
+
+=== 3. 알림 삭제
+.request
+include::{snippets}/notification-controller-test/success_delete-notification/http-request.adoc[]
+
+.response
+include::{snippets}/notification-controller-test/success_delete-notification/http-response.adoc[]
+
+.response field
+include::{snippets}/notification-controller-test/success_delete-notification/response-body.adoc[]
+
+
+== 파이어베이스토큰 API
+=== 1. 파이어베이스토큰 저장
+.request
+include::{snippets}/notification-info-controller-test/success_save-notification-info/http-request.adoc[]
+
+.response
+include::{snippets}/notification-info-controller-test/success_save-notification-info/http-response.adoc[]
+
+.response field
+include::{snippets}/notification-info-controller-test/success_save-notification-info/response-body.adoc[]

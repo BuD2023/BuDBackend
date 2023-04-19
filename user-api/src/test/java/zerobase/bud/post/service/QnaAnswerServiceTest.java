@@ -7,6 +7,14 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static zerobase.bud.common.type.ErrorCode.*;
+import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
+import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER_PIN;
+import static zerobase.bud.common.type.ErrorCode.NOT_POST_OWNER;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 import static zerobase.bud.post.type.PostStatus.INACTIVE;
 
@@ -25,9 +33,8 @@ import org.springframework.data.domain.*;
 import org.springframework.security.test.context.support.WithMockUser;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
-import zerobase.bud.fcm.FcmApi;
 import zerobase.bud.notification.domain.NotificationInfo;
-import zerobase.bud.notification.repository.NotificationInfoRepository;
+import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.domain.QnaAnswerPin;
@@ -56,16 +63,13 @@ class QnaAnswerServiceTest {
     private QnaAnswerPinRepository qnaAnswerPinRepository;
 
     @Mock
-    private NotificationInfoRepository notificationInfoRepository;
-
-    @Mock
-    private MemberRepository memberRepository;
+    private SendNotificationService sendNotificationService;
 
     @Mock
     private QnaAnswerRepositoryQuerydslImpl qnaAnswerRepositoryQuerydsl;
 
     @Mock
-    private FcmApi fcmApi;
+    private MemberRepository memberRepository;
 
     @InjectMocks
     private QnaAnswerService qnaAnswerService;
@@ -79,12 +83,6 @@ class QnaAnswerServiceTest {
 
         given(qnaAnswerRepository.save(any()))
             .willReturn(getQnaAnswer());
-
-        given(notificationInfoRepository.findByMemberId(getSender().getId()))
-            .willReturn(Optional.ofNullable(getNotificationInfo()));
-
-        given(memberRepository.findById(anyLong()))
-            .willReturn(Optional.ofNullable(getReceiver()));
 
         ArgumentCaptor<QnaAnswer> captor = ArgumentCaptor.forClass(
             QnaAnswer.class);
@@ -187,61 +185,6 @@ class QnaAnswerServiceTest {
     }
 
     @Test
-    @DisplayName("NOT_FOUND_NOTIFICATION_INFO_createQnaAnswer")
-    void NOT_FOUND_NOTIFICATION_INFO_createQnaAnswer() {
-        //given
-
-        given(postRepository.findById(anyLong()))
-            .willReturn(Optional.ofNullable(getPost()));
-
-        given(qnaAnswerRepository.save(any()))
-            .willReturn(getQnaAnswer());
-
-        given(notificationInfoRepository.findByMemberId(getSender().getId()))
-            .willReturn(Optional.empty());
-
-        //when 어떤 경우에
-        BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getSender(),
-                Request.builder()
-                    .postId(1L)
-                    .content("content")
-                    .build()));
-        //then 이런 결과가 나온다.
-        assertEquals(NOT_FOUND_NOTIFICATION_INFO, budException.getErrorCode());
-
-    }
-
-    @Test
-    @DisplayName("NOT_REGISTERED_MEMBER_createQnaAnswer")
-    void NOT_REGISTERED_MEMBER_createQnaAnswer() {
-        //given
-
-        given(postRepository.findById(anyLong()))
-            .willReturn(Optional.ofNullable(getPost()));
-
-        given(qnaAnswerRepository.save(any()))
-            .willReturn(getQnaAnswer());
-
-        given(notificationInfoRepository.findByMemberId(getSender().getId()))
-            .willReturn(Optional.ofNullable(getNotificationInfo()));
-
-        given(memberRepository.findById(anyLong()))
-            .willReturn(Optional.empty());
-
-        //when 어떤 경우에
-        BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getSender(),
-                Request.builder()
-                    .postId(1L)
-                    .content("content")
-                    .build()));
-        //then 이런 결과가 나온다.
-        assertEquals(NOT_REGISTERED_MEMBER, budException.getErrorCode());
-
-    }
-
-    @Test
     void success_updateQnaAnswer() {
         //given
         given(qnaAnswerRepository.findById(anyLong()))
@@ -325,6 +268,155 @@ class QnaAnswerServiceTest {
         //then 이런 결과가 나온다.
         assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER,
             budException.getErrorCode());
+    }
+
+    @Test
+    void success_pinnedQnaAnswer() {
+        //given
+        Post post = Post.builder()
+            .member(getPostMaker())
+            .title("title")
+            .content("postContent")
+            .postStatus(ACTIVE)
+            .postType(PostType.QNA)
+            .build();
+
+        QnaAnswerPin qnaAnswerPin = QnaAnswerPin.builder()
+            .id(1L)
+            .post(getPost())
+            .qnaAnswer(getQnaAnswer())
+            .build();
+
+        given(qnaAnswerRepository.findByIdAndQnaAnswerStatus(anyLong(), any()))
+            .willReturn(Optional.ofNullable(QnaAnswer.builder()
+                .id(1L)
+                .member(getPostMaker())
+                .post(post)
+                .content("content")
+                .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
+                .build()));
+
+        given(qnaAnswerPinRepository.save(any()))
+            .willReturn(qnaAnswerPin);
+
+        ArgumentCaptor<QnaAnswerPin> captor =
+            ArgumentCaptor.forClass(QnaAnswerPin.class);
+
+        //when
+        Long answer = qnaAnswerService.qnaAnswerPin(1L, getPostMaker());
+
+        //then
+        verify(qnaAnswerPinRepository, times(1)).save(captor.capture());
+        assertEquals(PostType.QNA, captor.getValue().getPost().getPostType());
+        assertEquals("content", captor.getValue().getQnaAnswer().getContent());
+        assertEquals(1L, answer);
+    }
+
+    @Test
+    @DisplayName("1)NOT_FOUND_QNA_ANSWER_pinnedQnaAnswer")
+    void NOT_FOUND_QNA_ANSWER_pinnedQnaAnswer() {
+        //given
+        given(qnaAnswerRepository.findByIdAndQnaAnswerStatus(anyLong(), any()))
+            .willReturn(Optional.empty());
+
+        //when
+        BudException budException = assertThrows(BudException.class, () ->
+            qnaAnswerService.qnaAnswerPin(1L, getPostMaker()));
+
+        //then
+        assertEquals(NOT_FOUND_QNA_ANSWER, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("NOT_POST_OWNER_pinnedQnaAnswer")
+    void NOT_POST_OWNER_pinnedQnaAnswer() {
+        //given
+        given(qnaAnswerRepository.findByIdAndQnaAnswerStatus(anyLong(), any()))
+            .willReturn(Optional.ofNullable(QnaAnswer.builder()
+                .id(1L)
+                .post(getPost())
+                .member(getPostMaker())
+                .content("content")
+                .qnaAnswerStatus(QnaAnswerStatus.INACTIVE)
+                .build()));
+
+        //when
+        BudException budException = assertThrows(BudException.class, () ->
+            qnaAnswerService.qnaAnswerPin(1L, getPostMaker()));
+
+        //then
+        assertEquals(NOT_POST_OWNER, budException.getErrorCode());
+    }
+
+    @Test
+    void success_cancelQnaAnswerPin() {
+        //given
+        Post post = Post.builder()
+            .member(getPostMaker())
+            .title("title")
+            .content("postContent")
+            .postStatus(ACTIVE)
+            .postType(PostType.QNA)
+            .build();
+
+        QnaAnswerPin qnaAnswerPin = QnaAnswerPin.builder()
+            .id(1L)
+            .post(post)
+            .qnaAnswer(getQnaAnswer())
+            .build();
+
+        given(qnaAnswerPinRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(qnaAnswerPin));
+
+        //when
+        Long answer = qnaAnswerService.cancelQnaAnswerPin(1L, getPostMaker());
+
+        //then
+        assertEquals(1L, answer);
+    }
+
+    @Test
+    @DisplayName("NOT_FOUND_QNA_ANSWER_PIN_cancelQnaAnswerPin")
+    void NOT_FOUND_QNA_ANSWER_PIN_cancelQnaAnswerPin() {
+        //given
+        given(qnaAnswerPinRepository.findById(anyLong()))
+            .willReturn(Optional.empty());
+
+        //when
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.cancelQnaAnswerPin(1L, getPostMaker()));
+
+        //then
+        assertEquals(NOT_FOUND_QNA_ANSWER_PIN, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("NOT_POST_OWNER_cancelQnaAnswerPin")
+    void NOT_POST_OWNER_cancelQnaAnswerPin() {
+        //given
+        Post post = Post.builder()
+            .member(getSender())
+            .title("title")
+            .content("postContent")
+            .postStatus(ACTIVE)
+            .postType(PostType.QNA)
+            .build();
+
+        QnaAnswerPin qnaAnswerPin = QnaAnswerPin.builder()
+            .id(1L)
+            .post(post)
+            .qnaAnswer(getQnaAnswer())
+            .build();
+
+        given(qnaAnswerPinRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(qnaAnswerPin));
+
+        //when
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.cancelQnaAnswerPin(1L, getPostMaker()));
+
+        //then
+        assertEquals(NOT_POST_OWNER, budException.getErrorCode());
     }
 
     @Test
@@ -456,6 +548,7 @@ class QnaAnswerServiceTest {
 
     private static QnaAnswer getQnaAnswer() {
         return QnaAnswer.builder()
+            .id(1L)
             .member(getSender())
             .post(getPost())
             .content("content")
@@ -470,6 +563,15 @@ class QnaAnswerServiceTest {
             .content("postContent")
             .postStatus(ACTIVE)
             .postType(PostType.QNA)
+            .build();
+    }
+
+    private static Member getPostMaker() {
+        return Member.builder()
+            .id(3L)
+            .nickname("postMaker")
+            .userId("postMaker")
+            .createdAt(LocalDateTime.now().minusDays(1))
             .build();
     }
 

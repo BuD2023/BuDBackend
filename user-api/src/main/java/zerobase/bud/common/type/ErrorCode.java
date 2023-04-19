@@ -7,8 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    NOT_FOUND_QNA_ANSWER_PIN("존재하지 않는 QnA 답변 핀입니다."),
     NOT_RECEIVED_NOTIFICATION_MEMBER("알림을 수신한 회원이 아닙니다."),
-    DELETED_NOTIFICATION("삭제된 알람입니다."),
     NOT_FOUND_NOTIFICATION("존재하지 않는 알림입니다."),
     NOT_FOUND_NOTIFICATION_INFO("알림 정보가 없습니다."),
     NOT_FOUND_TOKEN("Firebase 토큰을 발견하지 못했습니다."),
@@ -25,8 +25,8 @@ public enum ErrorCode {
     NOT_FOUND_POST("존재하지 않는 게시물입니다."),
 
     CANNOT_LIKE_WRITER_SELF("자신의 댓글을 좋아요 할 수 없습니다."),
-
     NOT_COMMENT_OWNER("댓글 작성자가 아닙니다."),
+    NOT_QNA_ANSWER_OWNER("게시글의 작성자가 아닙니다."),
     NOT_POST_OWNER("게시글의 작성자가 아닙니다."),
     COMMENT_NOT_FOUND("존재하지 않는 댓글입니다."),
 

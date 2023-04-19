@@ -359,6 +359,8 @@ class UserControllerTest {
                                                 .description("회원 고유값"),
                                         fieldWithPath("[].description").type(JsonFieldType.STRING)
                                                 .description("한줄 소개"),
+                                        fieldWithPath("[].id").type(JsonFieldType.NUMBER)
+                                                .description("팔로우 식별값"),
                                         fieldWithPath("[].nickName").type(JsonFieldType.STRING)
                                                 .description("회원의 닉네임"),
                                         fieldWithPath("[].profileUrl").type(JsonFieldType.STRING)

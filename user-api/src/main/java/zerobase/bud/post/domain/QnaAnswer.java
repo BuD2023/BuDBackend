@@ -1,21 +1,17 @@
 package zerobase.bud.post.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import zerobase.bud.comment.domain.QnaAnswerCommentPin;
 import zerobase.bud.domain.BaseEntity;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.type.QnaAnswerStatus;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -45,16 +41,19 @@ public class QnaAnswer extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private QnaAnswerStatus qnaAnswerStatus;
 
+    @OneToOne(mappedBy = "qnaAnswer")
+    private QnaAnswerCommentPin qnaAnswerCommentPin;
+
     public void updateContent(String content) {
         this.content = content;
     }
 
     public static QnaAnswer of(Member member, Post post, String content) {
         return QnaAnswer.builder()
-            .member(member)
-            .post(post)
-            .content(content)
-            .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
-            .build();
+                .member(member)
+                .post(post)
+                .content(content)
+                .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
+                .build();
     }
 }
