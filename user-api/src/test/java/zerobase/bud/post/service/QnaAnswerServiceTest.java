@@ -133,11 +133,37 @@ class QnaAnswerServiceTest {
     }
 
     @Test
+    @DisplayName("CANNOT_ANSWER_YOURSELF_createQnaAnswer")
+    void CANNOT_ANSWER_YOURSELF_createQnaAnswer() {
+        //given 어떤 데이터가 주어졌을 때
+        Post post = Post.builder()
+            .member(getSender())
+            .title("title")
+            .content("postContent")
+            .postStatus(ACTIVE)
+            .postType(PostType.FEED)
+            .build();
+
+        given(postRepository.findById(anyLong()))
+            .willReturn(Optional.ofNullable(post));
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.createQnaAnswer(getSender(),
+                Request.builder()
+                    .postId(1L)
+                    .content("content")
+                    .build()));
+        //then 이런 결과가 나온다.
+        assertEquals(CANNOT_ANSWER_YOURSELF, budException.getErrorCode());
+    }
+
+    @Test
     @DisplayName("INVALID_POST_TYPE_FOR_ANSWER_createQnaAnswer")
     void INVALID_POST_TYPE_FOR_ANSWER_createQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
         Post post = Post.builder()
-            .member(getSender())
+            .member(getReceiver())
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)
@@ -163,7 +189,7 @@ class QnaAnswerServiceTest {
     void INVALID_POST_STATUS_createQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
         Post post = Post.builder()
-            .member(getSender())
+            .member(getReceiver())
             .title("title")
             .content("postContent")
             .postStatus(INACTIVE)
@@ -529,7 +555,7 @@ class QnaAnswerServiceTest {
         qnaAnswer.setQnaAnswerStatus(QnaAnswerStatus.INACTIVE);
 
         given(qnaAnswerRepository.findById(anyLong()))
-                .willReturn(Optional.ofNullable(qnaAnswer));
+                .willReturn(Optional.of(qnaAnswer));
 
         //when
         BudException exception = assertThrows(BudException.class,
@@ -558,7 +584,7 @@ class QnaAnswerServiceTest {
 
     private static Post getPost() {
         return Post.builder()
-            .member(getSender())
+            .member(getReceiver())
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)

@@ -60,7 +60,7 @@ public class QnaAnswerService {
         Post post = postRepository.findById(request.getPostId())
             .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
-        validateCreateQnaAnswer(post);
+        validateCreateQnaAnswer(post, member);
 
         qnaAnswerRepository.save(QnaAnswer.of(member, post, request.getContent()));
 
@@ -99,7 +99,11 @@ public class QnaAnswerService {
             });
     }
 
-    private void validateCreateQnaAnswer(Post post) {
+    private void validateCreateQnaAnswer(Post post , Member member) {
+        if(Objects.equals(post.getMember().getId(), member.getId())){
+            throw new BudException(CANNOT_ANSWER_YOURSELF);
+        }
+
         if (!Objects.equals(post.getPostType(), PostType.QNA)) {
             throw new BudException(INVALID_POST_TYPE_FOR_ANSWER);
         }
@@ -147,6 +151,7 @@ public class QnaAnswerService {
         QnaAnswer qnaAnswer = qnaAnswerRepository.findByIdAndQnaAnswerStatus(
             qnaAnswerId, QnaAnswerStatus.ACTIVE
         ).orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
+
 
         Post post = qnaAnswer.getPost();
 
