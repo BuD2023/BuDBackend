@@ -24,7 +24,6 @@ import zerobase.bud.post.type.PostStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,21 +42,17 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (comment.getMember().equals(member)) {
+        if (Objects.equals(comment.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.CANNOT_LIKE_WRITER_SELF);
         }
 
-        Optional<CommentLike> optionalCommentLike =
-                commentLikeRepository.findByCommentAndMember(comment, member);
-
-        if (optionalCommentLike.isEmpty()) {
-            commentLikeRepository.save(CommentLike.builder()
-                    .comment(comment)
-                    .member(member)
-                    .build());
-        } else {
-            commentLikeRepository.delete(optionalCommentLike.get());
-        }
+        commentLikeRepository.findByCommentAndMember(comment, member)
+                .ifPresentOrElse(commentLikeRepository::delete,
+                        () -> commentLikeRepository.save(CommentLike.builder()
+                                .comment(comment)
+                                .member(member)
+                                .build())
+                );
 
         return commentId;
     }
@@ -73,12 +68,11 @@ public class CommentService {
 
         Post post = comment.getPost();
 
-        if (!post.getMember().equals(member)) {
+        if (!Objects.equals(post.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_POST_OWNER);
         }
 
         commentPinRepository.deleteByPost(post);
-
         commentPinRepository.save(CommentPin.builder()
                 .comment(comment)
                 .post(post)
@@ -93,7 +87,7 @@ public class CommentService {
         Post post = postRepository.findByIdAndPostStatus(postId, PostStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
 
-        if (!post.getMember().equals(member)) {
+        if (!Objects.equals(post.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_POST_OWNER);
         }
 
@@ -108,7 +102,6 @@ public class CommentService {
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
 
         List<CommentDto> commentDtos = new ArrayList<>();
-
         Long pinCommentId = -1L;
 
         if (post.getCommentPin() != null && page == 0) {
@@ -123,7 +116,6 @@ public class CommentService {
 
         comments.getContent()
                 .forEach(comment -> commentDtos.add(toCommentDto(member, comment, false)));
-
 
         return new SliceImpl<>(commentDtos, comments.getPageable(), comments.hasNext());
     }
@@ -147,12 +139,11 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getMember().equals(member)) {
+        if (!Objects.equals(comment.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
         commentRepository.delete(comment);
-
         return commentId;
     }
 }

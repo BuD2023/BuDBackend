@@ -24,7 +24,6 @@ import zerobase.bud.post.type.QnaAnswerStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,22 +42,17 @@ public class QnaAnswerCommentService {
         QnaAnswerComment qnaAnswerComment = qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(commentId, QnaAnswerCommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (qnaAnswerComment.getMember().equals(member)) {
+        if (Objects.equals(qnaAnswerComment.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.CANNOT_LIKE_WRITER_SELF);
         }
 
-        Optional<QnaAnswerCommentLike> optionalQnaCommentLike =
-                qnaAnswerCommentLikeRepository.findByQnaAnswerCommentAndMember(qnaAnswerComment, member);
-
-        if (optionalQnaCommentLike.isEmpty()) {
-            qnaAnswerCommentLikeRepository.save(QnaAnswerCommentLike.builder()
-                    .qnaAnswerComment(qnaAnswerComment)
-                    .member(member)
-                    .build());
-        } else {
-            qnaAnswerCommentLikeRepository.delete(optionalQnaCommentLike.get());
-        }
-
+        qnaAnswerCommentLikeRepository.findByQnaAnswerCommentAndMember(qnaAnswerComment, member)
+                .ifPresentOrElse(qnaAnswerCommentLikeRepository::delete,
+                        () -> qnaAnswerCommentLikeRepository.save(QnaAnswerCommentLike.builder()
+                                .qnaAnswerComment(qnaAnswerComment)
+                                .member(member)
+                                .build())
+                );
         return commentId;
     }
 
@@ -73,12 +67,11 @@ public class QnaAnswerCommentService {
 
         QnaAnswer qnaAnswer = qnaAnswerComment.getQnaAnswer();
 
-        if (!qnaAnswer.getMember().equals(member)) {
+        if (!Objects.equals(qnaAnswer.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_QNA_ANSWER_OWNER);
         }
 
         qnaAnswerCommentPinRepository.deleteByQnaAnswer(qnaAnswer);
-
         qnaAnswerCommentPinRepository.save(QnaAnswerCommentPin.builder()
                 .qnaAnswerComment(qnaAnswerComment)
                 .qnaAnswer(qnaAnswer)
@@ -92,7 +85,7 @@ public class QnaAnswerCommentService {
         QnaAnswer qnaAnswer = qnaAnswerRepository.findByIdAndQnaAnswerStatus(qnaPostId, QnaAnswerStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_QNA_ANSWER));
 
-        if (!qnaAnswer.getMember().equals(member)) {
+        if (!Objects.equals(qnaAnswer.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_QNA_ANSWER_OWNER);
         }
 
@@ -107,7 +100,6 @@ public class QnaAnswerCommentService {
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_QNA_ANSWER));
 
         List<QnaAnswerCommentDto> commentDtos = new ArrayList<>();
-
         Long pinCommentId = -1L;
 
         if (qnaAnswer.getQnaAnswerCommentPin() != null && page == 0) {
@@ -122,7 +114,6 @@ public class QnaAnswerCommentService {
 
         comments.getContent()
                 .forEach(comment -> commentDtos.add(toQnaCommentDto(member, comment, false)));
-
 
         return new SliceImpl<>(commentDtos, comments.getPageable(), comments.hasNext());
     }
@@ -146,12 +137,11 @@ public class QnaAnswerCommentService {
         QnaAnswerComment qnaAnswerComment = qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(commentId, QnaAnswerCommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (!qnaAnswerComment.getMember().equals(member)) {
+        if (!Objects.equals(member.getId(), qnaAnswerComment.getMember().getId())) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
         qnaAnswerCommentRepository.delete(qnaAnswerComment);
-
         return commentId;
     }
 }
