@@ -79,9 +79,7 @@ public class SendNotificationService {
         try {
             Member receiver = post.getMember();
 
-            NotificationInfo notificationInfo = notificationInfoRepository
-                .findByMemberId(receiver.getId())
-                .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isPostPushAvailable()) {
@@ -109,9 +107,7 @@ public class SendNotificationService {
         try {
             Member receiver = qnaAnswer.getMember();
 
-            NotificationInfo notificationInfo = notificationInfoRepository
-                .findByMemberId(receiver.getId())
-                .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isPostPushAvailable()) {
@@ -136,9 +132,7 @@ public class SendNotificationService {
 
     public void sendFollowedNotification(Member sender, Member receiver) {
         try {
-            NotificationInfo notificationInfo = notificationInfoRepository
-                .findByMemberId(receiver.getId())
-                .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isFollowPushAvailable()) {
@@ -165,9 +159,7 @@ public class SendNotificationService {
         try {
             Member receiver = post.getMember();
 
-            NotificationInfo notificationInfo = notificationInfoRepository
-                .findByMemberId(receiver.getId())
-                .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isPostPushAvailable()) {
@@ -188,5 +180,10 @@ public class SendNotificationService {
             log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
                 e.getMessage(), e);
         }
+    }
+
+    private NotificationInfo getNotificationInfo(Long receiverId) {
+        return notificationInfoRepository.findByMemberId(receiverId)
+            .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
     }
 }

@@ -85,6 +85,30 @@ class SendNotificationServiceTest {
         );
     }
 
+    @Test
+    void success_sendFollowedNotification() {
+        //given
+        given(notificationInfoRepository.findByMemberId(anyLong()))
+            .willReturn(Optional.ofNullable(getNotificationInfo()));
+
+        //when
+        sendNotificationService.sendFollowedNotification(
+            getSender(), getReceiver()
+        );
+    }
+
+    @Test
+    void success_sendAddLikeNotification() {
+        //given
+        given(notificationInfoRepository.findByMemberId(anyLong()))
+            .willReturn(Optional.ofNullable(getNotificationInfo()));
+
+        //when
+        sendNotificationService.sendAddLikeNotification(
+            getSender(), getPost()
+        );
+    }
+
     private QnaAnswer getQnaAnswer() {
         return QnaAnswer.builder()
             .id(1L)
