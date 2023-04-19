@@ -26,6 +26,7 @@ public enum ErrorCode {
     NOT_FOUND_POST("존재하지 않는 게시물입니다."),
 
     CANNOT_LIKE_WRITER_SELF("자신의 댓글을 좋아요 할 수 없습니다."),
+    NOT_CHATROOM_OWNER("채팅방 호스트가 아닙니다."),
     NOT_COMMENT_OWNER("댓글 작성자가 아닙니다."),
     NOT_QNA_ANSWER_OWNER("게시글의 작성자가 아닙니다."),
     NOT_POST_OWNER("게시글의 작성자가 아닙니다."),

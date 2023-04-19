@@ -16,12 +16,14 @@ import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.ChatRoomStatusDto;
 import zerobase.bud.common.exception.ChatRoomException;
+import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Chat;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.Member;
 import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
+import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.ChatRoomStatus;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.MemberStatus;
@@ -43,6 +45,9 @@ import static org.mockito.Mockito.verify;
 class ChatRoomServiceTest {
     @Mock
     private ChatRoomRepository chatRoomRepository;
+
+    @Mock
+    private MemberRepository memberRepository;
 
     @Mock
     private ChatRepository chatRepository;
@@ -339,5 +344,100 @@ class ChatRoomServiceTest {
         assertEquals(3L, dto.getNumberOfChatRooms());
         assertEquals(24L, dto.getNumberOfUsers());
 
+    }
+
+    @Test
+    @DisplayName("호스트 변경 성공")
+    void successModifyHostTest() {
+        //given
+        ChatRoom chatRoom = ChatRoom.builder()
+                .id(1L)
+                .title("임의의타이틀")
+                .description("임의의 첫번째 설명")
+                .hashTag("#해시태그#해시#")
+                .status(ChatRoomStatus.ACTIVE)
+                .member(member)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Member newHost = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .build();
+
+        given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.of(newHost));
+        //when
+        ArgumentCaptor<ChatRoom> captor = ArgumentCaptor.forClass(ChatRoom.class);
+        Long result = chatRoomService.modifyHost(1L, 2L, member);
+        //then
+        verify(chatRoomRepository, times(1)).save(captor.capture());
+        assertEquals(newHost, captor.getValue().getMember());
+        assertEquals(result, 2L);
+    }
+
+    @Test
+    @DisplayName("호스트 변경 실패 - 채팅방 없음")
+    void failModifyHostTest_ChatRoomNotFound() {
+        //given
+        given(chatRoomRepository.findByIdAndStatus(anyLong(), any()))
+                .willReturn(Optional.empty());
+        //when
+        ChatRoomException exception = assertThrows(ChatRoomException.class,
+                () -> chatRoomService.modifyHost(12L, 1L, member));
+        //then
+        assertEquals(ErrorCode.CHATROOM_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("호스트 변경 실패 - 요청한 유저가 호스트가 아님")
+    void failModifyHostTest_NotChatRoomUsersRequest() {
+        //given
+        Member host = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .build();
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .id(1L)
+                .title("임의의타이틀")
+                .description("임의의 첫번째 설명")
+                .hashTag("#해시태그#해시#")
+                .status(ChatRoomStatus.ACTIVE)
+                .member(host)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
+        //when
+        ChatRoomException exception = assertThrows(ChatRoomException.class,
+                () -> chatRoomService.modifyHost(12L, 1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_CHATROOM_OWNER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("호스트 변경 실패 - 해당 유저 찾을 수 없음")
+    void failModifyHostTest_MemberNotFound() {
+        //given
+        ChatRoom chatRoom = ChatRoom.builder()
+                .id(1L)
+                .title("임의의타이틀")
+                .description("임의의 첫번째 설명")
+                .hashTag("#해시태그#해시#")
+                .status(ChatRoomStatus.ACTIVE)
+                .member(member)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        MemberException exception = assertThrows(MemberException.class,
+                () -> chatRoomService.modifyHost(12L, 1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_REGISTERED_MEMBER, exception.getErrorCode());
     }
 }
