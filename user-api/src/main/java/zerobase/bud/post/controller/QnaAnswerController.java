@@ -42,9 +42,10 @@ public class QnaAnswerController {
 
     @PutMapping
     public ResponseEntity<Long> updateQnaAnswer(
-        @RequestBody @Valid UpdateQnaAnswer.Request request
+        @RequestBody @Valid UpdateQnaAnswer.Request request,
+        @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(qnaAnswerService.updateQnaAnswer(request));
+        return ResponseEntity.ok(qnaAnswerService.updateQnaAnswer(request, member));
     }
 
     @GetMapping
