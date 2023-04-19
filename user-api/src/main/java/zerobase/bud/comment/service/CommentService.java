@@ -128,7 +128,7 @@ public class CommentService {
                 comment.getReComments().stream()
                         .map(reComment ->
                                 CommentDto.of(reComment,
-                                        member.equals(reComment.getMember()),
+                                        Objects.equals(member.getId(), reComment.getMember().getId()),
                                         commentLikeRepository.existsByCommentAndAndMember(reComment, member))
                         ).collect(Collectors.toList())
         );
