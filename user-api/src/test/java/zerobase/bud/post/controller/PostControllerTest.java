@@ -23,16 +23,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.comment.service.CommentService;
 import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
-import zerobase.bud.post.dto.PostDto;
+import zerobase.bud.post.dto.SearchPost;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
-import zerobase.bud.util.TimeUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -184,10 +183,10 @@ class PostControllerTest {
     @DisplayName("성공 - 전체 게시글 검색")
     void success_searchPosts() throws Exception {
         //given
-        List<PostDto> list = new ArrayList<>();
+        List<SearchPost.Response> list = new ArrayList<>();
 
         for (int i = 1; i <= 3; i++) {
-            list.add(PostDto.builder()
+            list.add(SearchPost.Response.builder()
                     .id(i)
                     .title("제목" + i)
                     .imageUrls(new String[]{"url1", "url2"})
@@ -197,15 +196,15 @@ class PostControllerTest {
                     .scrapCount(i)
                     .hitCount(i)
                     .postStatus(
-                            i % 4 == 0 ? PostStatus.INACTIVE : PostStatus.ACTIVE)
+                            i % 3 == 0 ? PostStatus.INACTIVE : PostStatus.ACTIVE)
                     .postType(PostType.FEED)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build());
         }
 
-        given(postService.searchPosts(anyString(), any(), any(), anyInt(),
-                anyInt()))
+        given(postService.searchPosts(any(), anyString(), any(), any(),
+                anyInt(), anyInt(), any()))
                 .willReturn(new PageImpl<>(list));
 
         //when
@@ -296,7 +295,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 상세 정보 검색")
     void success_searchPost() throws Exception {
         //given
-        PostDto postDto = PostDto.builder()
+        SearchPost.Response response = SearchPost.Response.builder()
                 .id(1)
                 .title("제목")
                 .imageUrls(new String[]{"url1", "url2"})
@@ -311,8 +310,8 @@ class PostControllerTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        given(postService.searchPost(anyLong()))
-                .willReturn(postDto);
+        given(postService.searchPost(any(), anyLong()))
+                .willReturn(response);
         //when
         //then
 
@@ -369,10 +368,9 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 삭제")
     void success_deletePost() throws Exception {
         //given
-        PostDto postDto = PostDto.builder()
-                .id(1)
+        Post post = Post.builder()
+                .id((long)1)
                 .title("제목")
-                .imageUrls(new String[]{"url1", "url2"})
                 .content("내용")
                 .commentCount(1)
                 .likeCount(1)
@@ -385,7 +383,7 @@ class PostControllerTest {
                 .build();
 
         given(postService.deletePost(anyLong()))
-                .willReturn(postDto.getId());
+                .willReturn(post.getId());
         //when
         //then
 
