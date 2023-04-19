@@ -21,6 +21,7 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -98,27 +99,10 @@ class UserControllerTest {
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))
                 .alwaysDo(print())
                 .build();
-
-        Member member = Member.builder()
-                .id(1L)
-                .createdAt(LocalDateTime.now())
-                .status(MemberStatus.VERIFIED)
-                .profileImg("abcde.jpg")
-                .nickname("안뇽")
-                .job("시스템프로그래머")
-                .oAuthAccessToken("tokenvalue")
-                .build();
-
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(member, "",
-                List.of(MemberStatus.VERIFIED.getKey()).stream().map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList()));
-
-        given(tokenProvider.getAuthentication("임의의토큰")).willReturn(authentication);
     }
 
     @Test
+    @WithMockUser
     @DisplayName("유저 팔로우/팔로우 취소 성공")
     void successFollowTest() throws Exception {
         //given
@@ -138,6 +122,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("회원 프로필 조회 성공")
     void successReadProfileTest() throws Exception {
         //given
@@ -195,6 +180,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("나의 프로필 조회 성공")
     void successReadMyProfileTest() throws Exception {
         //given
@@ -246,6 +232,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("유저의 팔로우 리스트 조회 성공")
     void successReadMyFollowingsTest() throws Exception {
         //given
@@ -307,6 +294,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("회원 팔로우 리스트 조회 성공")
     void successReadFollowingsTest() throws Exception {
         //given
@@ -375,6 +363,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("유저의 팔로워 리스트 조회 성공")
     void successReadMyFollowersTest() throws Exception {
         //given
@@ -435,6 +424,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("회원의 팔로워 리스트 조회 성공")
     void successReadFollowersTest() throws Exception {
         //given
@@ -500,6 +490,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("성공 - 마이페이지 스크랩 불러오기")
     void successSearchScrap() throws Exception {
         //given
@@ -583,6 +574,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("성공 - 마이페이지에서 스크랩 삭제하기")
     void successDeleteScrap() throws Exception {
         //given

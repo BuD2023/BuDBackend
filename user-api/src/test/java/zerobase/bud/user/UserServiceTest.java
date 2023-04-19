@@ -115,7 +115,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("팔로우 성공 - 이미 팔로우")
-    void successFollowWhenAlreadyFollowingTest() {
+    void successFollowTest_AlreadyFollowing() {
         //given
         Member targetMember = Member.builder()
                 .id(2L)
@@ -149,7 +149,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("팔로우 실패 - 자기 자신을 팔로우")
-    void failFollowWhenFollowSelfTest() {
+    void failFollowTest_FollowSelf() {
         //given
         Member targetMember = Member.builder()
                 .id(2L)
