@@ -44,18 +44,15 @@ public class FcmApi {
                 .concat(now);
 
             // 메시지 만들기
-            Message message = makeMessage(dto, token, webpushConfig,
-                notificationId);
+            Message message = makeMessage(dto, token, webpushConfig, notificationId);
 
             // 요청에 대한 응답을 받을 response
             try {
                 // 알림 발송
-                String response = FirebaseMessaging.getInstance()
-                    .send(message);
+                String response = FirebaseMessaging.getInstance().send(message);
                 log.info("send message success response: " + response);
 
-                notificationRepository.save(
-                    Notification.of(notificationId, dto));
+                notificationRepository.save(Notification.of(notificationId, dto));
             } catch (FirebaseMessagingException e) {
                 log.error(
                     "cannot send to memberList push message. error info : {}",
@@ -75,6 +72,7 @@ public class FcmApi {
             .setToken(token)
             .setWebpushConfig(webpushConfig)
             .putData(NOTIFICATION_ID, notificationId)
+            .putData(SENDER_ID, dto.getSender().getId().toString())
             .putData(SENDER_NICKNAME, dto.getSender().getNickname())
             .putData(NOTIFICATION_TYPE, dto.getNotificationType().name())
             .putData(PAGE_TYPE, dto.getPageType().name())

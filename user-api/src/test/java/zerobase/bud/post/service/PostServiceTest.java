@@ -150,7 +150,7 @@ class PostServiceTest {
         //given 어떤 데이터가 주어졌을 때
         List<MultipartFile> images = getMockMultipartFiles();
 
-        given(postRepository.findById(anyLong()))
+        given(postRepository.findByIdAndPostStatus(anyLong(), any()))
             .willReturn(Optional.ofNullable(getPost()));
 
         given(awsS3Api.uploadImage(any(), any()))
@@ -187,7 +187,7 @@ class PostServiceTest {
     @DisplayName("NOT_FOUND_POST_updatePost")
     void NOT_FOUND_POST_updatePost() {
         //given 어떤 데이터가 주어졌을 때
-        given(postRepository.findById(anyLong()))
+        given(postRepository.findByIdAndPostStatus(anyLong(), any()))
             .willReturn(Optional.empty());
 
         //when 어떤 경우에

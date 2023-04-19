@@ -11,6 +11,7 @@ import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.MemberStatus;
@@ -44,6 +45,9 @@ class UserServiceTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private SendNotificationService sendNotificationService;
 
     @InjectMocks
     private UserService userService;

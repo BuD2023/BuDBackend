@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.user.domain.Follow;
@@ -26,6 +27,8 @@ public class UserService {
 
     private final PostRepository postRepository;
 
+    private final SendNotificationService sendNotificationService;
+
     @Transactional
     public Long follow(Long memberId, Member member) {
         Member targetMember = memberRepository.findById(memberId)
@@ -42,7 +45,9 @@ public class UserService {
                                 .member(member)
                                 .build())
                 );
-
+        
+        sendNotificationService.sendFollowedNotification(member, targetMember);
+        
         return targetMember.getId();
     }
 
