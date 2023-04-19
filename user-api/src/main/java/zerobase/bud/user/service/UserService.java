@@ -1,9 +1,5 @@
 package zerobase.bud.user.service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +13,10 @@ import zerobase.bud.user.domain.Follow;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.repository.FollowRepository;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -38,21 +38,16 @@ public class UserService {
             throw new MemberException(ErrorCode.CANNOT_FOLLOW_YOURSELF);
         }
 
-        Optional<Follow> optionalFollow =
-                followRepository.findByTargetAndAndMember(targetMember, member);
-
-        if (optionalFollow.isPresent()) {
-            followRepository.delete(optionalFollow.get());
-        } else {
-            followRepository.save(Follow.builder()
-                    .target(targetMember)
-                    .member(member)
-                    .build()
-            );
-        }
-
+        followRepository.findByTargetAndAndMember(targetMember, member)
+                .ifPresentOrElse(followRepository::delete,
+                        () -> followRepository.save(Follow.builder()
+                                .target(targetMember)
+                                .member(member)
+                                .build())
+                );
+        
         sendNotificationService.sendFollowedNotification(member, targetMember);
-
+        
         return targetMember.getId();
     }
 
@@ -63,11 +58,10 @@ public class UserService {
         Long numberOfFollowers = followRepository.countByTarget(targetMember);
         Long numberOfFollows = followRepository.countByMember(targetMember);
         Long numberOfPosts = postRepository.countByMember(targetMember);
-        boolean isReader = Objects.equals(member.getId(), targetMember.getId());
         boolean isFollowing = followRepository.existsByTargetAndMember(targetMember, member);
 
-        return UserDto.of(targetMember, isReader, isFollowing,
-                numberOfFollowers, numberOfFollows, numberOfPosts);
+        return UserDto.of(targetMember, Objects.equals(member.getId(), targetMember.getId()),
+                isFollowing, numberOfFollowers, numberOfFollows, numberOfPosts);
     }
 
     public UserDto readMyProfile(Member member) {

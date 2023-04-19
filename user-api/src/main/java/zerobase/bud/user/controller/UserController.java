@@ -20,52 +20,53 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
     private final ScrapService scrapService;
 
-    @PostMapping("/users/{userId}/follows")
+    @PostMapping("/{userId}/follows")
     private ResponseEntity<URI> follow(@PathVariable Long userId,
                                        @AuthenticationPrincipal Member member) {
         userService.follow(userId, member);
         return ResponseEntity.created(URI.create("/users/" + userId)).build();
     }
 
-    @GetMapping("/users/follows")
+    @GetMapping("/follows")
     private ResponseEntity<List<FollowDto>> readMyFollowings(@AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(userService.readMyFollowings(member));
     }
 
-    @GetMapping("/users/{userId}/follows")
+    @GetMapping("/{userId}/follows")
     private ResponseEntity<List<FollowDto>> readFollowings(@PathVariable Long userId,
                                                            @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(userService.readFollowings(userId, member));
     }
 
-    @GetMapping("/users/followers")
+    @GetMapping("/followers")
     private ResponseEntity<List<FollowDto>> readMyFollowers(@AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(userService.readMyFollowers(member));
     }
 
-    @GetMapping("/users/{userId}/followers")
+    @GetMapping("/{userId}/followers")
     private ResponseEntity<List<FollowDto>> readFollowers(@PathVariable Long userId,
                                                           @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(userService.readFollowers(userId, member));
     }
 
-    @GetMapping("/users/{userId}")
+    @GetMapping("/{userId}")
     private ResponseEntity<UserDto> readProfile(@PathVariable Long userId,
                                                 @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(userService.readProfile(userId, member));
     }
 
-    @GetMapping("/users")
+    @GetMapping
     private ResponseEntity<UserDto> readMyProfile(@AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(userService.readMyProfile(member));
     }
 
-    @GetMapping("/users/posts/scraps")
+    @GetMapping("/posts/scraps")
     public ResponseEntity<Slice<ScrapDto>> searchScraps(
             @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable,
@@ -75,7 +76,7 @@ public class UserController {
         return ResponseEntity.ok(scrapService.searchScrap(pageable, member));
     }
 
-    @DeleteMapping("/users/posts/scraps/{scrapId}")
+    @DeleteMapping("/posts/scraps/{scrapId}")
     public ResponseEntity<Long> removeScrap(@PathVariable Long scrapId) {
         return ResponseEntity.ok(scrapService.removeScrap(scrapId));
     }
