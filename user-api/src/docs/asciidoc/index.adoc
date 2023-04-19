@@ -100,7 +100,7 @@ include::{snippets}/chat-room-controller-test/success-read-chats-test/response-f
 include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/http-request.adoc[]
 
 .response field
-include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/response-body.adoc[]
+include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/http-response.adoc[]
 
 
 
@@ -115,8 +115,8 @@ include::{snippets}/chat-room-controller-test/success-modify-host-test/http-requ
 |userId|Number|Y|path variable 호스트 위임할 유저의 아이디
 |===
 
-.response field
-include::{snippets}/chat-room-controller-test/success-modify-host-test/response-body.adoc[]
+.response
+include::{snippets}/chat-room-controller-test/success-modify-host-test/http-response.adoc[]
 
 .error response
 |===
