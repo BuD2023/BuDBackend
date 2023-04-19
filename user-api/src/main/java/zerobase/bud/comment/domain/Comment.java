@@ -43,4 +43,12 @@ public class Comment extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private CommentStatus commentStatus;
+
+    public void addLikeCount() {
+        this.likeCount++;
+    }
+
+    public void minusLikeCount() {
+        this.likeCount--;
+    }
 }
