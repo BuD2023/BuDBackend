@@ -3,6 +3,8 @@ package zerobase.bud.notification.service;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION_INFO;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,34 +34,33 @@ public class SendNotificationService {
 
     private final FollowRepository followRepository;
 
-    public void sendCreatePostNotification(Member member, Post post) {
+    public void sendCreatePostNotification(Member sender, Post post) {
         try {
-            List<Member> followerList = followRepository.findByTarget(member)
+            List<Member> followerList = followRepository.findByTarget(sender)
                 .map(Follow::getMember)
                 .collect(Collectors.toList());
 
-            log.info("follower 가 " + followerList.size() + " 명 입니다. 알림 전송을 시작합니다.");
+            log.info(
+                "follower 가 " + followerList.size() + " 명 입니다. 알림 전송을 시작합니다.");
 
             for (Member receiver : followerList) {
-                NotificationInfo notificationInfo = notificationInfoRepository
-                    .findByMemberId(receiver.getId())
-                    .orElseThrow(
-                        () -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
+                Optional<NotificationInfo> optionalNotificationInfo =
+                    notificationInfoRepository.findByMemberId(receiver.getId());
 
-                //테스트를 위해 우선 주석처리 해두었음. 수신자와 송신자가 같으면 알람발생 x
-                //post 알람이 꺼져있는 수신자의 경우 알람발생 x
-    //        if (!Objects.equals(receiver.getId(), member.getId())
-    //            && notificationInfo.isPostPushAvailable()) {
-    //            sendNotification(notificationInfo.getFcmToken(), receiver, member,
-    //                post);
-    //        }
+                if (optionalNotificationInfo.isEmpty()) {
+                    log.error(receiver.getNickname() + "님의 알림정보가 없습니다.");
+                    continue;
+                }
 
-                if (notificationInfo.isFollowPushAvailable()) {
+                NotificationInfo notificationInfo = optionalNotificationInfo.get();
+
+                if (!Objects.equals(receiver.getId(), sender.getId())
+                    && notificationInfo.isFollowPushAvailable()) {
                     fcmApi.sendNotificationByToken(
                         NotificationDto.of(
                             notificationInfo.getFcmToken()
                             , receiver
-                            , member
+                            , sender
                             , NotificationType.FOLLOW
                             , PageType.valueOf(post.getPostType().name())
                             , post.getId()
@@ -69,11 +70,12 @@ public class SendNotificationService {
                 }
             }
         } catch (Exception e) {
-            log.error("sendCreatePostNotification 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(),e);
+            log.error("sendCreatePostNotification 알림을 보내는 중 오류가 발생했습니다. {}",
+                e.getMessage(), e);
         }
     }
 
-    public void sendCreateQnaAnswerNotification(Member member, Post post) {
+    public void sendCreateQnaAnswerNotification(Member sender, Post post) {
         try {
             Member receiver = post.getMember();
 
@@ -81,20 +83,13 @@ public class SendNotificationService {
                 .findByMemberId(receiver.getId())
                 .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
 
-            //테스트를 위해 우선 주석처리 해두었음. 수신자와 송신자가 같으면 알람발생 x
-            //post 알람이 꺼져있는 수신자의 경우 알람발생 x
-//        if (!Objects.equals(receiver.getId(), member.getId())
-//            && notificationInfo.isPostPushAvailable()) {
-//            sendNotification(notificationInfo.getFcmToken(), receiver, member,
-//                post);
-//        }
-
-            if (notificationInfo.isPostPushAvailable()) {
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
                 fcmApi.sendNotificationByToken(
                     NotificationDto.of(
                         notificationInfo.getFcmToken()
                         , receiver
-                        , member
+                        , sender
                         , NotificationType.POST
                         , PageType.QNA
                         , post.getId()
@@ -102,14 +97,15 @@ public class SendNotificationService {
                     )
                 );
             }
+
         } catch (Exception e) {
-            log.error("sendCreateQnaAnswerNotification 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(),e);
+            log.error(
+                "sendCreateQnaAnswerNotification 알림을 보내는 중 오류가 발생했습니다. {}",
+                e.getMessage(), e);
         }
     }
 
-    public void sendQnaAnswerPinNotification(
-        Member member, QnaAnswer qnaAnswer
-    ) {
+    public void sendQnaAnswerPinNotification(Member sender, QnaAnswer qnaAnswer) {
         try {
             Member receiver = qnaAnswer.getMember();
 
@@ -117,20 +113,13 @@ public class SendNotificationService {
                 .findByMemberId(receiver.getId())
                 .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
 
-            //테스트를 위해 우선 주석처리 해두었음. 수신자와 송신자가 같으면 알람발생 x
-            //post 알람이 꺼져있는 수신자의 경우 알람발생 x
-//        if (!Objects.equals(receiver.getId(), member.getId())
-//            && notificationInfo.isPostPushAvailable()) {
-//            sendNotification(notificationInfo.getFcmToken(), receiver, member,
-//                post);
-//        }
-
-            if (notificationInfo.isPostPushAvailable()) {
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
                 fcmApi.sendNotificationByToken(
                     NotificationDto.of(
                         notificationInfo.getFcmToken()
                         , receiver
-                        , member
+                        , sender
                         , NotificationType.POST
                         , PageType.QNA
                         , qnaAnswer.getPost().getId()
@@ -138,8 +127,66 @@ public class SendNotificationService {
                     )
                 );
             }
+
         } catch (Exception e) {
-            log.error("sendQnaAnswerPinNotification 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(),e);
+            log.error("sendQnaAnswerPinNotification 알림을 보내는 중 오류가 발생했습니다. {}",
+                e.getMessage(), e);
+        }
+    }
+
+    public void sendFollowedNotification(Member sender, Member receiver) {
+        try {
+            NotificationInfo notificationInfo = notificationInfoRepository
+                .findByMemberId(receiver.getId())
+                .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isFollowPushAvailable()) {
+                fcmApi.sendNotificationByToken(
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.FOLLOW
+                        , PageType.OTHER_PROFILE
+                        , sender.getId()
+                        , NotificationDetailType.FOLLOWED
+                    )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
+                e.getMessage(), e);
+        }
+    }
+
+    public void sendAddLikeNotification(Member sender, Post post) {
+        try {
+            Member receiver = post.getMember();
+
+            NotificationInfo notificationInfo = notificationInfoRepository
+                .findByMemberId(receiver.getId())
+                .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
+                fcmApi.sendNotificationByToken(
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.POST
+                        , PageType.valueOf(post.getPostType().name())
+                        , post.getId()
+                        , NotificationDetailType.LIKE
+                    )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
+                e.getMessage(), e);
         }
     }
 }

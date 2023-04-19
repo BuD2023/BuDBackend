@@ -52,8 +52,11 @@ public class PostService {
 
 
     @Transactional
-    public String createPost(Member member, List<MultipartFile> images,
-        Request request) {
+    public String createPost(
+        Member member
+        , List<MultipartFile> images
+        , Request request
+    ) {
 
         Post post = postRepository.save(Post.of(member, request));
 
@@ -70,7 +73,7 @@ public class PostService {
         , UpdatePost.Request request
     ) {
 
-        Post post = postRepository.findById(request.getPostId())
+        Post post = postRepository.findByIdAndPostStatus(request.getPostId(), PostStatus.ACTIVE)
             .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
         post.update(request);
@@ -148,6 +151,8 @@ public class PostService {
                 .build());
 
         post.likeCountUp();
+
+        sendNotificationService.sendAddLikeNotification(member, post);
 
         return true;
     }
