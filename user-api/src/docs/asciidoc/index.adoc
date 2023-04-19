@@ -328,26 +328,6 @@ include::{snippets}/post-controller-test/success_delete-post/http-response.adoc[
 .response field
 include::{snippets}/post-controller-test/success_delete-post/response-body.adoc[]
 
-=== 6. QNA 답변 작성
-.request
-include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-request.adoc[]
-
-.response
-include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-response.adoc[]
-
-.response field
-include::{snippets}/qna-answer-controller-test/success_create-qna-answer/response-body.adoc[]
-
-=== 7. QNA 답변 수정
-.request
-include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-request.adoc[]
-
-.response
-include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-response.adoc[]
-
-.response field
-include::{snippets}/qna-answer-controller-test/success_update-qna-answer/response-body.adoc[]
-
 === 6. 게시글 좋아요
 .request
 include::{snippets}/post-controller-test/success_add-post-like/http-request.adoc[]
@@ -431,8 +411,66 @@ include::{snippets}/post-controller-test/success_remove-post-scrap/http-response
 .response field
 include::{snippets}/post-controller-test/success_remove-post-scrap/response-body.adoc[]
 
+=== 10. QNA 답변 작성
+.request
+include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-request.adoc[]
 
-=== 10. 댓글 좋아요 및 좋아요 취소
+.response
+include::{snippets}/qna-answer-controller-test/success_create-qna-answer/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_create-qna-answer/response-body.adoc[]
+
+=== 11. QNA 답변 수정
+.request
+include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-request.adoc[]
+
+.response
+include::{snippets}/qna-answer-controller-test/success_update-qna-answer/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_update-qna-answer/response-body.adoc[]
+
+=== 12. QNA 답변 조회
+.request
+include::{snippets}/qna-answer-controller-test/success_search-qna-answers/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명|기본값
+|postId|Long|Y|QNA 답변을 조회할 QNA 고유 아이디값|0
+|sort|String|N|정렬기준(LIKE,DESC or DATE,DESC)|DATE,DESC
+|page|Number|N|요청 페이지 번호|0
+|size|Number|N|요청 데이터 개수|5
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success_search-qna-answers/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_search-qna-answers/response-body.adoc[]
+
+
+=== 13. QNA 답변 삭제
+.request
+include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/posts/qna-answer/{qna-answer-id}|/posts/qna-answer/1
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/response-body.adoc[]
+
+
+
+
+=== 14. 댓글 좋아요 및 좋아요 취소
 .request
 include::{snippets}/post-controller-test/success-comment-like/http-request.adoc[]
 
@@ -452,7 +490,7 @@ include::{snippets}/post-controller-test/success-comment-like/http-response.adoc
 |400|CANNOT_LIKE_WRITER_SELF|자신의 댓글을 좋아요 할 수 없습니다.
 |===
 
-=== 11. 댓글 핀 및 댓글 핀 변경
+=== 15. 댓글 핀 및 댓글 핀 변경
 .request
 include::{snippets}/post-controller-test/success-comment-pin/http-request.adoc[]
 
@@ -473,7 +511,7 @@ include::{snippets}/post-controller-test/success-comment-pin/http-response.adoc[
 |400|CANNOT_PIN_RECOMMENT|대댓글에는 핀을 할 수 없습니다.
 |===
 
-=== 12. 댓글 핀 취소
+=== 16. 댓글 핀 취소
 .request
 include::{snippets}/post-controller-test/success-cancel-comment-pin/http-request.adoc[]
 
@@ -493,7 +531,7 @@ include::{snippets}/post-controller-test/success-cancel-comment-pin/http-respons
 |400|NOT_POST_OWNER|게시글의 작성자가 아닙니다.
 |===
 
-=== 13. 댓글 조회
+=== 17. 댓글 조회
 .request
 include::{snippets}/post-controller-test/success-comments/http-request.adoc[]
 
@@ -512,7 +550,7 @@ include::{snippets}/post-controller-test/success-comments/http-response.adoc[]
 include::{snippets}/post-controller-test/success-comments/response-fields.adoc[]
 
 
-=== 14. 댓글 삭제
+=== 18. 댓글 삭제
 .request
 include::{snippets}/post-controller-test/success-delete-comment/http-request.adoc[]
 
