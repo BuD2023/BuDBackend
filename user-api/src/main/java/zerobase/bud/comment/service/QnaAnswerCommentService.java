@@ -126,7 +126,7 @@ public class QnaAnswerCommentService {
                 comment.getReComments().stream()
                         .map(reComment ->
                                 QnaAnswerCommentDto.of(reComment,
-                                        member.equals(reComment.getMember()),
+                                        Objects.equals(member.getId(), reComment.getMember().getId()),
                                         qnaAnswerCommentLikeRepository.existsByQnaAnswerCommentAndMember(reComment, member))
                         ).collect(Collectors.toList())
         );
