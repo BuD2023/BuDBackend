@@ -161,34 +161,6 @@ class CommentServiceTest {
         assertEquals(ErrorCode.COMMENT_NOT_FOUND, exception.getErrorCode());
     }
 
-    @Test
-    @DisplayName("좋아요 실패 - 자신의 댓글을 좋아요")
-    void failCommentLikeWhenRequesterIsWriterTest() {
-        //given
-        Member writer = Member.builder()
-                .id(2L)
-                .createdAt(LocalDateTime.now())
-                .status(MemberStatus.VERIFIED)
-                .profileImg("aaaaaa.jpg")
-                .nickname("비가와")
-                .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
-                .build();
-
-        Comment comment = Comment.builder()
-                .member(writer)
-                .commentCount(1)
-                .id(3L)
-                .build();
-
-        given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
-                .willReturn(Optional.of(comment));
-        //when
-        BudException exception = assertThrows(BudException.class,
-                () -> commentService.commentLike(123L, writer));
-        //then
-        assertEquals(ErrorCode.CANNOT_LIKE_WRITER_SELF, exception.getErrorCode());
-    }
 
     @Test
     @DisplayName("댓글 핀 성공")

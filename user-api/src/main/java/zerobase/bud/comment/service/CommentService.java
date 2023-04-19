@@ -44,10 +44,6 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (Objects.equals(comment.getMember().getId(), member.getId())) {
-            throw new BudException(ErrorCode.CANNOT_LIKE_WRITER_SELF);
-        }
-
         Optional<CommentLike> optionalCommentLike = commentLikeRepository.findByCommentAndMember(comment, member);
 
         if (optionalCommentLike.isPresent()) {
