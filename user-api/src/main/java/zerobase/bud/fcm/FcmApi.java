@@ -65,7 +65,7 @@ public class FcmApi {
         }
     }
 
-    private static Message makeMessage(
+    private Message makeMessage(
         NotificationDto dto
         , String token
         , WebpushConfig webpushConfig
