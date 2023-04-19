@@ -16,6 +16,7 @@ import zerobase.bud.comment.type.CommentStatus;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.repository.PostRepository;
@@ -39,6 +40,8 @@ public class CommentService {
 
     private final PostRepository postRepository;
 
+    private final SendNotificationService sendNotificationService;
+
     @Transactional
     public Long commentLike(Long commentId, Member member) {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
@@ -59,6 +62,7 @@ public class CommentService {
                     .comment(comment)
                     .member(member)
                     .build());
+            sendNotificationService.sendCommentLikeNotification(member, comment);
         }
 
         commentRepository.save(comment);
@@ -85,6 +89,8 @@ public class CommentService {
                 .comment(comment)
                 .post(post)
                 .build());
+
+        sendNotificationService.sendCommentPinNotification(member, comment);
 
         return commentId;
     }

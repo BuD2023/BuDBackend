@@ -18,6 +18,7 @@ import zerobase.bud.comment.repository.CommentRepository;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.repository.PostRepository;
@@ -45,6 +46,9 @@ class CommentServiceTest {
 
     @Mock
     private CommentPinRepository commentPinRepository;
+
+    @Mock
+    private SendNotificationService sendNotificationService;
 
     @Mock
     private PostRepository postRepository;
