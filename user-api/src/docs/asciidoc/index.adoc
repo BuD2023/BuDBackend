@@ -103,7 +103,31 @@ include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/htt
 include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/response-body.adoc[]
 
 
-=== 7. 웹소켓 sub
+
+=== 7. 채팅방 호스트 변경
+.request
+include::{snippets}/chat-room-controller-test/success-modify-host-test/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|chatroomId|Number|Y|path variable
+|userId|Number|Y|path variable 호스트 위임할 유저의 아이디
+|===
+
+.response field
+include::{snippets}/chat-room-controller-test/success-modify-host-test/response-body.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|CHATROOM_NOT_FOUND|해당 채팅방 정보가 없습니다.
+|400|NOT_CHATROOM_OWNER|채팅방 호스트가 아닙니다.
+|400|NOT_REGISTERED_MEMBER|등록되지 않은 회원입니다.
+|===
+
+
+=== 8. 웹소켓 sub
 .STOMP
 ----
 http://34.64.224.24:8083/ws
@@ -111,7 +135,7 @@ http://34.64.224.24:8083/ws
 Authorization: Bearer accestokenvlaue
 ----
 
-=== 8. 웹소켓 pub - 메세지
+=== 9. 웹소켓 pub - 메세지
 .STOMP
 ----
 http://34.64.224.24:8083/ws
@@ -137,7 +161,7 @@ Authorization: Bearer accestokenvlaue
 }
 ----
 
-=== 9. 웹소켓 pub - 이미지
+=== 10. 웹소켓 pub - 이미지
 .STOMP
 ----
 http://34.64.224.24:8083/ws
@@ -168,7 +192,7 @@ Authorization: Bearer accestokenvlaue
 }
 ----
 
-=== 10. 채팅방에서 유저가 들어왔을 때
+=== 11. 채팅방에서 유저가 들어왔을 때
 .STOMP
 ----
 {
@@ -178,7 +202,7 @@ Authorization: Bearer accestokenvlaue
 }
 ----
 
-=== 11. 채팅방에서 유저가 나갔을 때
+=== 12. 채팅방에서 유저가 나갔을 때
 .STOMP
 ----
 {
@@ -188,7 +212,7 @@ Authorization: Bearer accestokenvlaue
 }
 ----
 
-=== 12. 채팅방이 폭파되었을 때
+=== 13. 채팅방이 폭파되었을 때
 호스트가 나가 채팅방이 폭파된 경우
 
 .STOMP

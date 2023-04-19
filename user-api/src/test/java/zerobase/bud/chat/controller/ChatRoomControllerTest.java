@@ -452,5 +452,25 @@ class ChatRoomControllerTest {
                 );
     }
 
+    @Test
+    @DisplayName("채팅방 호스트 변경 성공")
+    void successModifyHostTest() throws Exception {
+        //given
+        given(chatRoomService.modifyHost(anyLong(), anyLong(), any())).willReturn(1L);
+        //when
+        //then
+        this.mockMvc.perform(post("/chatrooms/{chatroomId}/users/{userId}",2L,1L)
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+    }
+
 
 }
