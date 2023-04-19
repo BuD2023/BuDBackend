@@ -113,6 +113,8 @@ public class QnaAnswerService {
 
         qnaAnswerPinRepository.save(QnaAnswerPin.of(qnaAnswer, post));
 
+        sendNotificationService.sendQnaAnswerPinNotification(member, qnaAnswer);
+
         return qnaAnswerId;
     }
 

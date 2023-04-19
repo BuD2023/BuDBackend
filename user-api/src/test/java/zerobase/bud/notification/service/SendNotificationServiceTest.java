@@ -1,11 +1,8 @@
 package zerobase.bud.notification.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION_INFO;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 import static zerobase.bud.util.Constants.REPLACE_EXPRESSION;
 
@@ -14,13 +11,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.fcm.FcmApi;
 import zerobase.bud.notification.domain.Notification;
@@ -31,7 +26,9 @@ import zerobase.bud.notification.type.NotificationStatus;
 import zerobase.bud.notification.type.NotificationType;
 import zerobase.bud.notification.type.PageType;
 import zerobase.bud.post.domain.Post;
+import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.type.PostType;
+import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.user.domain.Follow;
 import zerobase.bud.user.repository.FollowRepository;
 
@@ -65,24 +62,6 @@ class SendNotificationServiceTest {
     }
 
     @Test
-    @DisplayName("NOT_FOUND_NOTIFICATION_INFO_sendCreatePostNotification")
-    void NOT_FOUND_NOTIFICATION_INFO_sendCreatePostNotification() {
-        //given
-        given(followRepository.findByTarget(any()))
-            .willReturn(Stream.of(getFollow()));
-
-        given(notificationInfoRepository.findByMemberId(anyLong()))
-            .willReturn(Optional.empty());
-        //when
-        BudException budException = assertThrows(BudException.class,
-            () -> sendNotificationService.sendCreatePostNotification(
-                getSender(), getPost()
-            ));
-
-        assertEquals(NOT_FOUND_NOTIFICATION_INFO, budException.getErrorCode());
-    }
-
-    @Test
     void success_sendCreateQnaAnswerNotification() {
         //given
         given(notificationInfoRepository.findByMemberId(anyLong()))
@@ -95,18 +74,25 @@ class SendNotificationServiceTest {
     }
 
     @Test
-    @DisplayName("NOT_FOUND_NOTIFICATION_INFO_sendCreateQnaAnswerNotification")
-    void NOT_FOUND_NOTIFICATION_INFO_sendCreateQnaAnswerNotification() {
+    void success_sendQnaAnswerPinNotification() {
         //given
         given(notificationInfoRepository.findByMemberId(anyLong()))
-            .willReturn(Optional.empty());
-        //when
-        BudException budException = assertThrows(BudException.class,
-            () -> sendNotificationService.sendCreateQnaAnswerNotification(
-                getSender(), getPost()
-            ));
+            .willReturn(Optional.ofNullable(getNotificationInfo()));
 
-        assertEquals(NOT_FOUND_NOTIFICATION_INFO, budException.getErrorCode());
+        //when
+        sendNotificationService.sendQnaAnswerPinNotification(
+            getSender(), getQnaAnswer()
+        );
+    }
+
+    private QnaAnswer getQnaAnswer() {
+        return QnaAnswer.builder()
+            .id(1L)
+            .member(getSender())
+            .post(getPost())
+            .content("content")
+            .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
+            .build();
     }
 
     private Post getPost() {
