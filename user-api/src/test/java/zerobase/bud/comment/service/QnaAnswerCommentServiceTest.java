@@ -77,6 +77,7 @@ class QnaAnswerCommentServiceTest {
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
                 .member(writer)
                 .commentCount(1)
+                .likeCount(0)
                 .id(3L)
                 .build();
 
@@ -87,13 +88,16 @@ class QnaAnswerCommentServiceTest {
         given(qnaAnswerCommentLikeRepository.findByQnaAnswerCommentAndMember(any(), any()))
                 .willReturn(Optional.empty());
         //when
-        ArgumentCaptor<QnaAnswerCommentLike> captor = ArgumentCaptor.forClass(QnaAnswerCommentLike.class);
+        ArgumentCaptor<QnaAnswerCommentLike> commentLikeCaptor = ArgumentCaptor.forClass(QnaAnswerCommentLike.class);
+        ArgumentCaptor<QnaAnswerComment> commentCaptor = ArgumentCaptor.forClass(QnaAnswerComment.class);
         Long result = qnaAnswerCommentService.commentLike(123L, member);
         //then
-        verify(qnaAnswerCommentLikeRepository, times(1)).save(captor.capture());
+        verify(qnaAnswerCommentLikeRepository, times(1)).save(commentLikeCaptor.capture());
+        verify(qnaAnswerCommentRepository, times(1)).save(commentCaptor.capture());
+        assertEquals(1, commentCaptor.getValue().getLikeCount());
         assertEquals(123L, result);
-        assertEquals(1L, captor.getValue().getMember().getId());
-        assertEquals(3L, captor.getValue().getQnaAnswerComment().getId());
+        assertEquals(1L, commentLikeCaptor.getValue().getMember().getId());
+        assertEquals(3L, commentLikeCaptor.getValue().getQnaAnswerComment().getId());
     }
 
     @Test
@@ -113,6 +117,7 @@ class QnaAnswerCommentServiceTest {
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
                 .member(writer)
                 .commentCount(1)
+                .likeCount(1)
                 .id(3L)
                 .build();
 
@@ -129,13 +134,16 @@ class QnaAnswerCommentServiceTest {
                         .build()
                 ));
         //when
-        ArgumentCaptor<QnaAnswerCommentLike> captor = ArgumentCaptor.forClass(QnaAnswerCommentLike.class);
+        ArgumentCaptor<QnaAnswerCommentLike> commentLikeCaptor = ArgumentCaptor.forClass(QnaAnswerCommentLike.class);
+        ArgumentCaptor<QnaAnswerComment> commentCaptor = ArgumentCaptor.forClass(QnaAnswerComment.class);
         Long result = qnaAnswerCommentService.commentLike(123L, member);
         //then
-        verify(qnaAnswerCommentLikeRepository, times(1)).delete(captor.capture());
+        verify(qnaAnswerCommentLikeRepository, times(1)).delete(commentLikeCaptor.capture());
+        verify(qnaAnswerCommentRepository, times(1)).save(commentCaptor.capture());
+        assertEquals(0, commentCaptor.getValue().getLikeCount());
         assertEquals(123L, result);
-        assertEquals(1L, captor.getValue().getMember().getId());
-        assertEquals(3L, captor.getValue().getQnaAnswerComment().getId());
+        assertEquals(1L, commentLikeCaptor.getValue().getMember().getId());
+        assertEquals(3L, commentLikeCaptor.getValue().getQnaAnswerComment().getId());
     }
 
     @Test

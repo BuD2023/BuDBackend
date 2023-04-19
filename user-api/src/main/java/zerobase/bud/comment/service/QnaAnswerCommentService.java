@@ -24,6 +24,7 @@ import zerobase.bud.post.type.QnaAnswerStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +39,7 @@ public class QnaAnswerCommentService {
 
     private final QnaAnswerRepository qnaAnswerRepository;
 
+    @Transactional
     public Long commentLike(Long commentId, Member member) {
         QnaAnswerComment qnaAnswerComment = qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(commentId, QnaAnswerCommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
@@ -46,13 +48,20 @@ public class QnaAnswerCommentService {
             throw new BudException(ErrorCode.CANNOT_LIKE_WRITER_SELF);
         }
 
-        qnaAnswerCommentLikeRepository.findByQnaAnswerCommentAndMember(qnaAnswerComment, member)
-                .ifPresentOrElse(qnaAnswerCommentLikeRepository::delete,
-                        () -> qnaAnswerCommentLikeRepository.save(QnaAnswerCommentLike.builder()
-                                .qnaAnswerComment(qnaAnswerComment)
-                                .member(member)
-                                .build())
-                );
+        Optional<QnaAnswerCommentLike> optionalQnaAnswerComment =
+                qnaAnswerCommentLikeRepository.findByQnaAnswerCommentAndMember(qnaAnswerComment, member);
+
+        if (optionalQnaAnswerComment.isPresent()) {
+            qnaAnswerComment.minusLikeCount();
+            qnaAnswerCommentLikeRepository.delete(optionalQnaAnswerComment.get());
+        } else {
+            qnaAnswerComment.addLikeCount();
+            qnaAnswerCommentLikeRepository.save(QnaAnswerCommentLike.builder()
+                    .qnaAnswerComment(qnaAnswerComment)
+                    .member(member)
+                    .build());
+        }
+        qnaAnswerCommentRepository.save(qnaAnswerComment);
         return commentId;
     }
 

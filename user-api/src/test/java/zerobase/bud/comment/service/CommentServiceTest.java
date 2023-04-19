@@ -79,6 +79,7 @@ class CommentServiceTest {
         Comment comment = Comment.builder()
                 .member(writer)
                 .commentCount(1)
+                .likeCount(0)
                 .id(3L)
                 .build();
 
@@ -89,13 +90,16 @@ class CommentServiceTest {
         given(commentLikeRepository.findByCommentAndMember(any(), any()))
                 .willReturn(Optional.empty());
         //when
-        ArgumentCaptor<CommentLike> captor = ArgumentCaptor.forClass(CommentLike.class);
+        ArgumentCaptor<CommentLike> commentLikeCaptor = ArgumentCaptor.forClass(CommentLike.class);
+        ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
         Long result = commentService.commentLike(123L, member);
         //then
-        verify(commentLikeRepository, times(1)).save(captor.capture());
+        verify(commentLikeRepository, times(1)).save(commentLikeCaptor.capture());
+        verify(commentRepository, times(1)).save(commentCaptor.capture());
+        assertEquals(1, commentCaptor.getValue().getLikeCount());
         assertEquals(123L, result);
-        assertEquals(1L, captor.getValue().getMember().getId());
-        assertEquals(3L, captor.getValue().getComment().getId());
+        assertEquals(1L, commentLikeCaptor.getValue().getMember().getId());
+        assertEquals(3L, commentLikeCaptor.getValue().getComment().getId());
     }
 
     @Test
@@ -115,6 +119,7 @@ class CommentServiceTest {
         Comment comment = Comment.builder()
                 .member(writer)
                 .commentCount(1)
+                .likeCount(1)
                 .id(3L)
                 .build();
 
@@ -131,13 +136,16 @@ class CommentServiceTest {
                         .build()
                 ));
         //when
-        ArgumentCaptor<CommentLike> captor = ArgumentCaptor.forClass(CommentLike.class);
+        ArgumentCaptor<CommentLike> commentLikeCaptor = ArgumentCaptor.forClass(CommentLike.class);
+        ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
         Long result = commentService.commentLike(123L, member);
         //then
-        verify(commentLikeRepository, times(1)).delete(captor.capture());
+        verify(commentLikeRepository, times(1)).delete(commentLikeCaptor.capture());
+        verify(commentRepository, times(1)).save(commentCaptor.capture());
+        assertEquals(0, commentCaptor.getValue().getLikeCount());
         assertEquals(123L, result);
-        assertEquals(1L, captor.getValue().getMember().getId());
-        assertEquals(3L, captor.getValue().getComment().getId());
+        assertEquals(1L, commentLikeCaptor.getValue().getMember().getId());
+        assertEquals(3L, commentLikeCaptor.getValue().getComment().getId());
     }
 
     @Test

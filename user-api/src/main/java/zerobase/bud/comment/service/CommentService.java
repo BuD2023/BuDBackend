@@ -24,6 +24,7 @@ import zerobase.bud.post.type.PostStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +39,7 @@ public class CommentService {
 
     private final PostRepository postRepository;
 
+    @Transactional
     public Long commentLike(Long commentId, Member member) {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
@@ -46,14 +48,20 @@ public class CommentService {
             throw new BudException(ErrorCode.CANNOT_LIKE_WRITER_SELF);
         }
 
-        commentLikeRepository.findByCommentAndMember(comment, member)
-                .ifPresentOrElse(commentLikeRepository::delete,
-                        () -> commentLikeRepository.save(CommentLike.builder()
-                                .comment(comment)
-                                .member(member)
-                                .build())
-                );
+        Optional<CommentLike> optionalCommentLike = commentLikeRepository.findByCommentAndMember(comment, member);
 
+        if (optionalCommentLike.isPresent()) {
+            comment.minusLikeCount();
+            commentLikeRepository.delete(optionalCommentLike.get());
+        } else {
+            comment.addLikeCount();
+            commentLikeRepository.save(CommentLike.builder()
+                    .comment(comment)
+                    .member(member)
+                    .build());
+        }
+
+        commentRepository.save(comment);
         return commentId;
     }
 
