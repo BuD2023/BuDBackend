@@ -1,6 +1,7 @@
 package zerobase.bud.user.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -10,6 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.dto.ScrapDto;
+import zerobase.bud.post.dto.SearchMyPagePost;
+import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
@@ -24,7 +27,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
     private final ScrapService scrapService;
+
+
+    private final PostService postService;
 
     @PostMapping("/{userId}/follows")
     private ResponseEntity<URI> follow(@PathVariable Long userId,
@@ -79,5 +86,16 @@ public class UserController {
     @DeleteMapping("/posts/scraps/{scrapId}")
     public ResponseEntity<Long> removeScrap(@PathVariable Long scrapId) {
         return ResponseEntity.ok(scrapService.removeScrap(scrapId));
+    }
+
+    @GetMapping("/{my-page-userId}/posts")
+    public ResponseEntity<Page<SearchMyPagePost.Response>> searchMyPosts(
+            @AuthenticationPrincipal Member member,
+            @PathVariable("my-page-userId") Long myPageUserId,
+            @PageableDefault(size = 5, sort = "DATE", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(postService.searchMyPagePosts(member,
+                myPageUserId, pageable));
     }
 }
