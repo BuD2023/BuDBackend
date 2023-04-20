@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.dto.NotificationInfoDto;
+import zerobase.bud.notification.service.NotificationInfoService;
 import zerobase.bud.post.dto.ScrapDto;
 import zerobase.bud.post.dto.SearchMyPagePost;
 import zerobase.bud.post.service.PostService;
@@ -27,10 +29,8 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-
     private final ScrapService scrapService;
-
-
+    private final NotificationInfoService notificationInfoService;
     private final PostService postService;
 
     @PostMapping("/{userId}/follows")
@@ -97,5 +97,15 @@ public class UserController {
     ) {
         return ResponseEntity.ok(postService.searchMyPagePosts(member,
                 myPageUserId, pageable));
+    }
+
+    @PutMapping("/{userId}/notification-info")
+    public ResponseEntity<String> changeNotificationAvailable(
+        @RequestBody NotificationInfoDto notificationInfoDto,
+        @AuthenticationPrincipal Member member
+    ){
+        return ResponseEntity.ok(notificationInfoService.changeNotificationAvailable(
+            notificationInfoDto, member
+        ));
     }
 }
