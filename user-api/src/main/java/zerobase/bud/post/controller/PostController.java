@@ -51,12 +51,14 @@ public class PostController {
         );
     }
 
-    @PostMapping("/update")
+    @PostMapping("/{postId}")
     public ResponseEntity<String> updatePost(
+            @PathVariable Long postId,
             @RequestPart(value = IMAGES, required = false) List<MultipartFile> images,
-            @RequestPart(value = UPDATE_POST_REQUEST) @Valid UpdatePost.Request request
+            @RequestPart(value = UPDATE_POST_REQUEST) @Valid UpdatePost.Request request,
+            @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(postService.updatePost(images, request));
+        return ResponseEntity.ok(postService.updatePost(postId, images, request, member));
     }
 
     @GetMapping

@@ -1,6 +1,8 @@
 package zerobase.bud.post.service;
 
+import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
+import static zerobase.bud.common.type.ErrorCode.NOT_POST_OWNER;
 import static zerobase.bud.util.Constants.POSTS;
 
 import com.querydsl.core.types.Order;
@@ -50,7 +52,6 @@ public class PostService {
 
     private final SendNotificationService sendNotificationService;
 
-
     @Transactional
     public String createPost(
         Member member
@@ -69,17 +70,26 @@ public class PostService {
 
     @Transactional
     public String updatePost(
-        List<MultipartFile> images
+        Long postId
+        , List<MultipartFile> images
         , UpdatePost.Request request
+        , Member member
     ) {
 
-        Post post = postRepository.findByIdAndPostStatus(request.getPostId(), PostStatus.ACTIVE)
+        Post post = postRepository.findByIdAndPostStatus(postId, PostStatus.ACTIVE)
             .orElseThrow(() -> new BudException(NOT_FOUND_POST));
+
+        if(!Objects.equals(post.getMember().getId() , member.getId())){
+            throw new BudException(NOT_POST_OWNER);
+        }
+
+        if(Objects.nonNull(post.getQnaAnswerPin())){
+            throw new BudException(CHANGE_IMPOSSIBLE_PINNED_ANSWER);
+        }
 
         post.update(request);
 
         deleteImages(post.getId());
-        imageRepository.deleteAllByPostId(post.getId());
 
         saveImageWithPost(images, post);
 
@@ -178,6 +188,8 @@ public class PostService {
         for (Image image : imageList) {
             awsS3Api.deleteImage(image.getImagePath());
         }
+
+        imageRepository.deleteAllByPostId(postId);
     }
 }
 

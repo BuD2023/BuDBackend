@@ -8,7 +8,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
+import static zerobase.bud.common.type.ErrorCode.NOT_POST_OWNER;
 import static zerobase.bud.post.type.PostSortType.HIT;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 import static zerobase.bud.post.type.PostStatus.INACTIVE;
@@ -39,12 +41,15 @@ import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;
+import zerobase.bud.post.domain.QnaAnswer;
+import zerobase.bud.post.domain.QnaAnswerPin;
 import zerobase.bud.post.domain.Scrap;
 import zerobase.bud.post.dto.CreatePost;
 import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.post.repository.*;
 import zerobase.bud.post.type.PostType;
+import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.type.MemberStatus;
 
 @ExtendWith(MockitoExtension.class)
@@ -165,13 +170,13 @@ class PostServiceTest {
         ArgumentCaptor<Image> imageCaptor = ArgumentCaptor.forClass(
             Image.class);
         //when 어떤 경우에
-        String result = postService.updatePost(images,
+        String result = postService.updatePost(1L, images,
             UpdatePost.Request.builder()
-                .postId(1L)
                 .title("resultTitle")
                 .content("resultContent")
                 .postType(PostType.QNA)
-                .build());
+                .build()
+        , getMember());
 
         //then 이런 결과가 나온다.
         verify(imageRepository, times(1)).save(imageCaptor.capture());
@@ -192,16 +197,77 @@ class PostServiceTest {
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> postService.updatePost(getMockMultipartFiles(),
-                UpdatePost.Request.builder()
-                    .postId(1L)
+            () -> postService.updatePost(1L, getMockMultipartFiles()
+                , UpdatePost.Request.builder()
                     .title("resultTitle")
                     .content("resultContent")
                     .postType(PostType.FEED)
-                    .build()));
+                    .build()
+                , getMember()));
 
         //then 이런 결과가 나온다.
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("NOT_POST_OWNER_updatePost")
+    void NOT_POST_OWNER_updatePost() {
+        //given 어떤 데이터가 주어졌을 때
+        Member diffMember = Member.builder()
+            .id(3L)
+            .nickname("nick")
+            .level(getLevel())
+            .userId("")
+            .createdAt(LocalDateTime.now().minusDays(1))
+            .build();
+
+        given(postRepository.findByIdAndPostStatus(anyLong(), any()))
+            .willReturn(Optional.ofNullable(getPost()));
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> postService.updatePost(1L, getMockMultipartFiles()
+                , UpdatePost.Request.builder()
+                    .title("resultTitle")
+                    .content("resultContent")
+                    .postType(PostType.FEED)
+                    .build()
+                , diffMember));
+
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_POST_OWNER, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("CHANGE_IMPOSSIBLE_PINNED_ANSWER_updatePost")
+    void CHANGE_IMPOSSIBLE_PINNED_ANSWER_updatePost() {
+        //given 어떤 데이터가 주어졌을 때
+        //given 어떤 데이터가 주어졌을 때
+
+        Post post = Post.builder()
+            .member(getMember())
+            .title("title")
+            .content("content")
+            .postStatus(ACTIVE)
+            .postType(FEED)
+            .qnaAnswerPin(getQnaAnswerPin())
+            .build();
+
+        given(postRepository.findByIdAndPostStatus(anyLong(), any()))
+            .willReturn(Optional.ofNullable(post));
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> postService.updatePost(1L, getMockMultipartFiles()
+                , UpdatePost.Request.builder()
+                    .title("resultTitle")
+                    .content("resultContent")
+                    .postType(PostType.FEED)
+                    .build()
+                , getMember()));
+
+        //then 이런 결과가 나온다.
+        assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER, budException.getErrorCode());
     }
 
     @Test
@@ -525,6 +591,22 @@ class PostServiceTest {
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
     }
 
+    private QnaAnswerPin getQnaAnswerPin() {
+        return QnaAnswerPin.builder()
+            .post(getPost())
+            .qnaAnswer(getQnaAnswer())
+            .build();
+    }
+
+    private static QnaAnswer getQnaAnswer() {
+        return QnaAnswer.builder()
+            .id(1L)
+            .member(getMember())
+            .post(getPost())
+            .content("content")
+            .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
+            .build();
+    }
 
     private static Post getPost() {
         return Post.builder()
