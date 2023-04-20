@@ -66,7 +66,7 @@ public class ScrapService {
 
         return new SliceImpl<>(
                 scraps.stream()
-                        .map(scrap -> ScrapDto.fromScrapWithImages(scrap,
+                        .map(scrap -> ScrapDto.of(scrap,
                                 imageRepository.findAllByPostId(scrap.getPost().getId())))
                         .collect(Collectors.toList()),
                 scraps.getPageable(),

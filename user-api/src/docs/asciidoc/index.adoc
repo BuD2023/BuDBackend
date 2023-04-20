@@ -324,6 +324,7 @@ include::{snippets}/post-controller-test/success_search-posts/http-request.adoc[
 |order|String|N|정렬기준(ASC or DESC)|DESC
 |page|Number|N|요청 페이지 번호|0
 |size|Number|N|요청 데이터 개수|10
+|postType|String|N|요청 페이지 종류(FEED, QNA) 이며, null 이라면, FEED, QNA 전체를 보내줍니다. |null
 |===
 
 .response
@@ -898,6 +899,36 @@ include::{snippets}/user-controller-test/success-delete-scrap/http-request.adoc[
 
 .response
 include::{snippets}/user-controller-test/success-delete-scrap/http-response.adoc[]
+
+=== 10. 마이페이지 게시글 리스트 조회
+.request
+include::{snippets}/user-controller-test/success-search-my-page-posts/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/users/{my-page-userId}/posts|/users/2/posts
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명|기본값
+|size|Number|N|요청 데이터 개수|5
+|page|Number|N|요청 페이지 번호|0
+|sort|String|N|정렬기준(
+(DATE,DESC(ASC)), (HIT,DESC(ASC)), (LIKE,DESC(ASC))
+)|DATE,DESC
+|===
+
+.response
+include::{snippets}/user-controller-test/success-search-my-page-posts/http-response.adoc[]
+
+.response
+include::{snippets}/user-controller-test/success-search-my-page-posts/http-response.adoc[]
+
+
+
+
 
 == 알림 API
 === 1. 알림 조회
