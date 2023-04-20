@@ -14,13 +14,13 @@ import java.util.List;
 @Builder
 public class ScrapDto {
     private Long id;
-    private PostDto post;
+    private SearchPost.Response post;
     private LocalDateTime createdAt;
 
-    public static ScrapDto fromScrapWithImages(Scrap scrap, List<Image> images) {
+    public static ScrapDto of(Scrap scrap, List<Image> images) {
         return ScrapDto.builder()
                 .id(scrap.getId())
-                .post(PostDto.fromEntity(scrap.getPost(), images))
+                .post(SearchPost.Response.of(PostDto.of(scrap.getPost()), images))
                 .createdAt(scrap.getCreatedAt())
                 .build();
     }

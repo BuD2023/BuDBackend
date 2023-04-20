@@ -324,6 +324,7 @@ include::{snippets}/post-controller-test/success_search-posts/http-request.adoc[
 |order|String|N|정렬기준(ASC or DESC)|DESC
 |page|Number|N|요청 페이지 번호|0
 |size|Number|N|요청 데이터 개수|10
+|postType|String|N|요청 페이지 종류(FEED, QNA) 이며, null 이라면, FEED, QNA 전체를 보내줍니다. |null
 |===
 
 .response
@@ -491,10 +492,54 @@ include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/http-re
 .response field
 include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/response-body.adoc[]
 
+=== 14. QNA 답변 좋아요
+.request
+include::{snippets}/qna-answer-controller-test/success_add-qna-answer-like/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/posts/qna-answers/{qnaAnswerId}/like|/posts/qna-answers/1/like
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success_add-qna-answer-like/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_add-qna-answer-like/response-body.adoc[]
+
+=== 15. QNA 답변 좋아요 해제
+.request
+include::{snippets}/qna-answer-controller-test/success_remove-qna-answer-like/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/posts/qna-answers/{qnaAnswerId}/like|/posts/qna-answers/1/like
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable
+|===
 
 
 
-=== 14. 댓글 좋아요 및 좋아요 취소
+.response
+include::{snippets}/qna-answer-controller-test/success_remove-qna-answer-like/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_remove-qna-answer-like/response-body.adoc[]
+
+
+=== 16. 댓글 좋아요 및 좋아요 취소
 .request
 include::{snippets}/post-controller-test/success-comment-like/http-request.adoc[]
 
@@ -514,7 +559,7 @@ include::{snippets}/post-controller-test/success-comment-like/http-response.adoc
 |400|CANNOT_LIKE_WRITER_SELF|자신의 댓글을 좋아요 할 수 없습니다.
 |===
 
-=== 15. 댓글 핀 및 댓글 핀 변경
+=== 17. 댓글 핀 및 댓글 핀 변경
 .request
 include::{snippets}/post-controller-test/success-comment-pin/http-request.adoc[]
 
@@ -535,7 +580,7 @@ include::{snippets}/post-controller-test/success-comment-pin/http-response.adoc[
 |400|CANNOT_PIN_RECOMMENT|대댓글에는 핀을 할 수 없습니다.
 |===
 
-=== 16. 댓글 핀 취소
+=== 18. 댓글 핀 취소
 .request
 include::{snippets}/post-controller-test/success-cancel-comment-pin/http-request.adoc[]
 
@@ -555,7 +600,7 @@ include::{snippets}/post-controller-test/success-cancel-comment-pin/http-respons
 |400|NOT_POST_OWNER|게시글의 작성자가 아닙니다.
 |===
 
-=== 17. 댓글 조회
+=== 19. 댓글 조회
 .request
 include::{snippets}/post-controller-test/success-comments/http-request.adoc[]
 
@@ -574,7 +619,7 @@ include::{snippets}/post-controller-test/success-comments/http-response.adoc[]
 include::{snippets}/post-controller-test/success-comments/response-fields.adoc[]
 
 
-=== 18. 댓글 삭제
+=== 20. 댓글 삭제
 .request
 include::{snippets}/post-controller-test/success-delete-comment/http-request.adoc[]
 
@@ -595,7 +640,7 @@ include::{snippets}/post-controller-test/success-delete-comment/http-response.ad
 |===
 
 
-=== 15. Q&A 댓글 좋아요 및 좋아요 취소
+=== 21. Q&A 댓글 좋아요 및 좋아요 취소
 .request
 include::{snippets}/qna-answer-controller-test/success-comment-like/http-request.adoc[]
 
@@ -615,7 +660,7 @@ include::{snippets}/qna-answer-controller-test/success-comment-like/http-respons
 |400|CANNOT_LIKE_WRITER_SELF|자신의 댓글을 좋아요 할 수 없습니다.
 |===
 
-=== 16. Q&A 댓글 핀 및 댓글 핀 변경
+=== 22. Q&A 댓글 핀 및 댓글 핀 변경
 .request
 include::{snippets}/qna-answer-controller-test/success-comment-pin/http-request.adoc[]
 
@@ -636,7 +681,7 @@ include::{snippets}/qna-answer-controller-test/success-comment-pin/http-response
 |400|CANNOT_PIN_RECOMMENT|대댓글에는 핀을 할 수 없습니다.
 |===
 
-=== 17. Q&A 댓글 핀 취소
+=== 23. Q&A 댓글 핀 취소
 .request
 include::{snippets}/qna-answer-controller-test/success-cancel-comment-pin/http-request.adoc[]
 
@@ -656,7 +701,7 @@ include::{snippets}/qna-answer-controller-test/success-cancel-comment-pin/http-r
 |400|NOT_QNA_ANSWER_OWNER|게시글의 작성자가 아닙니다.
 |===
 
-=== 18. Q&A 댓글 조회
+=== 24. Q&A 댓글 조회
 .request
 include::{snippets}/qna-answer-controller-test/success-comments/http-request.adoc[]
 
@@ -675,7 +720,7 @@ include::{snippets}/qna-answer-controller-test/success-comments/http-response.ad
 include::{snippets}/qna-answer-controller-test/success-comments/response-fields.adoc[]
 
 
-=== 19. Q&A 댓글 삭제
+=== 25. Q&A 댓글 삭제
 .request
 include::{snippets}/qna-answer-controller-test/success-delete-comment/http-request.adoc[]
 
@@ -695,7 +740,7 @@ include::{snippets}/qna-answer-controller-test/success-delete-comment/http-respo
 |400|NOT_COMMENT_OWNER|댓글의 작성자가 아닙니다.
 |===
 
-=== 20. Q&A 답변 핀 기능
+=== 26. Q&A 답변 핀 기능
 .request
 include::{snippets}/qna-answer-controller-test/success_qna-answer-pin/http-request.adoc[]
 
@@ -714,7 +759,7 @@ include::{snippets}/qna-answer-controller-test/success_qna-answer-pin/http-respo
 |qnaAnswerId|Number|Y|path variable, QnA답글의 Id
 |===
 
-=== 21. Q&A 답변 핀 취소
+=== 27. Q&A 답변 핀 취소
 .request
 include::{snippets}/qna-answer-controller-test/success_cancel-qna-answer-pin/http-request.adoc[]
 
@@ -899,7 +944,33 @@ include::{snippets}/user-controller-test/success-delete-scrap/http-request.adoc[
 .response
 include::{snippets}/user-controller-test/success-delete-scrap/http-response.adoc[]
 
-=== 10. 알림 푸쉬 설정 변경
+=== 10. 마이페이지 게시글 리스트 조회
+.request
+include::{snippets}/user-controller-test/success-search-my-page-posts/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/users/{my-page-userId}/posts|/users/2/posts
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명|기본값
+|size|Number|N|요청 데이터 개수|5
+|page|Number|N|요청 페이지 번호|0
+|sort|String|N|정렬기준(
+(DATE,DESC(ASC)), (HIT,DESC(ASC)), (LIKE,DESC(ASC))
+)|DATE,DESC
+|===
+
+.response
+include::{snippets}/user-controller-test/success-search-my-page-posts/http-response.adoc[]
+
+.response
+include::{snippets}/user-controller-test/success-search-my-page-posts/http-response.adoc[]
+
+=== 11. 알림 푸쉬 설정 변경
 .request
 include::{snippets}/user-controller-test/success_change-notification-available/http-request.adoc[]
 

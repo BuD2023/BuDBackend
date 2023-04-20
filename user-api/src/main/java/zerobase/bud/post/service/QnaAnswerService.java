@@ -1,20 +1,5 @@
 package zerobase.bud.post.service;
 
-import static zerobase.bud.common.type.ErrorCode.ADD_IMPOSSIBLE_PINNED_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.ALREADY_DELETE_QNA_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.CANNOT_ANSWER_YOURSELF;
-import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
-import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER_PIN;
-import static zerobase.bud.common.type.ErrorCode.NOT_POST_OWNER;
-import static zerobase.bud.common.type.ErrorCode.NOT_QNA_ANSWER_OWNER;
-
-import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,18 +12,22 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
+import zerobase.bud.post.domain.QnaAnswerLike;
 import zerobase.bud.post.domain.QnaAnswerPin;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
 import zerobase.bud.post.dto.QnaAnswerDto;
 import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
-import zerobase.bud.post.repository.PostRepository;
-import zerobase.bud.post.repository.QnaAnswerPinRepository;
-import zerobase.bud.post.repository.QnaAnswerRepository;
-import zerobase.bud.post.repository.QnaAnswerRepositoryQuerydslImpl;
+import zerobase.bud.post.repository.*;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
+
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import static zerobase.bud.common.type.ErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,6 +43,8 @@ public class QnaAnswerService {
     private final SendNotificationService sendNotificationService;
 
     private final QnaAnswerRepositoryQuerydslImpl qnaAnswerRepositoryQuerydsl;
+
+    private final QnaAnswerLikeRepository qnaAnswerLikeRepository;
 
     @Transactional
     public String createQnaAnswer(Member member, Request request) {
@@ -196,5 +187,37 @@ public class QnaAnswerService {
 
         return qnaAnswerPinId;
     }
-}
 
+    public boolean setLike(Long qnaAnswerId, Member member) {
+        QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
+                .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
+
+        var isAdd = new AtomicReference<Boolean>(false);
+
+        qnaAnswerLikeRepository.findByQnaAnswerIdAndMemberId(qnaAnswerId, member.getId())
+                .ifPresentOrElse(
+                        postLike -> cancelLike(postLike, qnaAnswer),
+                        () -> isAdd.set(addLike(qnaAnswer, member))
+                );
+
+        qnaAnswerRepository.save(qnaAnswer);
+
+        return isAdd.get();
+    }
+
+    private void cancelLike(QnaAnswerLike qnaAnswerLike, QnaAnswer qnaAnswer) {
+        qnaAnswerLikeRepository.delete(qnaAnswerLike);
+
+        qnaAnswer.likeCountDown();
+    }
+
+    private boolean addLike(QnaAnswer qnaAnswer, Member member) {
+        qnaAnswerLikeRepository.save(QnaAnswerLike.of(qnaAnswer, member));
+
+        qnaAnswer.likeCountUp();
+
+        sendNotificationService.sendQnaAnswerAddLikeNotification(member, qnaAnswer);
+
+        return true;
+    }
+}

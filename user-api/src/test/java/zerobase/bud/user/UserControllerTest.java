@@ -33,6 +33,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -47,8 +49,10 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.notification.dto.NotificationInfoDto;
 import zerobase.bud.notification.service.NotificationInfoService;
-import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.ScrapDto;
+import zerobase.bud.post.dto.SearchMyPagePost;
+import zerobase.bud.post.dto.SearchPost;
+import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
@@ -67,6 +71,9 @@ class UserControllerTest {
 
     @MockBean
     private ScrapService scrapService;
+
+    @MockBean
+    private PostService postService;
 
     @MockBean
     private NotificationInfoService notificationInfoService;
@@ -494,16 +501,16 @@ class UserControllerTest {
     @DisplayName("성공 - 마이페이지 스크랩 불러오기")
     void successSearchScrap() throws Exception {
         //given
-        List<PostDto> postDtos = new ArrayList<>();
+        List<SearchPost.Response> list = new ArrayList<>();
 
         for (int i = 1; i <= 3; i++) {
-            postDtos.add(PostDto.builder()
+            list.add(SearchPost.Response.builder()
                     .id(i)
                     .title("제목" + i)
-                    .imageUrls(new String[]{"url1", "url2"})
                     .content("내용" + i)
                     .member(null)
                     .commentCount(i)
+                    .imageUrls(getImageUrlList(3))
                     .likeCount(i)
                     .scrapCount(i)
                     .hitCount(i)
@@ -519,7 +526,7 @@ class UserControllerTest {
         for (int i = 1; i <= 3; i++) {
             scrapDtos.add(ScrapDto.builder()
                     .id((long)i)
-                    .post(postDtos.get(i - 1))
+                    .post(list.get(i - 1))
                     .createdAt(LocalDateTime.now().plusDays(1))
                     .build());
         }
@@ -541,8 +548,8 @@ class UserControllerTest {
                 .andExpect(jsonPath("content[0].post.title").value("제목1"))
                 .andExpect(jsonPath("content[0].post.scrapCount").value("1"))
                 .andExpect(jsonPath("content[0].post.content").value("내용1"))
-                .andExpect(jsonPath("content[0].post.imageUrls[0]").value("url1"))
-                .andExpect(jsonPath("content[0].post.imageUrls[1]").value("url2"))
+                .andExpect(jsonPath("content[0].post.imageUrls[0]").value("img0"))
+                .andExpect(jsonPath("content[0].post.imageUrls[1]").value("img1"))
                 .andExpect(jsonPath("content[0].post.postStatus").value("ACTIVE"))
                 .andExpect(jsonPath("content[0].id").value("1"))
                 .andDo(
@@ -595,6 +602,124 @@ class UserControllerTest {
                                 preprocessResponse(prettyPrint())
                         )
                 );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("성공 - 마이페이지 작성한 게시글들 불러오기")
+    void successSearchMyPagePosts() throws Exception {
+        //given
+        List<SearchMyPagePost.Response> list = new ArrayList<>();
+
+        for (int i = 1; i <= 3; i++) {
+            list.add(SearchMyPagePost.Response.builder()
+                    .postId(i)
+                    .title("제목")
+                    .postRegisterMemberId(1)
+                    .postRegisterMemberId(i)
+                    .imageUrls(getImageUrlList(3))
+                    .content("내용")
+                    .commentCount(i)
+                    .likeCount(i)
+                    .scrapCount(i)
+                    .hitCount(i)
+                    .postStatus(PostStatus.ACTIVE)
+                    .postType(PostType.FEED)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .isLike(true)
+                    .isFollow(false)
+                    .isScrap(true)
+                    .build());
+        }
+
+        given(postService.searchMyPagePosts(any(), anyLong(), any()))
+                .willReturn(new PageImpl<>(list, PageRequest.of(0, 3), 3));
+
+        //when
+        //then
+        mockMvc.perform(get("/users/2/posts")
+                        .param("size", "3")
+                        .param("page", "0")
+                        .param("sort", "DATE,DESC")
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("content[0].title").value("제목"))
+                .andExpect(jsonPath("content[0].content").value("내용"))
+                .andExpect(jsonPath("content[0].postRegisterMemberId").value(1))
+                .andExpect(jsonPath("content[0].imageUrls[0]").value("img0"))
+                .andExpect(jsonPath("content[0].imageUrls[1]").value("img1"))
+                .andExpect(jsonPath("content[0].imageUrls[2]").value("img2"))
+                .andExpect(jsonPath("content[0].postStatus").value("ACTIVE"))
+                .andExpect(jsonPath("content[0].postType").value("FEED"))
+                .andExpect(jsonPath("content[0].like").value(true))
+                .andExpect(jsonPath("content[0].scrap").value(true))
+                .andExpect(jsonPath("content[0].follow").value(false))
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                relaxedResponseFields(
+                                        fieldWithPath("content[].postId").type(JsonFieldType.NUMBER)
+                                                .description("게시글 고유 번호"),
+                                        fieldWithPath("content[].title").type(JsonFieldType.STRING)
+                                                .description("게시글 제목"),
+                                        fieldWithPath("content[].postRegisterMemberId").type(JsonFieldType.NUMBER)
+                                                .description("게시글 작성자 고유 번호"),
+                                        fieldWithPath("content[].imageUrls").type(JsonFieldType.ARRAY)
+                                                .description("게시글 이미지 링크들"),
+                                        fieldWithPath("content[].content").type(JsonFieldType.STRING)
+                                                .description("게시글 본문"),
+                                        fieldWithPath("content[].commentCount").type(JsonFieldType.NUMBER)
+                                                .description("게시글 댓글 수"),
+                                        fieldWithPath("content[].likeCount").type(JsonFieldType.NUMBER)
+                                                .description("게시글 좋아요 수"),
+                                        fieldWithPath("content[].scrapCount").type(JsonFieldType.NUMBER)
+                                                .description("게시글 스크랩 수"),
+                                        fieldWithPath("content[].hitCount").type(JsonFieldType.NUMBER)
+                                                .description("게시글 조회수"),
+                                        fieldWithPath("content[].postStatus").type(JsonFieldType.STRING)
+                                                .description("게시글 상태"),
+                                        fieldWithPath("content[].postType").type(JsonFieldType.STRING)
+                                                .description("게시글 종류"),
+                                        fieldWithPath("content[].createdAt").type(JsonFieldType.STRING)
+                                                .description("게시글 등록일"),
+                                        fieldWithPath("content[].updatedAt").type(JsonFieldType.STRING)
+                                                .description("게시글 수정일"),
+                                        fieldWithPath("content[].like").type(JsonFieldType.BOOLEAN)
+                                                .description("해당 게시글 좋아요 여부"),
+                                        fieldWithPath("content[].scrap").type(JsonFieldType.BOOLEAN)
+                                                .description("해당 게시글 스크랩 여부"),
+                                        fieldWithPath("content[].follow").type(JsonFieldType.BOOLEAN)
+                                                .description("해당 게시글 작성자를 본인이 팔로우 했는지 여부"),
+                                        fieldWithPath("first").type(JsonFieldType.BOOLEAN)
+                                                .description("첫번째 페이지 여부"),
+                                        fieldWithPath("last").type(JsonFieldType.BOOLEAN)
+                                                .description("마지막 페이지 여부"),
+                                        fieldWithPath("totalElements").type(JsonFieldType.NUMBER)
+                                                .description("검색 데이터 전체 개수"),
+                                        fieldWithPath("totalPages").type(JsonFieldType.NUMBER)
+                                                .description("검색 데이터 전체 페이지 수"),
+                                        fieldWithPath("size").type(JsonFieldType.NUMBER)
+                                                .description("요청 데이터 수"),
+                                        fieldWithPath("numberOfElements").type(JsonFieldType.NUMBER)
+                                                .description("현재 페이지에서 보여지는 데이터 수")
+                                )
+                        )
+                );
+    }
+
+    private static String[] getImageUrlList(int size) {
+        String[] images = new String[size];
+
+        for (int i = 0; i < size; i++) {
+            images[i] = "img" + i;
+        }
+
+        return images;
     }
 
     @Test
