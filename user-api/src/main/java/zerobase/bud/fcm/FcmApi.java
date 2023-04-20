@@ -27,7 +27,7 @@ public class FcmApi {
 
     private final NotificationRepository notificationRepository;
 
-    public void sendNotificationByToken(NotificationDto dto) {
+    public void sendNotification(NotificationDto dto) {
         log.info("start send notification... " + LocalDateTime.now());
         for (String token : dto.getTokens()) {
             WebpushConfig webpushConfig = WebpushConfig.builder()

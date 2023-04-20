@@ -58,7 +58,7 @@ public class SendNotificationService {
 
                 if (!Objects.equals(receiver.getId(), sender.getId())
                     && notificationInfo.isFollowPushAvailable()) {
-                    fcmApi.sendNotificationByToken(
+                    fcmApi.sendNotification(
                         NotificationDto.of(
                             notificationInfo.getFcmToken()
                             , receiver
@@ -85,7 +85,7 @@ public class SendNotificationService {
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isPostPushAvailable()) {
-                fcmApi.sendNotificationByToken(
+                fcmApi.sendNotification(
                     NotificationDto.of(
                         notificationInfo.getFcmToken()
                         , receiver
@@ -113,7 +113,7 @@ public class SendNotificationService {
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isPostPushAvailable()) {
-                fcmApi.sendNotificationByToken(
+                fcmApi.sendNotification(
                     NotificationDto.of(
                         notificationInfo.getFcmToken()
                         , receiver
@@ -138,7 +138,7 @@ public class SendNotificationService {
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isFollowPushAvailable()) {
-                fcmApi.sendNotificationByToken(
+                fcmApi.sendNotification(
                     NotificationDto.of(
                         notificationInfo.getFcmToken()
                         , receiver
@@ -165,7 +165,7 @@ public class SendNotificationService {
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isPostPushAvailable()) {
-                fcmApi.sendNotificationByToken(
+                fcmApi.sendNotification(
                     NotificationDto.of(
                         notificationInfo.getFcmToken()
                         , receiver
@@ -193,7 +193,7 @@ public class SendNotificationService {
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isPostPushAvailable()) {
-                fcmApi.sendNotificationByToken(
+                fcmApi.sendNotification(
                     NotificationDto.of(
                         notificationInfo.getFcmToken()
                         , receiver
@@ -220,7 +220,7 @@ public class SendNotificationService {
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isPostPushAvailable()) {
-                fcmApi.sendNotificationByToken(
+                fcmApi.sendNotification(
                     NotificationDto.of(
                         notificationInfo.getFcmToken()
                         , receiver
@@ -247,7 +247,7 @@ public class SendNotificationService {
 
             if (!Objects.equals(receiver.getId(), sender.getId())
                     && notificationInfo.isPostPushAvailable()) {
-                fcmApi.sendNotificationByToken(
+                fcmApi.sendNotification(
                         NotificationDto.of(
                                 notificationInfo.getFcmToken()
                                 , receiver
