@@ -25,7 +25,7 @@ public class ChatDto implements Serializable {
     private String imageUrl;
     private String userProfileUrl;
     private String userName;
-    private int numberOfMembers;
+    private long numberOfMembers;
     private Long userId;
 
     public static ChatDto from(Chat chat) {
@@ -41,7 +41,7 @@ public class ChatDto implements Serializable {
                 .build();
     }
 
-    public static ChatDto of(ChatType chatType, Long chatroomId, Integer numberOfMembers) {
+    public static ChatDto of(ChatType chatType, Long chatroomId, Long numberOfMembers) {
         return ChatDto.builder()
                 .chatType(chatType)
                 .chatroomId(chatroomId)

@@ -3,18 +3,15 @@ package zerobase.bud.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MultiValueMap;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.ChatRoomSession;
 import zerobase.bud.dto.ChatDto;
@@ -24,9 +21,6 @@ import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.ErrorCode;
 import zerobase.bud.util.TokenProvider;
-
-import java.util.Map;
-import java.util.Optional;
 
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
 import static zerobase.bud.type.ErrorCode.CHATROOM_NOT_FOUND;
@@ -45,7 +39,7 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private static HashOperations<String, String, ChatRoomSession> hashOperations;
 
-    private static ValueOperations<String, Integer> valueOperations;
+    private static ListOperations<String, Long> listOperations;
 
     private final ChannelTopic channelTopic;
 
@@ -67,8 +61,9 @@ public class WebSocketHandler implements ChannelInterceptor {
 
             ChatRoom chatRoom = getChatRoom(chatroomId);
 
+            listOperations = redisTemplate.opsForList();
             hashOperations = redisTemplate.opsForHash();
-            addSessionCount(chatroomId);
+            addUser(chatroomId, userId);
             saveSession(chatRoom, userId, sessionId);
             notifyChatroomStatus(chatRoom.getId(), ChatType.ENTER);
 
@@ -79,16 +74,15 @@ public class WebSocketHandler implements ChannelInterceptor {
             ChatRoomSession session = hashOperations.get(SESSION, sessionId);
 
             try {
-                valueOperations = redisTemplate.opsForValue();
+                listOperations = redisTemplate.opsForList();
 
                 ChatRoom chatRoom = getChatRoom(session.getChatroomId());
-                minusSessionCount(chatRoom.getId());
+                removeUser(chatRoom.getId(), session.getUserId());
                 notifyChatroomStatus(chatRoom.getId(), ChatType.EXIT);
 
                 if (chatRoom.getMember().getUserId().equals(session.getUserId())) {
                     chatRoom.delete();
                     chatRoomRepository.save(chatRoom);
-                    valueOperations.getAndDelete(CHATROOM + chatRoom.getId());
                     notifyChatroomStatus(chatRoom.getId(), ChatType.EXPIRE);
                 }
             } catch (ChatRoomException | NullPointerException e) {
@@ -109,13 +103,12 @@ public class WebSocketHandler implements ChannelInterceptor {
         hashOperations.put(SESSION, sessionId, session);
     }
 
-    private void addSessionCount(Long chatroomId) {
-        valueOperations.setIfAbsent(CHATROOM + chatroomId, 0);
-        valueOperations.increment(CHATROOM + chatroomId);
+    private void addUser(Long chatroomId, String userId) {
+        listOperations.rightPush(CHATROOM + chatroomId, Long.parseLong(userId));
     }
 
-    private void minusSessionCount(Long chatroomId) {
-        valueOperations.decrement(CHATROOM + chatroomId);
+    private void removeUser(Long chatroomId, String userId) {
+        listOperations.remove(CHATROOM + chatroomId, 0, Long.parseLong(userId));
     }
 
     private Long getChatroomIdFromDestination(String destination) {
@@ -135,8 +128,8 @@ public class WebSocketHandler implements ChannelInterceptor {
                 ChatDto.of(chatType, chatroomId, getNumberOfMembers(chatroomId)));
     }
 
-    private Integer getNumberOfMembers(Long chatroomId) {
-        return Optional.ofNullable(valueOperations.get(CHATROOM + chatroomId)).orElse(1);
+    private Long getNumberOfMembers(Long chatroomId) {
+        return listOperations.size(CHATROOM + chatroomId);
     }
 
 }
