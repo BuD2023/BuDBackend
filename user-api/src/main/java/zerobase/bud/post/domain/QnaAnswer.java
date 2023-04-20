@@ -56,4 +56,12 @@ public class QnaAnswer extends BaseEntity {
                 .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
                 .build();
     }
+
+    public void likeCountUp() {
+        this.likeCount++;
+    }
+
+    public void likeCountDown() {
+        this.likeCount--;
+    }
 }

@@ -492,7 +492,51 @@ include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/http-re
 .response field
 include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/response-body.adoc[]
 
+=== 14. QNA 답변 좋아요
+.request
+include::{snippets}/qna-answer-controller-test/success_add-qna-answer-like/http-request.adoc[]
 
+.request example
+|===
+|url|예시
+|/posts/qna-answers/{qnaAnswerId}/like|/posts/qna-answers/1/like
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success_add-qna-answer-like/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_add-qna-answer-like/response-body.adoc[]
+
+=== 7. QNA 답변 좋아요 해제
+.request
+include::{snippets}/qna-answer-controller-test/success_remove-qna-answer-like/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/posts/qna-answers/{qnaAnswerId}/like|/posts/qna-answers/1/like
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable
+|===
+
+
+
+.response
+include::{snippets}/qna-answer-controller-test/success_remove-qna-answer-like/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_remove-qna-answer-like/response-body.adoc[]
 
 
 === 14. 댓글 좋아요 및 좋아요 취소

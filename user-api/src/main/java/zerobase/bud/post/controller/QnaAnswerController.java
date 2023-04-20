@@ -112,5 +112,14 @@ public class QnaAnswerController {
     ) {
         return ResponseEntity.ok(qnaAnswerService.cancelQnaAnswerPin(qnaAnswerPinId, member));
     }
+
+    @PostMapping("/{qnaAnswerId}/like")
+    public ResponseEntity<String> setLike(
+            @PathVariable Long qnaAnswerId,
+            @AuthenticationPrincipal Member member
+    ) {
+        return ResponseEntity.ok(
+                qnaAnswerService.setLike(qnaAnswerId, member) ? "좋아요" : "좋아요 해제");
+    }
 }
 
