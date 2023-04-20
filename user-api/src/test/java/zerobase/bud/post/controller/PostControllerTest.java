@@ -199,6 +199,9 @@ class PostControllerTest {
                     .postType(PostType.FEED)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
+                    .isLike(true)
+                    .isFollow(false)
+                    .isScrap(true)
                     .build());
         }
 
@@ -267,6 +270,12 @@ class PostControllerTest {
                                         fieldWithPath("content[].updatedAt").type(
                                                         JsonFieldType.STRING)
                                                 .description("게시물 업데이트일"),
+                                        fieldWithPath("content[].like").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 좋아요 클릭 여부"),
+                                        fieldWithPath("content[].follow").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 작성자 팔로우 여부"),
+                                        fieldWithPath("content[].scrap").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 스크랩 여부"),
                                         fieldWithPath("first").type(JsonFieldType.BOOLEAN)
                                                 .description("첫번째 페이지인지 여부"),
                                         fieldWithPath("last").type(JsonFieldType.BOOLEAN)
@@ -307,6 +316,9 @@ class PostControllerTest {
                 .postType(PostType.FEED)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .isLike(true)
+                .isFollow(false)
+                .isScrap(true)
                 .build();
 
         given(postService.searchPost(any(), anyLong()))
@@ -356,7 +368,13 @@ class PostControllerTest {
                                         fieldWithPath("createdAt").type(JsonFieldType.STRING)
                                                 .description("게시물 등록일"),
                                         fieldWithPath("updatedAt").type(JsonFieldType.STRING)
-                                                .description("게시물 업데이트일")
+                                                .description("게시물 업데이트일"),
+                                        fieldWithPath("like").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 좋아요 클릭 여부"),
+                                        fieldWithPath("follow").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 작성자 팔로우 여부"),
+                                        fieldWithPath("scrap").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 스크랩 여부")
                                 )
                         )
                 );
