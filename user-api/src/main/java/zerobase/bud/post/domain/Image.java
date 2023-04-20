@@ -29,4 +29,12 @@ public class Image extends BaseEntity {
 
     private String imagePath;
 
+
+    public static Image of(Post post, String imagePath){
+        return Image.builder()
+            .post(post)
+            .imagePath(imagePath)
+            .build();
+    }
+
 }

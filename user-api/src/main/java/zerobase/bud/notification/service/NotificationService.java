@@ -39,7 +39,9 @@ public class NotificationService {
                 notificationId)
             .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION));
 
-        validateUpdateNotificationStatus(notification, member);
+        if (!Objects.equals(notification.getReceiver().getId(), member.getId())) {
+            throw new BudException(NOT_RECEIVED_NOTIFICATION_MEMBER);
+        }
 
         notification.updateStatus();
 
@@ -52,22 +54,12 @@ public class NotificationService {
                 notificationId)
             .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION));
 
-        if (!Objects.equals(notification.getReceiver().getId(),
-            member.getId())) {
+        if (!Objects.equals(notification.getReceiver().getId(), member.getId())) {
             throw new BudException(NOT_RECEIVED_NOTIFICATION_MEMBER);
         }
 
-        notificationRepository.delete(notification);
+        notificationRepository.deleteById(notification.getId());
 
         return notificationId;
-    }
-
-    private void validateUpdateNotificationStatus(Notification notification,
-        Member member) {
-
-        if (!Objects.equals(notification.getReceiver().getId(),
-            member.getId())) {
-            throw new BudException(NOT_RECEIVED_NOTIFICATION_MEMBER);
-        }
     }
 }

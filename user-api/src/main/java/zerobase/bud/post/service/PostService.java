@@ -192,17 +192,10 @@ public class PostService {
     private void saveImageWithPost(List<MultipartFile> images, Post post) {
         if (Objects.nonNull(images)) {
             for (MultipartFile image : images) {
-                saveImage(post, image);
+                String imagePath = awsS3Api.uploadImage(image, POSTS);
+                imageRepository.save(Image.of(post,imagePath));
             }
         }
-    }
-
-    private void saveImage(Post post, MultipartFile image) {
-        String imagePath = awsS3Api.uploadImage(image, POSTS);
-        imageRepository.save(Image.builder()
-            .post(post)
-            .imagePath(imagePath)
-            .build());
     }
 
     private void deleteImages(Long postId) {
