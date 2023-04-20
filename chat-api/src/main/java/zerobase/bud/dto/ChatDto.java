@@ -25,7 +25,7 @@ public class ChatDto implements Serializable {
     private String imageUrl;
     private String userProfileUrl;
     private String userName;
-    private long numberOfMembers;
+    private Long numberOfMembers;
     private Long userId;
 
     public static ChatDto from(Chat chat) {
@@ -37,7 +37,7 @@ public class ChatDto implements Serializable {
                 .message(chat.getMessage())
                 .userName(chat.getMember().getNickname())
                 .userProfileUrl(chat.getMember().getProfileImg())
-                .userId(chat.getId())
+                .userId(chat.getMember().getId())
                 .build();
     }
 
