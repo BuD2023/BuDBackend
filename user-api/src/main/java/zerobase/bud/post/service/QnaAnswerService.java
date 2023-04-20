@@ -1,15 +1,5 @@
 package zerobase.bud.post.service;
 
-import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
-import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER_PIN;
-import static zerobase.bud.common.type.ErrorCode.NOT_POST_OWNER;
-
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,7 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.notification.service.SendNotificationService;
-import zerobase.bud.post.domain.*;
+import zerobase.bud.post.domain.Post;
+import zerobase.bud.post.domain.QnaAnswer;
+import zerobase.bud.post.domain.QnaAnswerLike;
+import zerobase.bud.post.domain.QnaAnswerPin;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
 import zerobase.bud.post.dto.QnaAnswerDto;
 import zerobase.bud.post.dto.SearchQnaAnswer;
@@ -30,6 +23,7 @@ import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -70,24 +64,30 @@ public class QnaAnswerService {
     }
 
     @Transactional
-    public Long updateQnaAnswer(UpdateQnaAnswer.Request request) {
+    public Long updateQnaAnswer(UpdateQnaAnswer.Request request , Member member) {
 
         QnaAnswer qnaAnswer = qnaAnswerRepository.findById(
                 request.getQnaAnswerId())
             .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
 
-        validateUpdateQnaAnswer(qnaAnswer, request);
+        validateUpdateQnaAnswer(qnaAnswer, request, member);
 
         qnaAnswer.updateContent(request.getContent());
 
         return request.getQnaAnswerId();
     }
 
-    private void validateUpdateQnaAnswer(QnaAnswer qnaAnswer,
-        UpdateQnaAnswer.Request request) {
+    private void validateUpdateQnaAnswer(
+        QnaAnswer qnaAnswer
+        , UpdateQnaAnswer.Request request
+        , Member member
+    ) {
 
-        if (!Objects.equals(qnaAnswer.getQnaAnswerStatus(),
-            QnaAnswerStatus.ACTIVE)) {
+        if(!Objects.equals(member.getId(), qnaAnswer.getMember().getId())){
+            throw new BudException(NOT_QNA_ANSWER_OWNER);
+        }
+
+        if (!Objects.equals(qnaAnswer.getQnaAnswerStatus(), QnaAnswerStatus.ACTIVE)) {
             throw new BudException(INVALID_QNA_ANSWER_STATUS);
         }
 
@@ -108,6 +108,10 @@ public class QnaAnswerService {
 
         if (!Objects.equals(post.getPostStatus(), PostStatus.ACTIVE)) {
             throw new BudException(INVALID_POST_STATUS);
+        }
+
+        if( Objects.nonNull(post.getQnaAnswerPin())){
+            throw new BudException(ADD_IMPOSSIBLE_PINNED_ANSWER);
         }
     }
 
@@ -146,10 +150,10 @@ public class QnaAnswerService {
     }
     @Transactional
     public Long qnaAnswerPin(Long qnaAnswerId, Member member) {
+
         QnaAnswer qnaAnswer = qnaAnswerRepository.findByIdAndQnaAnswerStatus(
             qnaAnswerId, QnaAnswerStatus.ACTIVE
         ).orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
-
 
         Post post = qnaAnswer.getPost();
 
@@ -157,10 +161,11 @@ public class QnaAnswerService {
             throw new BudException(NOT_POST_OWNER);
         }
 
-        qnaAnswerPinRepository.deleteByPostId(post.getId());
+        if(Objects.nonNull(post.getQnaAnswerPin())){
+            throw new BudException(CHANGE_IMPOSSIBLE_PINNED_ANSWER);
+        }
 
         qnaAnswerPinRepository.save(QnaAnswerPin.of(qnaAnswer, post));
-
         sendNotificationService.sendQnaAnswerPinNotification(member, qnaAnswer);
 
         return qnaAnswerId;
@@ -216,4 +221,3 @@ public class QnaAnswerService {
         return true;
     }
 }
-

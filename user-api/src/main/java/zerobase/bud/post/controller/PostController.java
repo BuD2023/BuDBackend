@@ -10,13 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.comment.service.CommentService;
 import zerobase.bud.domain.Member;
-import zerobase.bud.post.dto.CommentDto;
-import zerobase.bud.post.dto.CreatePost;
-import zerobase.bud.post.dto.PostDto;
-import zerobase.bud.post.dto.UpdatePost;
+import zerobase.bud.post.dto.*;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostSortType;
+import zerobase.bud.post.type.PostType;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -51,29 +49,37 @@ public class PostController {
         );
     }
 
-    @PostMapping("/update")
+    @PostMapping("/{postId}")
     public ResponseEntity<String> updatePost(
+            @PathVariable Long postId,
             @RequestPart(value = IMAGES, required = false) List<MultipartFile> images,
-            @RequestPart(value = UPDATE_POST_REQUEST) @Valid UpdatePost.Request request
+            @RequestPart(value = UPDATE_POST_REQUEST) @Valid UpdatePost.Request request,
+            @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(postService.updatePost(images, request));
+        return ResponseEntity.ok(postService.updatePost(postId, images, request, member));
     }
 
     @GetMapping
-    public ResponseEntity<Page<PostDto>> searchPosts(
+    public ResponseEntity<Page<SearchPost.Response>> searchPosts(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false, defaultValue = "DATE") PostSortType sort,
             @RequestParam(required = false, defaultValue = "DESC") Order order,
             @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "10") int size
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) PostType postType,
+            @AuthenticationPrincipal Member member
     ) {
         return ResponseEntity.ok(
-                postService.searchPosts(keyword, sort, order, page, size));
+                postService.searchPosts(member, keyword, sort, order,
+                        page, size, postType));
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<PostDto> searchPost(@PathVariable Long postId) {
-        return ResponseEntity.ok(postService.searchPost(postId));
+    public ResponseEntity<SearchPost.Response> searchPost(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal Member member
+    ) {
+        return ResponseEntity.ok(postService.searchPost(member, postId));
     }
 
     @DeleteMapping("/{postId}")

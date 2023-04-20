@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.fcm.FcmApi;
@@ -36,7 +37,8 @@ public class SendNotificationService {
 
     public void sendCreatePostNotification(Member sender, Post post) {
         try {
-            List<Member> followerList = followRepository.findByTarget(sender)
+            List<Member> followerList = followRepository.findAllByTargetId(sender.getId())
+                .stream()
                 .map(Follow::getMember)
                 .collect(Collectors.toList());
 
@@ -181,6 +183,61 @@ public class SendNotificationService {
                 e.getMessage(), e);
         }
     }
+    public void sendCommentLikeNotification(Member sender, Comment comment) {
+        try {
+            Member receiver = comment.getMember();
+
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
+
+            Post post = comment.getPost();
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
+                fcmApi.sendNotificationByToken(
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.POST
+                        , PageType.valueOf(post.getPostType().name())
+                        , post.getId()
+                        , NotificationDetailType.LIKE
+                    )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
+                e.getMessage(), e);
+        }
+    }
+
+    public void sendCommentPinNotification(Member sender, Comment comment) {
+        try {
+            Member receiver = comment.getMember();
+
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
+                fcmApi.sendNotificationByToken(
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.POST
+                        , PageType.valueOf(comment.getPost().getPostType().name())
+                        , comment.getPost().getId()
+                        , NotificationDetailType.PIN
+                    )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
+                e.getMessage(), e);
+        }
+    }
 
     public void sendQnaAnswerAddLikeNotification(Member sender, QnaAnswer qnaAnswer) {
         try {
@@ -213,4 +270,5 @@ public class SendNotificationService {
         return notificationInfoRepository.findByMemberId(receiverId)
             .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
     }
+
 }

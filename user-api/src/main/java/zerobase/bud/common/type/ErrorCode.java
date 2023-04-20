@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    ADD_IMPOSSIBLE_PINNED_ANSWER("이미 채택된 답변이 있어 답변을 달 수 없습니다."),
     CANNOT_ANSWER_YOURSELF("자신의 QnA 게시글에 답변할 수 없습니다."),
     NOT_FOUND_QNA_ANSWER_PIN("존재하지 않는 QnA 답변 핀입니다."),
     NOT_RECEIVED_NOTIFICATION_MEMBER("알림을 수신한 회원이 아닙니다."),
