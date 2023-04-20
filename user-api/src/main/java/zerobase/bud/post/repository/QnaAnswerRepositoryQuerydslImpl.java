@@ -1,9 +1,9 @@
 package zerobase.bud.post.repository;
 
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import zerobase.bud.post.dto.QQnaAnswerDto;
 import zerobase.bud.post.dto.QnaAnswerDto;
 
 import java.util.ArrayList;
@@ -18,8 +19,10 @@ import java.util.List;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static zerobase.bud.post.domain.QQnaAnswer.qnaAnswer;
+import static zerobase.bud.post.domain.QQnaAnswerLike.qnaAnswerLike;
 import static zerobase.bud.post.domain.QQnaAnswerPin.qnaAnswerPin;
 import static zerobase.bud.post.type.QnaAnswerStatus.INACTIVE;
+import static zerobase.bud.user.domain.QFollow.follow;
 
 @Repository
 @RequiredArgsConstructor
@@ -30,23 +33,23 @@ public class QnaAnswerRepositoryQuerydslImpl
 
     @Override
     public Page<QnaAnswerDto> findAllByPostIdAndQnaAnswerStatusNotLike(
-            Long postId, Pageable pageable) {
+            Long memberId, Long postId, Pageable pageable) {
 
         return new PageImpl<>(
-                searchQnaAnswers(postId, pageable),
+                searchQnaAnswers(memberId, postId, pageable),
                 pageable,
                 countQnaAnswers(postId)
         );
     }
 
-    private List<QnaAnswerDto> searchQnaAnswers(Long postId,
+    private List<QnaAnswerDto> searchQnaAnswers(Long memberId,
+                                                Long postId,
                                                 Pageable pageable) {
         List<OrderSpecifier<?>> orders = getOrders(pageable);
 
         return jpaQueryFactory
                 .select(
-                        Projections.constructor(
-                                QnaAnswerDto.class,
+                        new QQnaAnswerDto(
                                 qnaAnswer.id,
                                 qnaAnswer.member,
                                 qnaAnswer.content,
@@ -55,7 +58,10 @@ public class QnaAnswerRepositoryQuerydslImpl
                                 qnaAnswer.qnaAnswerStatus,
                                 qnaAnswer.createdAt,
                                 qnaAnswer.updatedAt,
-                                qnaAnswerPin.id
+                                qnaAnswerPin.id,
+                                isUserQnaAnswerLike(memberId, qnaAnswer.id),
+                                isUserPostRegisterUserFollow(memberId,
+                                        qnaAnswer.member.id)
                         )
                 )
                 .from(qnaAnswer)
@@ -66,6 +72,31 @@ public class QnaAnswerRepositoryQuerydslImpl
                 .limit(pageable.getPageSize())
                 .orderBy(orders.toArray(OrderSpecifier[]::new))
                 .fetch();
+    }
+
+    private Expression<Boolean> isUserQnaAnswerLike(Long memberId,
+                                                    NumberPath<Long> qnaAnswerId) {
+        return ExpressionUtils.as(
+                JPAExpressions.select(qnaAnswerLike.count()
+                                .when(0L)
+                                .then(false)
+                                .otherwise(true))
+                        .from(qnaAnswerLike)
+                        .where(qnaAnswerLike.qnaAnswer.id.eq(qnaAnswerId),
+                                qnaAnswerLike.member.id.eq(memberId)), "isLike");
+    }
+
+    private Expression<Boolean> isUserPostRegisterUserFollow(Long memberId,
+                                                             NumberPath<Long> qnaAnswerMemberId) {
+        return ExpressionUtils.as(
+                JPAExpressions.select(follow.count()
+                                .when(0L)
+                                .then(false)
+                                .otherwise(true))
+                        .from(follow)
+                        .where(follow.target.id.eq(qnaAnswerMemberId),
+                                follow.member.id.eq(memberId)), "isFollow");
+
     }
 
     private Long countQnaAnswers(Long postId) {
