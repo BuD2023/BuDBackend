@@ -213,7 +213,7 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
     }
 
     private BooleanExpression eqType(PostType type) {
-        return type == null ? null : post.postType.eq(type);
+        return type == null || type.equals(PostType.ALL) ? null : post.postType.eq(type);
     }
 
     private BooleanExpression neStatus() {
