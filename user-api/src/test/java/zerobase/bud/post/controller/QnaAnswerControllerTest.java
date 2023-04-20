@@ -124,7 +124,7 @@ class QnaAnswerControllerTest {
     @WithMockUser
     void success_updateQnaAnswer() throws Exception {
         //given
-        given(qnaAnswerService.updateQnaAnswer(any()))
+        given(qnaAnswerService.updateQnaAnswer(any(), any()))
                 .willReturn(3L);
 
         //when

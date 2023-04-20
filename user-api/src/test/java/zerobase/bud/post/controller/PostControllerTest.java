@@ -157,11 +157,11 @@ class PostControllerTest {
 
         String contents = objectMapper.writeValueAsString(input);
 
-        given(postService.updatePost(any(), any()))
+        given(postService.updatePost(anyLong(), any(), any(), any()))
                 .willReturn("success");
         //when
         //then
-        mockMvc.perform(multipart("/posts/update")
+        mockMvc.perform(multipart("/posts/1")
                         .file(images.get(0))
                         .file(new MockMultipartFile("updatePostRequest", "",
                                 "application/json", contents.getBytes(
@@ -195,8 +195,7 @@ class PostControllerTest {
                     .likeCount(i)
                     .scrapCount(i)
                     .hitCount(i)
-                    .postStatus(
-                            i % 3 == 0 ? PostStatus.INACTIVE : PostStatus.ACTIVE)
+                    .postStatus(i % 3 == 0 ? PostStatus.INACTIVE : PostStatus.ACTIVE)
                     .postType(PostType.FEED)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())

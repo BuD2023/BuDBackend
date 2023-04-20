@@ -8,21 +8,26 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.ChatRoomStatusDto;
 import zerobase.bud.common.exception.ChatRoomException;
+import zerobase.bud.common.exception.MemberException;
+import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.ChatRoom;
 import zerobase.bud.domain.ChatRoomSession;
 import zerobase.bud.domain.Member;
 import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
+import zerobase.bud.repository.MemberRepository;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static zerobase.bud.common.type.ErrorCode.CHATROOM_NOT_FOUND;
+import static zerobase.bud.common.type.ErrorCode.NOT_CHATROOM_OWNER;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
 import static zerobase.bud.util.Constants.CHATROOM;
 import static zerobase.bud.util.Constants.SESSION;
@@ -34,6 +39,8 @@ import static zerobase.bud.util.Constants.SESSION;
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
+
+    private final MemberRepository memberRepository;
 
     private final ChatRepository chatRepository;
 
@@ -110,5 +117,23 @@ public class ChatRoomService {
         return ChatRoomStatusDto.of(
                 chatRoomRepository.countByStatus(ACTIVE),
                 hashOperations.size(SESSION));
+    }
+
+
+    @Transactional
+    public Long modifyHost(Long chatroomId, Long userId, Member member) {
+        ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
+                .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
+
+        if (!Objects.equals(member.getId(), chatRoom.getMember().getId())) {
+            throw new ChatRoomException(NOT_CHATROOM_OWNER);
+        }
+
+        Member newHost = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
+
+        chatRoom.modifyHost(newHost);
+        chatRoomRepository.save(chatRoom);
+        return userId;
     }
 }

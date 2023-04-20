@@ -17,9 +17,6 @@ public class UpdatePost {
     public static class Request {
 
         @NotNull
-        private Long postId;
-
-        @NotNull
         private PostType postType;
 
         @NotBlank

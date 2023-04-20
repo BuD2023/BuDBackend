@@ -1,12 +1,17 @@
 package zerobase.bud.post.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static zerobase.bud.common.type.ErrorCode.*;
+import static zerobase.bud.common.type.ErrorCode.ADD_IMPOSSIBLE_PINNED_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.ALREADY_DELETE_QNA_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.CANNOT_ANSWER_YOURSELF;
 import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
@@ -15,8 +20,10 @@ import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER_PIN;
 import static zerobase.bud.common.type.ErrorCode.NOT_POST_OWNER;
+import static zerobase.bud.common.type.ErrorCode.NOT_QNA_ANSWER_OWNER;
 import static zerobase.bud.post.type.PostStatus.ACTIVE;
 import static zerobase.bud.post.type.PostStatus.INACTIVE;
+import static zerobase.bud.post.type.PostType.QNA;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,7 +36,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
@@ -193,7 +203,7 @@ class QnaAnswerServiceTest {
             .title("title")
             .content("postContent")
             .postStatus(INACTIVE)
-            .postType(PostType.QNA)
+            .postType(QNA)
             .build();
 
         given(postRepository.findById(anyLong()))
@@ -211,6 +221,34 @@ class QnaAnswerServiceTest {
     }
 
     @Test
+    @DisplayName("ADD_IMPOSSIBLE_PINNED_ANSWER_createQnaAnswer")
+    void ADD_IMPOSSIBLE_PINNED_ANSWER_createQnaAnswer() {
+        //given 어떤 데이터가 주어졌을 때
+
+        Post post = Post.builder()
+            .member(getPostMaker())
+            .title("title")
+            .content("content")
+            .postStatus(ACTIVE)
+            .postType(QNA)
+            .qnaAnswerPin(getQnaAnswerPin())
+            .build();
+
+        given(postRepository.findById(anyLong()))
+            .willReturn(Optional.of(post));
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.createQnaAnswer(getSender(),
+                Request.builder()
+                    .postId(1L)
+                    .content("content")
+                    .build()));
+        //then 이런 결과가 나온다.
+        assertEquals(ADD_IMPOSSIBLE_PINNED_ANSWER, budException.getErrorCode());
+    }
+
+    @Test
     void success_updateQnaAnswer() {
         //given
         given(qnaAnswerRepository.findById(anyLong()))
@@ -224,7 +262,8 @@ class QnaAnswerServiceTest {
             UpdateQnaAnswer.Request.builder()
                 .qnaAnswerId(3L)
                 .content("content")
-                .build());
+                .build()
+        , getSender());
 
         //then
         assertEquals(3L, answer);
@@ -243,9 +282,35 @@ class QnaAnswerServiceTest {
                 UpdateQnaAnswer.Request.builder()
                     .qnaAnswerId(1L)
                     .content("content")
-                    .build()));
+                    .build()
+            ,getSender()));
         //then 이런 결과가 나온다.
         assertEquals(NOT_FOUND_QNA_ANSWER, budException.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("NOT_QNA_ANSWER_OWNER_updateQnaAnswer")
+    void NOT_QNA_ANSWER_OWNER_updateQnaAnswer() {
+        //given 어떤 데이터가 주어졌을 때
+        QnaAnswer qnaAnswer = QnaAnswer.builder()
+            .member(getReceiver())
+            .post(getPost())
+            .content("content")
+            .qnaAnswerStatus(QnaAnswerStatus.INACTIVE)
+            .build();
+
+        given(qnaAnswerRepository.findById(anyLong()))
+            .willReturn(Optional.of(qnaAnswer));
+
+        //when 어떤 경우에
+        BudException budException = assertThrows(BudException.class,
+            () -> qnaAnswerService.updateQnaAnswer(
+                UpdateQnaAnswer.Request.builder()
+                    .qnaAnswerId(1L)
+                    .content("content")
+                    .build(), getSender()));
+        //then 이런 결과가 나온다.
+        assertEquals(NOT_QNA_ANSWER_OWNER, budException.getErrorCode());
     }
 
     @Test
@@ -268,7 +333,7 @@ class QnaAnswerServiceTest {
                 UpdateQnaAnswer.Request.builder()
                     .qnaAnswerId(1L)
                     .content("content")
-                    .build()));
+                    .build(), getSender()));
         //then 이런 결과가 나온다.
         assertEquals(INVALID_QNA_ANSWER_STATUS, budException.getErrorCode());
     }
@@ -290,7 +355,7 @@ class QnaAnswerServiceTest {
                 UpdateQnaAnswer.Request.builder()
                     .qnaAnswerId(1L)
                     .content("content")
-                    .build()));
+                    .build(), getSender()));
         //then 이런 결과가 나온다.
         assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER,
             budException.getErrorCode());
@@ -304,7 +369,7 @@ class QnaAnswerServiceTest {
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)
-            .postType(PostType.QNA)
+            .postType(QNA)
             .build();
 
         QnaAnswerPin qnaAnswerPin = QnaAnswerPin.builder()
@@ -333,7 +398,7 @@ class QnaAnswerServiceTest {
 
         //then
         verify(qnaAnswerPinRepository, times(1)).save(captor.capture());
-        assertEquals(PostType.QNA, captor.getValue().getPost().getPostType());
+        assertEquals(QNA, captor.getValue().getPost().getPostType());
         assertEquals("content", captor.getValue().getQnaAnswer().getContent());
         assertEquals(1L, answer);
     }
@@ -375,6 +440,36 @@ class QnaAnswerServiceTest {
     }
 
     @Test
+    @DisplayName("CHANGE_IMPOSSIBLE_PINNED_ANSWER_pinnedQnaAnswer")
+    void CHANGE_IMPOSSIBLE_PINNED_ANSWER_pinnedQnaAnswer() {
+        //given
+        Post post = Post.builder()
+            .member(getPostMaker())
+            .title("title")
+            .content("content")
+            .postStatus(ACTIVE)
+            .postType(QNA)
+            .qnaAnswerPin(getQnaAnswerPin())
+            .build();
+
+        given(qnaAnswerRepository.findByIdAndQnaAnswerStatus(anyLong(), any()))
+            .willReturn(Optional.ofNullable(QnaAnswer.builder()
+                .id(1L)
+                .post(post)
+                .member(getPostMaker())
+                .content("content")
+                .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
+                .build()));
+
+        //when
+        BudException budException = assertThrows(BudException.class, () ->
+            qnaAnswerService.qnaAnswerPin(1L, getPostMaker()));
+
+        //then
+        assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER, budException.getErrorCode());
+    }
+
+    @Test
     void success_cancelQnaAnswerPin() {
         //given
         Post post = Post.builder()
@@ -382,7 +477,7 @@ class QnaAnswerServiceTest {
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)
-            .postType(PostType.QNA)
+            .postType(QNA)
             .build();
 
         QnaAnswerPin qnaAnswerPin = QnaAnswerPin.builder()
@@ -425,7 +520,7 @@ class QnaAnswerServiceTest {
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)
-            .postType(PostType.QNA)
+            .postType(QNA)
             .build();
 
         QnaAnswerPin qnaAnswerPin = QnaAnswerPin.builder()
@@ -588,7 +683,7 @@ class QnaAnswerServiceTest {
             .title("title")
             .content("postContent")
             .postStatus(ACTIVE)
-            .postType(PostType.QNA)
+            .postType(QNA)
             .build();
     }
 

@@ -23,7 +23,6 @@ public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
 
-    //TODO: member 추가
     @PostMapping("/chatrooms")
     private ResponseEntity<URI> createChatRoom(
             @RequestBody @Valid CreateChatRoom.Request request,
@@ -31,6 +30,13 @@ public class ChatRoomController {
         Long id = chatRoomService
                 .createChatRoom(request.getTitle(), request.getDescription(), request.getHashTag(), member);
         return ResponseEntity.created(URI.create("/chatrooms/" + id)).build();
+    }
+
+    @PostMapping("/chatrooms/{chatroomId}/users/{userId}")
+    private ResponseEntity<Long> modifyHost(@PathVariable Long chatroomId,
+                                            @PathVariable Long userId,
+                                            @AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(chatRoomService.modifyHost(chatroomId, userId, member));
     }
 
     @GetMapping("/chatrooms/search")
@@ -49,7 +55,7 @@ public class ChatRoomController {
     }
 
     @GetMapping("/chatrooms/{chatroomId}")
-    private ResponseEntity<ChatRoomDto> readChatRoom(@PathVariable Long chatroomId){
+    private ResponseEntity<ChatRoomDto> readChatRoom(@PathVariable Long chatroomId) {
         return ResponseEntity.ok(chatRoomService.readChatRoom(chatroomId));
     }
 
@@ -57,12 +63,12 @@ public class ChatRoomController {
     private ResponseEntity<Slice<ChatDto>> readChats(@PathVariable Long chatroomId,
                                                      @RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "10") int size,
-                                                     @AuthenticationPrincipal Member member){
+                                                     @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(chatRoomService.readChats(chatroomId, member, page, size));
     }
 
     @GetMapping("/chatrooms/status")
-    private ResponseEntity<ChatRoomStatusDto> chatRoomsStatus(){
+    private ResponseEntity<ChatRoomStatusDto> chatRoomsStatus() {
         return ResponseEntity.ok(chatRoomService.chatRoomsStatus());
     }
 }

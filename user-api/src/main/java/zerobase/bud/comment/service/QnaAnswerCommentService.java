@@ -44,10 +44,6 @@ public class QnaAnswerCommentService {
         QnaAnswerComment qnaAnswerComment = qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(commentId, QnaAnswerCommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (Objects.equals(qnaAnswerComment.getMember().getId(), member.getId())) {
-            throw new BudException(ErrorCode.CANNOT_LIKE_WRITER_SELF);
-        }
-
         Optional<QnaAnswerCommentLike> optionalQnaAnswerComment =
                 qnaAnswerCommentLikeRepository.findByQnaAnswerCommentAndMember(qnaAnswerComment, member);
 

@@ -160,35 +160,6 @@ class QnaAnswerCommentServiceTest {
     }
 
     @Test
-    @DisplayName("좋아요 실패 - 자신의 댓글을 좋아요")
-    void failCommentLikeWhenRequesterIsWriterTest() {
-        //given
-        Member writer = Member.builder()
-                .id(2L)
-                .createdAt(LocalDateTime.now())
-                .status(MemberStatus.VERIFIED)
-                .profileImg("aaaaaa.jpg")
-                .nickname("비가와")
-                .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
-                .build();
-
-        QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
-                .member(writer)
-                .commentCount(1)
-                .id(3L)
-                .build();
-
-        given(qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(anyLong(), any()))
-                .willReturn(Optional.of(qnaAnswerComment));
-        //when
-        BudException exception = assertThrows(BudException.class,
-                () -> qnaAnswerCommentService.commentLike(123L, writer));
-        //then
-        assertEquals(ErrorCode.CANNOT_LIKE_WRITER_SELF, exception.getErrorCode());
-    }
-
-    @Test
     @DisplayName("qna 댓글 핀 성공")
     void successCommentPinTest() {
         //given
