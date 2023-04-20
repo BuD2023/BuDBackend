@@ -109,7 +109,7 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
                         isUserPostRegisterUserFollow(memberId)
                 ))
                 .from(post)
-                .where(search(keyword), eqStatus(), eqType(postType))
+                .where(search(keyword), neStatus(), eqType(postType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(sortPostsList(sortType, order))
@@ -120,7 +120,7 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
         return jpaQueryFactory
                 .select(post.count())
                 .from(post)
-                .where(search(keyword))
+                .where(search(keyword), neStatus())
                 .fetchOne();
     }
 
