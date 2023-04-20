@@ -196,15 +196,15 @@ public class SendNotificationService {
                                 , receiver
                                 , sender
                                 , NotificationType.POST
-                                , PageType.QNA_ANSWER
-                                , qnaAnswer.getId()
+                                , PageType.QNA
+                                , qnaAnswer.getPost().getId()
                                 , NotificationDetailType.LIKE
                         )
                 );
             }
 
         } catch (Exception e) {
-            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
+            log.error("sendQnaAnswerAddLikeNotification 알림을 보내는 중 오류가 발생했습니다. {}",
                     e.getMessage(), e);
         }
     }
