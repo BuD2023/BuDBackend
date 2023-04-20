@@ -15,6 +15,7 @@ import zerobase.bud.post.dto.SearchMyPagePost;
 import zerobase.bud.post.dto.SearchScrap;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
+import zerobase.bud.post.type.PostType;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.service.UserService;
@@ -91,11 +92,12 @@ public class UserController {
     public ResponseEntity<Page<SearchMyPagePost.Response>> searchMyPosts(
             @AuthenticationPrincipal Member member,
             @PathVariable Long myPageUserId,
+            @RequestParam PostType postType,
             @PageableDefault(size = 5, sort = "DATE", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
         return ResponseEntity.ok(postService.searchMyPagePosts(member,
-                myPageUserId, pageable));
+                myPageUserId, postType, pageable));
     }
 
     @PutMapping("/{userId}/notification-info")

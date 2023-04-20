@@ -37,30 +37,40 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Page<PostDto> findAllByPostStatus(Long memberId,
-                                             String keyword,
-                                             PostSortType sortType,
-                                             Order order,
-                                             Pageable pageable,
-                                             PostType postType) {
+    public Page<PostDto> findAllByPostStatus(
+            Long memberId,
+            String keyword,
+            PostSortType sortType,
+            Order order,
+            Pageable pageable,
+            PostType postType
+    ) {
         return new PageImpl<>(
                 searchPosts(memberId, keyword, sortType, order, pageable, postType),
                 pageable,
-                searchPostsCount(keyword)
+                searchPostsCount(keyword, postType)
         );
     }
 
     @Override
-    public Page<PostDto> findAllByMyPagePost(Long memberId, Long myPageUserId, Pageable pageable) {
+    public Page<PostDto> findAllByMyPagePost(
+            Long memberId,
+            Long myPageUserId,
+            PostType postType,
+            Pageable pageable
+    ) {
         return new PageImpl<>(
-                searchMyPagePosts(memberId, myPageUserId, pageable),
+                searchMyPagePosts(memberId, myPageUserId, postType, pageable),
                 pageable,
-                countMyPagePosts(memberId)
+                countMyPagePosts(memberId, postType)
         );
     }
 
     @Override
-    public Optional<PostDto> findByPostId(Long memberId, Long postId) {
+    public Optional<PostDto> findByPostId(
+            Long memberId,
+            Long postId
+    ) {
         return Optional.ofNullable(jpaQueryFactory
                 .select(new QPostDto(
                         post.id,
@@ -84,12 +94,14 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
                 .fetchOne());
     }
 
-    private List<PostDto> searchPosts(Long memberId,
-                                      String keyword,
-                                      PostSortType sortType,
-                                      Order order,
-                                      Pageable pageable,
-                                      PostType postType) {
+    private List<PostDto> searchPosts(
+            Long memberId,
+            String keyword,
+            PostSortType sortType,
+            Order order,
+            Pageable pageable,
+            PostType postType
+    ) {
         return jpaQueryFactory
                 .select(new QPostDto(
                         post.id,
@@ -109,22 +121,27 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
                         isUserPostRegisterUserFollow(memberId)
                 ))
                 .from(post)
-                .where(search(keyword), neStatus(), eqType(postType))
+                .where(search(keyword), neStatus(), eqPostType(postType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(sortPostsList(sortType, order))
                 .fetch();
     }
 
-    private Long searchPostsCount(String keyword) {
+    private Long searchPostsCount(String keyword, PostType postType) {
         return jpaQueryFactory
                 .select(post.count())
                 .from(post)
-                .where(search(keyword), neStatus())
+                .where(search(keyword), neStatus(), eqPostType(postType))
                 .fetchOne();
     }
 
-    private List<PostDto> searchMyPagePosts(Long memberId, Long myPageUserId, Pageable pageable) {
+    private List<PostDto> searchMyPagePosts(
+            Long memberId,
+            Long myPageUserId,
+            PostType postType,
+            Pageable pageable
+    ) {
         List<OrderSpecifier<?>> orders = getOrders(pageable);
 
         return jpaQueryFactory
@@ -146,11 +163,19 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
                         isUserPostRegisterUserFollow(memberId)
                 ))
                 .from(post)
-                .where(neStatus(), eqPostRegisterMemberId(myPageUserId))
+                .where(neStatus(), eqPostRegisterMemberId(myPageUserId), eqPostType(postType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(orders.toArray(OrderSpecifier[]::new))
                 .fetch();
+    }
+
+    private Long countMyPagePosts(Long memberId, PostType postType) {
+        return jpaQueryFactory
+                .select(post.count())
+                .from(post)
+                .where(neStatus(), eqPostRegisterMemberId(memberId), eqPostType(postType))
+                .fetchOne();
     }
 
     private Expression<Boolean> isUserPostLike(Long memberId) {
@@ -192,13 +217,7 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
 
     }
 
-    private Long countMyPagePosts(Long memberId) {
-        return jpaQueryFactory
-                .select(post.count())
-                .from(post)
-                .where(neStatus(), eqPostRegisterMemberId(memberId))
-                .fetchOne();
-    }
+
 
     private BooleanBuilder search(String keyword) {
         return keyword == null ? null :
@@ -212,7 +231,7 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
         return post.postStatus.eq(ACTIVE);
     }
 
-    private BooleanExpression eqType(PostType type) {
+    private BooleanExpression eqPostType(PostType type) {
         return type == null || type.equals(PostType.ALL) ? null : post.postType.eq(type);
     }
 
@@ -240,8 +259,10 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
         return orders;
     }
 
-    private OrderSpecifier<?> sortPostsList(PostSortType sortType,
-                                            Order order) {
+    private OrderSpecifier<?> sortPostsList(
+            PostSortType sortType,
+            Order order
+    ) {
         switch (sortType) {
             case HIT:
                 return new OrderSpecifier<>(order, post.hitCount);

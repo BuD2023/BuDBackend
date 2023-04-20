@@ -122,10 +122,15 @@ public class PostService {
 
     public Page<SearchMyPagePost.Response> searchMyPagePosts(Member member,
                                                              Long myPageUserId,
+                                                             PostType postType,
                                                              Pageable pageable) {
 
-        Page<PostDto> posts = postRepositoryQuerydsl
-                .findAllByMyPagePost(member.getId(), myPageUserId, pageable);
+        Page<PostDto> posts = postRepositoryQuerydsl.findAllByMyPagePost(
+                member.getId(),
+                myPageUserId,
+                postType,
+                pageable
+        );
 
         return new PageImpl<>(
                 posts.stream()
