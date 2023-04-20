@@ -43,6 +43,8 @@ public enum ErrorCode {
     FAILED_CONNECT_GITHUB("깃헙과 연결에 실패했습니다."),
     NOT_REGISTERED_MEMBER("등록되지 않은 회원입니다."),
 
+    MEMBER_NOT_FOUND_IN_CHATROOM("현재 채팅방에 참여중인 멤버가 아닙니다"),
+
     REDIS_BROKER_ERROR("레디스 메세지 브로커 과정에서 실패했습니다."),
     INVALID_TOKEN("토큰이 유효하지 않습니다."),
     INTERNAL_ERROR("내부 서버 오류가 발생했습니다."),

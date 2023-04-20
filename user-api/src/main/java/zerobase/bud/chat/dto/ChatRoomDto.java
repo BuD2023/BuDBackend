@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class ChatRoomDto {
     private Long chatRoomId;
     private String title;
-    private int numberOfMembers;
+    private long numberOfMembers;
     private String description;
     private List<String> hashTags;
     private LocalDateTime createdAt;
@@ -27,7 +27,7 @@ public class ChatRoomDto {
     private String hostProfileUrl;
     private Long hostId;
 
-    public static ChatRoomDto of(ChatRoom chatRoom, Integer numberOfMembers) {
+    public static ChatRoomDto of(ChatRoom chatRoom, Long numberOfMembers) {
         return ChatRoomDto.builder()
                 .chatRoomId(chatRoom.getId())
                 .title(chatRoom.getTitle())

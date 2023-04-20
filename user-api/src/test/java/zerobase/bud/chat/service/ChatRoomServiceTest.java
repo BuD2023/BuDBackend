@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import zerobase.bud.chat.dto.ChatDto;
@@ -56,7 +57,7 @@ class ChatRoomServiceTest {
     private RedisTemplate<String, ?> redisTemplate;
 
     @Mock
-    private ValueOperations valueOperations;
+    private ListOperations listOperations;
 
     @Mock
     private HashOperations hashOperations;
@@ -165,10 +166,10 @@ class ChatRoomServiceTest {
                 .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatusOrderByCreatedAtDesc(anyString(), anyString(), any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
 
-        given(redisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get("CHATROOM1")).willReturn(2);
-        given(valueOperations.get("CHATROOM2")).willReturn(3);
-        given(valueOperations.get("CHATROOM3")).willReturn(3);
+        given(redisTemplate.opsForList()).willReturn(listOperations);
+        given(listOperations.size("CHATROOM1")).willReturn(2L);
+        given(listOperations.size("CHATROOM2")).willReturn(3L);
+        given(listOperations.size("CHATROOM3")).willReturn(3L);
         //when
         Slice<ChatRoomDto> chatRoomDtos = chatRoomService.searchChatRooms("키워드", 0, 3);
         //then
@@ -219,10 +220,10 @@ class ChatRoomServiceTest {
                 .findAllByStatusOrderByCreatedAtDesc(any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
 
-        given(redisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get("CHATROOM1")).willReturn(2);
-        given(valueOperations.get("CHATROOM2")).willReturn(3);
-        given(valueOperations.get("CHATROOM3")).willReturn(3);
+        given(redisTemplate.opsForList()).willReturn(listOperations);
+        given(listOperations.size("CHATROOM1")).willReturn(2L);
+        given(listOperations.size("CHATROOM2")).willReturn(3L);
+        given(listOperations.size("CHATROOM3")).willReturn(3L);
 
         //when
         Slice<ChatRoomDto> chatRoomDtos = chatRoomService.readChatRooms(0, 5);
@@ -253,8 +254,8 @@ class ChatRoomServiceTest {
                                 .build())
                 );
 
-        given(redisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get("CHATROOM123")).willReturn(2);
+        given(redisTemplate.opsForList()).willReturn(listOperations);
+        given(listOperations.size("CHATROOM123")).willReturn(2L);
         //when
         ChatRoomDto dto = chatRoomService.readChatRoom(123L);
         //then
@@ -368,6 +369,8 @@ class ChatRoomServiceTest {
 
         given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(newHost));
+        given(redisTemplate.opsForList()).willReturn(listOperations);
+        given(listOperations.range("CHATROOM1", 0, -1)).willReturn(List.of("1", "2", "3"));
         //when
         ArgumentCaptor<ChatRoom> captor = ArgumentCaptor.forClass(ChatRoom.class);
         Long result = chatRoomService.modifyHost(1L, 2L, member);
@@ -439,5 +442,36 @@ class ChatRoomServiceTest {
                 () -> chatRoomService.modifyHost(12L, 1L, member));
         //then
         assertEquals(ErrorCode.NOT_REGISTERED_MEMBER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("호스트 변경 실패 - 위임할 멤버가 채팅방에 참여중이지 않음")
+    void failModifyHostTest_MemberNotFoundInChatRoom() {
+        //given
+        ChatRoom chatRoom = ChatRoom.builder()
+                .id(1L)
+                .title("임의의타이틀")
+                .description("임의의 첫번째 설명")
+                .hashTag("#해시태그#해시#")
+                .status(ChatRoomStatus.ACTIVE)
+                .member(member)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Member newHost = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .build();
+
+        given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.of(newHost));
+        given(redisTemplate.opsForList()).willReturn(listOperations);
+        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of("2", "3"));
+        //when
+        ChatRoomException exception = assertThrows(ChatRoomException.class,
+                () -> chatRoomService.modifyHost(12L, 1L, member));
+        //then
+        assertEquals(ErrorCode.MEMBER_NOT_FOUND_IN_CHATROOM, exception.getErrorCode());
     }
 }
