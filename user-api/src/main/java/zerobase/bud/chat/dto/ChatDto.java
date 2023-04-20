@@ -38,7 +38,7 @@ public class ChatDto implements Serializable {
                 .message(chat.getMessage())
                 .userName(chat.getMember().getNickname())
                 .userProfileUrl(chat.getMember().getProfileImg())
-                .userId(chat.getId())
+                .userId(chat.getMember().getId())
                 .isReader(isReader)
                 .build();
     }
