@@ -1,12 +1,8 @@
 package zerobase.bud.post.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import zerobase.bud.domain.Member;
-import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 
@@ -60,27 +56,5 @@ public class PostDto {
         this.isLike = isLike;
         this.isScrap = isScrap;
         this.isFollow = isFollow;
-    }
-
-
-
-
-
-
-    public static PostDto of(Post post) {
-        return PostDto.builder()
-                .id(post.getId())
-                .member(post.getMember())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .commentCount(post.getCommentCount())
-                .likeCount(post.getLikeCount())
-                .scrapCount(post.getScrapCount())
-                .hitCount(post.getHitCount())
-                .postStatus(post.getPostStatus())
-                .postType(post.getPostType())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .build();
     }
 }
