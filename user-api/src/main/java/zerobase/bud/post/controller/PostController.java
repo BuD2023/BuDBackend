@@ -93,7 +93,7 @@ public class PostController {
             @AuthenticationPrincipal Member member
     ) {
         return ResponseEntity.ok(
-                postService.isLike(postId, member) ? "좋아요" : "좋아요 해제");
+                postService.addLike(postId, member) ? "좋아요" : "좋아요 해제");
     }
 
     @PostMapping("/{postId}/scrap")

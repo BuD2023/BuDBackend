@@ -425,7 +425,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 좋아요")
     void success_addPostLike() throws Exception {
         //given
-        given(postService.isLike(anyLong(), any()))
+        given(postService.addLike(anyLong(), any()))
                 .willReturn(true);
         //when
         //then
@@ -449,7 +449,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 좋아요 해제")
     void success_removePostLike() throws Exception {
         //given
-        given(postService.isLike(anyLong(), any()))
+        given(postService.addLike(anyLong(), any()))
                 .willReturn(false);
         //when
         //then

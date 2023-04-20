@@ -449,7 +449,7 @@ class PostServiceTest {
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
         //when
-        boolean isAdd = postService.isLike(post.getId(), member);
+        boolean isAdd = postService.addLike(post.getId(), member);
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
@@ -491,7 +491,7 @@ class PostServiceTest {
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
         //when
-        boolean isAdd = postService.isLike(post.getId(), member);
+        boolean isAdd = postService.addLike(post.getId(), member);
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
@@ -509,7 +509,7 @@ class PostServiceTest {
 
         //when
         BudException budException = assertThrows(BudException.class,
-                () -> postService.isLike((long)1, new Member()));
+                () -> postService.addLike((long)1, new Member()));
 
         //then
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
