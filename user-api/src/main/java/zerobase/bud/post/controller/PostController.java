@@ -101,7 +101,7 @@ public class PostController {
             @PathVariable Long postId,
             @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(scrapService.isScrap(postId, member)
+        return ResponseEntity.ok(scrapService.addScrap(postId, member)
                 ? "스크랩 추가" : "스크랩 해제");
     }
 

@@ -455,7 +455,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 스크랩 추가")
     void success_addPostScrap() throws Exception {
         //given
-        given(scrapService.isScrap(anyLong(), any()))
+        given(scrapService.addScrap(anyLong(), any()))
                 .willReturn(true);
         //when
         //then
@@ -479,7 +479,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 스크랩 추가")
     void success_removePostScrap() throws Exception {
         //given
-        given(scrapService.isScrap(anyLong(), any()))
+        given(scrapService.addScrap(anyLong(), any()))
                 .willReturn(false);
         //when
         //then
