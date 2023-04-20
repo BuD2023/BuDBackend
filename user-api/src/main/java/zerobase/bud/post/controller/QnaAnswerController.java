@@ -55,7 +55,7 @@ public class QnaAnswerController {
                     direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(qnaAnswerService.searchQnaAnswers(member.getId(),
+        return ResponseEntity.ok(qnaAnswerService.searchQnaAnswers(member,
                 postId, pageable));
     }
 
