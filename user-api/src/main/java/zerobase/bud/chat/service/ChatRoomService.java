@@ -47,7 +47,8 @@ public class ChatRoomService {
 
     private final FollowRepository followRepository;
 
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, Long> redisTemplate;
+
     private static ListOperations<String, Long> listOperations;
 
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
@@ -111,7 +112,8 @@ public class ChatRoomService {
 
         return chatRepository.findAllByChatRoomOrderByCreatedAtDesc(chatRoom,
                         PageRequest.of(page, size))
-                .map(chat -> ChatDto.of(chat, Objects.equals(member.getId(), chat.getMember().getId())));
+                .map(chat -> ChatDto.of(chat,
+                        Objects.equals(member.getId(), chat.getMember().getId())));
     }
 
     public ChatRoomStatusDto chatRoomsStatus() {
@@ -134,9 +136,7 @@ public class ChatRoomService {
         Member newHost = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        List<Long> result = getUserList(chatroomId);
-
-        if (!result.contains(userId)) {
+        if (!getUserList(chatroomId).contains(userId)) {
             throw new ChatRoomException(MEMBER_NOT_FOUND_IN_CHATROOM);
         }
 
@@ -147,7 +147,7 @@ public class ChatRoomService {
 
     @Transactional(readOnly = true)
     public List<ChatUserDto> readChatUsers(Long chatroomId, Member member) {
-        ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
+        chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
 
         return memberRepository.findAllByIdIn(getUserList(chatroomId))
