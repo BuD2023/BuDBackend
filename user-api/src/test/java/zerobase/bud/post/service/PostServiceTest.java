@@ -542,7 +542,7 @@ class PostServiceTest {
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
         //when
-        boolean isAdd = scrapService.isScrap(post.getId(), member);
+        boolean isAdd = scrapService.addScrap(post.getId(), member);
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
@@ -583,7 +583,7 @@ class PostServiceTest {
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
         //when
-        boolean isAdd = scrapService.isScrap(post.getId(), member);
+        boolean isAdd = scrapService.addScrap(post.getId(), member);
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
@@ -601,7 +601,7 @@ class PostServiceTest {
 
         //when
         BudException budException = assertThrows(BudException.class,
-                () -> scrapService.isScrap(1L, Member.builder().id(1L).build()));
+                () -> scrapService.addScrap(1L, Member.builder().id(1L).build()));
 
         //then
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
