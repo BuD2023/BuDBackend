@@ -1,8 +1,29 @@
 package zerobase.bud.user;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,47 +39,23 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.notification.dto.NotificationInfoDto;
+import zerobase.bud.notification.service.NotificationInfoService;
 import zerobase.bud.post.dto.PostDto;
-import zerobase.bud.post.type.PostStatus;
-import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.dto.ScrapDto;
 import zerobase.bud.post.service.ScrapService;
-import zerobase.bud.type.MemberStatus;
+import zerobase.bud.post.type.PostStatus;
+import zerobase.bud.post.type.PostType;
 import zerobase.bud.user.controller.UserController;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.service.UserService;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith({RestDocumentationExtension.class})
 @WebMvcTest(UserController.class)
@@ -70,6 +67,9 @@ class UserControllerTest {
 
     @MockBean
     private ScrapService scrapService;
+
+    @MockBean
+    private NotificationInfoService notificationInfoService;
 
     @MockBean
     private TokenProvider tokenProvider;
@@ -595,5 +595,36 @@ class UserControllerTest {
                                 preprocessResponse(prettyPrint())
                         )
                 );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("success_changeNotificationAvailable")
+    void success_changeNotificationAvailable() throws Exception {
+        //given
+        given(notificationInfoService.changeNotificationAvailable(any(), any()))
+            .willReturn("nickName");
+
+        //when
+        //then
+        mockMvc.perform(put("/users/1/notification-info")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(
+                    NotificationInfoDto.builder()
+                        .isPostPushAvailable(true)
+                        .isFollowPushAvailable(false)
+                        .build()
+                ))
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value("nickName"))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                    preprocessResponse(prettyPrint())
+                )
+            );
     }
 }

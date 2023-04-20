@@ -899,6 +899,32 @@ include::{snippets}/user-controller-test/success-delete-scrap/http-request.adoc[
 .response
 include::{snippets}/user-controller-test/success-delete-scrap/http-response.adoc[]
 
+=== 10. 알림 푸쉬 설정 변경
+.request
+include::{snippets}/user-controller-test/success_change-notification-available/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/users/{userId}/notification-info|/users/1/notification-info
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명|기본값
+|isPostPushAvailable|Boolean|N|게시물 푸쉬 허용 여부|기존값
+|isFollowPushAvailable|Boolean|N|게시물 푸쉬 허용 여부|기존값
+|===
+
+.response
+include::{snippets}/user-controller-test/success_change-notification-available/http-response.adoc[]
+
+.response field
+|===
+|필드명|설명
+|nickName|유저의 닉네임
+|===
+
 == 알림 API
 === 1. 알림 조회
 .request
