@@ -435,10 +435,12 @@ class QnaAnswerControllerTest {
                     .isQnaAnswerPin(i == 1)
                     .createdAt(LocalDateTime.now().minusDays(1))
                     .updatedAt(LocalDateTime.now())
+                    .isLike(true)
+                    .isFollow(false)
                     .build());
         }
 
-        given(qnaAnswerService.searchQnaAnswers(anyLong(), any()))
+        given(qnaAnswerService.searchQnaAnswers(any(), anyLong(), any()))
                 .willReturn(new PageImpl<>(list, PageRequest.of(0, 3), 10));
 
         //when
@@ -448,7 +450,6 @@ class QnaAnswerControllerTest {
                         .param("page", "0")
                         .param("size", "3")
                         .param("sort", "DATE,DESC")
-                        .header("Authorization", TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
                 .andDo(print())
@@ -460,6 +461,8 @@ class QnaAnswerControllerTest {
                 .andExpect(jsonPath("content[0].qnaAnswerPin").value(true))
                 .andExpect(jsonPath("content[1].qnaAnswerPin").value(false))
                 .andExpect(jsonPath("content[2].qnaAnswerPin").value(false))
+                .andExpect(jsonPath("content[0].like").value(true))
+                .andExpect(jsonPath("content[0].follow").value(false))
                 .andDo(
                         document("{class-name}/{method-name}",
                                 preprocessRequest(
@@ -486,6 +489,12 @@ class QnaAnswerControllerTest {
                                         fieldWithPath("content[].qnaAnswerPin").type(
                                                         JsonFieldType.BOOLEAN)
                                                 .description("qna 답글이 고정 답글인지 아닌지"),
+                                        fieldWithPath("content[].like").type(
+                                                        JsonFieldType.BOOLEAN)
+                                                .description("qna 답글에 좋아요 클릭 유무"),
+                                        fieldWithPath("content[].follow").type(
+                                                        JsonFieldType.BOOLEAN)
+                                                .description("qna 답글 작성자 팔로우 유무"),
                                         fieldWithPath("content[].createdAt").type(
                                                         JsonFieldType.STRING)
                                                 .description("qna 답글 등록일"),
@@ -518,10 +527,7 @@ class QnaAnswerControllerTest {
         //given
         //when
         //then
-        mockMvc.perform(get("/posts/qna-answers")
-                        .param("postId", "1")
-                        .param("page", "0")
-                        .param("size", "3")
+        mockMvc.perform(delete("/posts/qna-answers/2")
                         .header("Authorization", TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
@@ -538,7 +544,7 @@ class QnaAnswerControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("성공 - 게시글 좋아요")
+    @DisplayName("성공 - QNA Answer 좋아요")
     void success_addQnaAnswerLike() throws Exception {
         //given
         given(qnaAnswerService.setLike(anyLong(), any()))
@@ -562,7 +568,7 @@ class QnaAnswerControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("성공 - 게시글 좋아요 해제")
+    @DisplayName("성공 - QNA Answer 좋아요 해제")
     void success_removeQnaAnswerLike() throws Exception {
         //given
         given(qnaAnswerService.setLike(anyLong(), any()))

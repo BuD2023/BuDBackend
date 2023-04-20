@@ -115,10 +115,11 @@ public class QnaAnswerService {
         }
     }
 
-    public Page<SearchQnaAnswer.Response> searchQnaAnswers(Long postId,
-                                                     Pageable pageable) {
+    public Page<SearchQnaAnswer.Response> searchQnaAnswers(Member member,
+                                                           Long postId,
+                                                           Pageable pageable) {
         Page<QnaAnswerDto> qnaAnswerDtos = qnaAnswerRepositoryQuerydsl
-                .findAllByPostIdAndQnaAnswerStatusNotLike(postId, pageable);
+                .findAllByPostIdAndQnaAnswerStatusNotLike(member.getId(), postId, pageable);
 
         return new PageImpl<>(
                 qnaAnswerDtos.stream()

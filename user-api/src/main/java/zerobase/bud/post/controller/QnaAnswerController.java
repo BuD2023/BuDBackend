@@ -52,14 +52,16 @@ public class QnaAnswerController {
     public ResponseEntity<Page<SearchQnaAnswer.Response>> searchQnaAnswers(
             @RequestParam @Valid Long postId,
             @PageableDefault(size = 5, sort = "DATE" ,
-                    direction = Sort.Direction.DESC) Pageable pageable
+                    direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(qnaAnswerService.searchQnaAnswers(postId, pageable));
+        return ResponseEntity.ok(qnaAnswerService.searchQnaAnswers(member,
+                postId, pageable));
     }
 
-    @DeleteMapping("/{qna-answer-id}")
+    @DeleteMapping("/{qnaAnswerId}")
     public void deleteQnaAnswer(
-            @PathVariable("qna-answer-id") Long qnaAnswerId
+            @PathVariable Long qnaAnswerId
     ) {
         qnaAnswerService.deleteQnaAnswer(qnaAnswerId);
     }

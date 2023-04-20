@@ -1,16 +1,17 @@
 package zerobase.bud.post.dto;
 
-import lombok.*;
+import com.querydsl.core.annotations.QueryProjection;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.type.QnaAnswerStatus;
 
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-@ToString
+@NoArgsConstructor
 public class QnaAnswerDto {
     private Long id;
     private Member member;
@@ -21,4 +22,25 @@ public class QnaAnswerDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long pinId;
+    private boolean isLike;
+    private boolean isFollow;
+
+    @QueryProjection
+    public QnaAnswerDto(Long id, Member member, String content,
+                        long commentCount, long likeCount,
+                        QnaAnswerStatus qnaAnswerStatus,
+                        LocalDateTime createdAt, LocalDateTime updatedAt,
+                        Long pinId, boolean isLike, boolean isFollow) {
+        this.id = id;
+        this.member = member;
+        this.content = content;
+        this.commentCount = commentCount;
+        this.likeCount = likeCount;
+        this.qnaAnswerStatus = qnaAnswerStatus;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.pinId = pinId;
+        this.isLike = isLike;
+        this.isFollow = isFollow;
+    }
 }
