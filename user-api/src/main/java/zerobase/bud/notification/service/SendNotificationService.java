@@ -182,6 +182,33 @@ public class SendNotificationService {
         }
     }
 
+    public void sendQnaAnswerAddLikeNotification(Member sender, QnaAnswer qnaAnswer) {
+        try {
+            Member receiver = qnaAnswer.getMember();
+
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                    && notificationInfo.isPostPushAvailable()) {
+                fcmApi.sendNotificationByToken(
+                        NotificationDto.of(
+                                notificationInfo.getFcmToken()
+                                , receiver
+                                , sender
+                                , NotificationType.POST
+                                , PageType.QNA_ANSWER
+                                , qnaAnswer.getId()
+                                , NotificationDetailType.LIKE
+                        )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
+                    e.getMessage(), e);
+        }
+    }
+
     private NotificationInfo getNotificationInfo(Long receiverId) {
         return notificationInfoRepository.findByMemberId(receiverId)
             .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
