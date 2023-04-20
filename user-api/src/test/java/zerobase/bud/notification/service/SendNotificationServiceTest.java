@@ -8,14 +8,15 @@ import static zerobase.bud.util.Constants.REPLACE_EXPRESSION;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.domain.Member;
 import zerobase.bud.fcm.FcmApi;
 import zerobase.bud.notification.domain.Notification;
@@ -50,8 +51,8 @@ class SendNotificationServiceTest {
     @Test
     void success_sendCreatePostNotification() {
         //given
-        given(followRepository.findByTarget(any()))
-            .willReturn(Stream.of(getFollow()));
+        given(followRepository.findAllByTargetId(any()))
+            .willReturn(List.of(getFollow()));
 
         given(notificationInfoRepository.findByMemberId(anyLong()))
             .willReturn(Optional.ofNullable(getNotificationInfo()));
@@ -107,6 +108,39 @@ class SendNotificationServiceTest {
         sendNotificationService.sendAddLikeNotification(
             getSender(), getPost()
         );
+    }
+
+    @Test
+    void success_sendCommentLikeNotification() {
+        //given
+        given(notificationInfoRepository.findByMemberId(anyLong()))
+            .willReturn(Optional.ofNullable(getNotificationInfo()));
+
+        //when
+        sendNotificationService.sendCommentLikeNotification(
+            getSender(), getComment()
+        );
+    }
+
+    @Test
+    void success_sendCommentPinNotification() {
+        //given
+        given(notificationInfoRepository.findByMemberId(anyLong()))
+            .willReturn(Optional.ofNullable(getNotificationInfo()));
+
+        //when
+        sendNotificationService.sendCommentPinNotification(
+            getSender(), getComment()
+        );
+    }
+
+    private Comment getComment() {
+        return Comment.builder()
+            .member(getSender())
+            .commentCount(1)
+            .likeCount(0)
+            .id(3L)
+            .build();
     }
 
     private QnaAnswer getQnaAnswer() {
