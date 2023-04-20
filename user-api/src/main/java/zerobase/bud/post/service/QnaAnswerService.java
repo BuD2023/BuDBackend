@@ -20,21 +20,17 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.notification.service.SendNotificationService;
-import zerobase.bud.post.domain.Post;
-import zerobase.bud.post.domain.QnaAnswer;
-import zerobase.bud.post.domain.QnaAnswerPin;
+import zerobase.bud.post.domain.*;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
 import zerobase.bud.post.dto.QnaAnswerDto;
 import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
-import zerobase.bud.post.repository.PostRepository;
-import zerobase.bud.post.repository.QnaAnswerPinRepository;
-import zerobase.bud.post.repository.QnaAnswerRepository;
-import zerobase.bud.post.repository.QnaAnswerRepositoryQuerydslImpl;
+import zerobase.bud.post.repository.*;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static zerobase.bud.common.type.ErrorCode.*;
@@ -53,6 +49,8 @@ public class QnaAnswerService {
     private final SendNotificationService sendNotificationService;
 
     private final QnaAnswerRepositoryQuerydslImpl qnaAnswerRepositoryQuerydsl;
+
+    private final QnaAnswerLikeRepository qnaAnswerLikeRepository;
 
     @Transactional
     public String createQnaAnswer(Member member, Request request) {
@@ -183,6 +181,39 @@ public class QnaAnswerService {
         qnaAnswerPinRepository.deleteById(qnaAnswerPinId);
 
         return qnaAnswerPinId;
+    }
+
+    public boolean setLike(Long qnaAnswerId, Member member) {
+        QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
+                .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
+
+        var isAdd = new AtomicReference<Boolean>(false);
+
+        qnaAnswerLikeRepository.findByQnaAnswerIdAndMemberId(qnaAnswerId, member.getId())
+                .ifPresentOrElse(
+                        postLike -> cancelLike(postLike, qnaAnswer),
+                        () -> isAdd.set(addLike(qnaAnswer, member))
+                );
+
+        qnaAnswerRepository.save(qnaAnswer);
+
+        return isAdd.get();
+    }
+
+    private void cancelLike(QnaAnswerLike qnaAnswerLike, QnaAnswer qnaAnswer) {
+        qnaAnswerLikeRepository.delete(qnaAnswerLike);
+
+        qnaAnswer.likeCountDown();
+    }
+
+    private boolean addLike(QnaAnswer qnaAnswer, Member member) {
+        qnaAnswerLikeRepository.save(QnaAnswerLike.of(qnaAnswer, member));
+
+        qnaAnswer.likeCountUp();
+
+        sendNotificationService.sendQnaAnswerAddLikeNotification(member, qnaAnswer);
+
+        return true;
     }
 }
 
