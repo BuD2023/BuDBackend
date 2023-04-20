@@ -92,7 +92,7 @@ public class UserController {
     public ResponseEntity<Page<SearchMyPagePost.Response>> searchMyPosts(
             @AuthenticationPrincipal Member member,
             @PathVariable Long myPageUserId,
-            @RequestParam PostType postType,
+            @RequestParam(required = false) PostType postType,
             @PageableDefault(size = 5, sort = "DATE", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {

@@ -664,7 +664,7 @@ class UserControllerTest {
                     .build());
         }
 
-        given(postService.searchMyPagePosts(any(), anyLong(), any()))
+        given(postService.searchMyPagePosts(any(), anyLong(), any(), any()))
                 .willReturn(new PageImpl<>(list, PageRequest.of(0, 3), 3));
 
         //when

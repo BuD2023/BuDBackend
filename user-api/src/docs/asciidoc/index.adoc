@@ -347,7 +347,12 @@ include::{snippets}/post-controller-test/success_search-posts/http-request.adoc[
 |order|String|N|정렬기준(ASC or DESC)|DESC
 |page|Number|N|요청 페이지 번호|0
 |size|Number|N|요청 데이터 개수|10
-|postType|String|N|요청 페이지 종류(FEED, QNA) 이며, null 이라면, FEED, QNA 전체를 보내줍니다. |null
+|postType|String|N|게시글 종류(설명참고)|null
+|===
+
+|===
+|postType 종류|
+|FEED, QNA, ALL
 |===
 
 .response
@@ -924,20 +929,12 @@ include::{snippets}/user-controller-test/success-search-scrap/http-request.adoc[
 |필드명|타입|필수여부|설명|기본값
 |size|Number|N|요청 데이터 개수|5
 |page|Number|N|요청 페이지 번호|0
-|sort|String|N|정렬기준|postCreatedAt,desc
+|sort|String|N|정렬기준(설명 참고)|POST_DATE,desc
 |===
-.request field sort example
+
 |===
-|설명
-|1. '정렬기준,desc(혹은 asc, 대소문자 무시)' 같은 형식으로 작성해 주시면 됩니다.
-|2. 정렬기준은 카멜케이스로 적어주셔야 합니다.
-|3. 정렬기준은 변수명 + 변수명 이런식으로 작성해주시면 됩니다.
-|예시 1. 게시글 등록날 기준으로 하시고 싶으면, postCreatedAt으로 작성해주시면 됩니다.
-|예시 2. scrap 등록날 기준으로 하시고 싶으면, createdAt으로 해주시면 됩니다.
-|===
-|===
-|예시1|예시2|예시3|예시4|예시5
-|id,ASC|postId,DESC|postLikeCount,Asc|postHitCount,asc|postCreatedAt,desc
+|sort 종류
+|(SCRAP_DATE,DESC(or ASC)), (POST_HIT,DESC(or ASC)), (POST_LIKE,DESC(or ASC)), (POST_DATE,DESC(or ASC))
 |===
 
 .response
@@ -974,7 +971,7 @@ include::{snippets}/user-controller-test/success-search-my-page-posts/http-reque
 .request example
 |===
 |url|예시
-|/users/{my-page-userId}/posts|/users/2/posts
+|/users/{myPageUserId}/posts|/users/2/posts
 |===
 
 .request field
@@ -982,10 +979,21 @@ include::{snippets}/user-controller-test/success-search-my-page-posts/http-reque
 |필드명|타입|필수여부|설명|기본값
 |size|Number|N|요청 데이터 개수|5
 |page|Number|N|요청 페이지 번호|0
-|sort|String|N|정렬기준(
-(DATE,DESC(ASC)), (HIT,DESC(ASC)), (LIKE,DESC(ASC))
-)|DATE,DESC
+|sort|String|N|정렬기준(설명참고)|DATE,DESC
+|postType|String|N|게시글 종류(설명참고)|null
 |===
+
+|===
+|sort 종류
+|((DATE,DESC(ASC)), (HIT,DESC(ASC)), (LIKE,DESC(ASC)))
+|===
+
+|===
+|postType 종류
+|FEED, QNA, ALL
+|===
+
+
 
 .response
 include::{snippets}/user-controller-test/success-search-my-page-posts/http-response.adoc[]

@@ -639,7 +639,7 @@ class PostServiceTest {
         given(imageRepository.findAllByPostId(anyLong()))
                 .willReturn(images);
 
-        given(postRepositoryQuerydsl.findAllByMyPagePost(anyLong(), anyLong(), any()))
+        given(postRepositoryQuerydsl.findAllByMyPagePost(anyLong(), anyLong(), any(), any()))
                 .willReturn(new PageImpl<>(posts, PageRequest.of(0, 3), 3));
 
         //when
@@ -648,6 +648,7 @@ class PostServiceTest {
                                 .id(1L)
                                 .build(),
                         1L,
+                        FEED,
                         PageRequest.of(0, 3)
                 );
 
