@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.ChatRoomStatusDto;
+import zerobase.bud.chat.dto.ChatUserDto;
 import zerobase.bud.common.exception.ChatRoomException;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
@@ -21,9 +22,11 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.repository.ChatRepository;
 import zerobase.bud.repository.ChatRoomRepository;
 import zerobase.bud.repository.MemberRepository;
+import zerobase.bud.user.repository.FollowRepository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static zerobase.bud.common.type.ErrorCode.*;
 import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
@@ -42,8 +45,10 @@ public class ChatRoomService {
 
     private final ChatRepository chatRepository;
 
+    private final FollowRepository followRepository;
+
     private final RedisTemplate redisTemplate;
-    private static ListOperations<String, String> listOperations;
+    private static ListOperations<String, Long> listOperations;
 
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
 
@@ -129,9 +134,9 @@ public class ChatRoomService {
         Member newHost = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        List<String> result = getUserList(chatroomId);
+        List<Long> result = getUserList(chatroomId);
 
-        if (!result.contains(String.valueOf(userId))) {
+        if (!result.contains(userId)) {
             throw new ChatRoomException(MEMBER_NOT_FOUND_IN_CHATROOM);
         }
 
@@ -140,7 +145,20 @@ public class ChatRoomService {
         return userId;
     }
 
-    private List<String> getUserList(Long chatroomId) {
+    @Transactional(readOnly = true)
+    public List<ChatUserDto> readChatUsers(Long chatroomId, Member member) {
+        ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
+                .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
+
+        return memberRepository.findAllByIdIn(getUserList(chatroomId))
+                .map(chatUser -> ChatUserDto.of(
+                        chatUser,
+                        Objects.equals(chatUser.getUserId(), member.getUserId()),
+                        followRepository.existsByTargetAndMember(chatUser, member)))
+                .collect(Collectors.toList());
+    }
+
+    private List<Long> getUserList(Long chatroomId) {
         listOperations = redisTemplate.opsForList();
         return listOperations.range(CHATROOM + chatroomId, 0, -1);
     }

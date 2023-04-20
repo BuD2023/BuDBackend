@@ -12,10 +12,10 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.ChatRoomStatusDto;
+import zerobase.bud.chat.dto.ChatUserDto;
 import zerobase.bud.common.exception.ChatRoomException;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
@@ -28,12 +28,14 @@ import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.ChatRoomStatus;
 import zerobase.bud.type.ChatType;
 import zerobase.bud.type.MemberStatus;
+import zerobase.bud.user.repository.FollowRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -49,6 +51,9 @@ class ChatRoomServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private FollowRepository followRepository;
 
     @Mock
     private ChatRepository chatRepository;
@@ -370,7 +375,7 @@ class ChatRoomServiceTest {
         given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(newHost));
         given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.range("CHATROOM1", 0, -1)).willReturn(List.of("1", "2", "3"));
+        given(listOperations.range("CHATROOM1", 0, -1)).willReturn(List.of(1L, 2L, 3L));
         //when
         ArgumentCaptor<ChatRoom> captor = ArgumentCaptor.forClass(ChatRoom.class);
         Long result = chatRoomService.modifyHost(1L, 2L, member);
@@ -467,11 +472,75 @@ class ChatRoomServiceTest {
         given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(newHost));
         given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of("2", "3"));
+        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of(2L, 3L));
         //when
         ChatRoomException exception = assertThrows(ChatRoomException.class,
                 () -> chatRoomService.modifyHost(12L, 1L, member));
         //then
         assertEquals(ErrorCode.MEMBER_NOT_FOUND_IN_CHATROOM, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("채팅에 참여중인 멤버 리스트 불러오기 성공")
+    void successReadChatUsersTest() {
+        //given
+        ChatRoom chatRoom = ChatRoom.builder()
+                .id(1L)
+                .title("임의의타이틀")
+                .description("임의의 첫번째 설명")
+                .hashTag("#해시태그#해시#")
+                .status(ChatRoomStatus.ACTIVE)
+                .member(member)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Member chatUser1 = Member.builder()
+                .id(2L)
+                .userId("thefn")
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .introduceMessage("안녕하세요 저는 어쩌구저쩌구")
+                .profileImg("ddddd.jpg")
+                .nickname("하이")
+                .build();
+
+        Member chatUser2 = Member.builder()
+                .id(3L)
+                .userId("trowds")
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .introduceMessage("안녕하세용")
+                .profileImg("ddddd.jpg")
+                .nickname("닉넴고갈")
+                .build();
+
+        given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
+        given(redisTemplate.opsForList()).willReturn(listOperations);
+        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of(2L, 3L));
+        given(memberRepository.findAllByIdIn(anyList()))
+                .willReturn(Stream.of(member, chatUser1, chatUser2));
+        given(followRepository.existsByTargetAndMember(member, member)).willReturn(false);
+        given(followRepository.existsByTargetAndMember(chatUser1, member)).willReturn(true);
+        given(followRepository.existsByTargetAndMember(chatUser2, member)).willReturn(false);
+        //when
+        List<ChatUserDto> dtos = chatRoomService.readChatUsers(12L, member);
+        //then
+        assertEquals(true, dtos.get(0).getIsReader());
+        assertEquals(3, dtos.size());
+        assertEquals(true, dtos.get(1).getIsFollowing());
+        assertEquals(false, dtos.get(2).getIsFollowing());
+    }
+
+    @Test
+    @DisplayName("채팅에 참여중인 멤버 리스트 불러오기 성공 - 채팅방 없음")
+    void failReadChatUsersTest_ChatRoomNotFound() {
+        //given
+        given(chatRoomRepository.findByIdAndStatus(anyLong(), any()))
+                .willReturn(Optional.empty());
+        //when
+        ChatRoomException exception = assertThrows(ChatRoomException.class,
+                () -> chatRoomService.readChatUsers(12L, member));
+        //then
+        assertEquals(ErrorCode.CHATROOM_NOT_FOUND, exception.getErrorCode());
     }
 }

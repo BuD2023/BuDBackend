@@ -39,7 +39,7 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private static HashOperations<String, String, ChatRoomSession> hashOperations;
 
-    private static ListOperations<String, String> listOperations;
+    private static ListOperations<String, Long> listOperations;
 
     private final ChannelTopic channelTopic;
 
@@ -104,11 +104,11 @@ public class WebSocketHandler implements ChannelInterceptor {
     }
 
     private void addUser(Long chatroomId, String userId) {
-        listOperations.rightPush(CHATROOM + chatroomId, userId);
+        listOperations.rightPush(CHATROOM + chatroomId, Long.parseLong(userId));
     }
 
     private void removeUser(Long chatroomId, String userId) {
-        listOperations.remove(CHATROOM + chatroomId, 0, userId);
+        listOperations.remove(CHATROOM + chatroomId, 0, Long.parseLong(userId));
     }
 
     private Long getChatroomIdFromDestination(String destination) {

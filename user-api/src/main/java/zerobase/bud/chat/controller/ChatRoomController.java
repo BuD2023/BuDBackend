@@ -6,15 +6,13 @@ import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import zerobase.bud.chat.dto.ChatDto;
-import zerobase.bud.chat.dto.ChatRoomDto;
-import zerobase.bud.chat.dto.ChatRoomStatusDto;
-import zerobase.bud.chat.dto.CreateChatRoom;
+import zerobase.bud.chat.dto.*;
 import zerobase.bud.chat.service.ChatRoomService;
 import zerobase.bud.domain.Member;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -65,6 +63,12 @@ public class ChatRoomController {
                                                      @RequestParam(defaultValue = "10") int size,
                                                      @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(chatRoomService.readChats(chatroomId, member, page, size));
+    }
+
+    @GetMapping("/chatrooms/{chatroomId}/users")
+    private ResponseEntity<List<ChatUserDto>> chatUsers(@PathVariable Long chatroomId,
+                                                        @AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(chatRoomService.readChatUsers(chatroomId, member));
     }
 
     @GetMapping("/chatrooms/status")
