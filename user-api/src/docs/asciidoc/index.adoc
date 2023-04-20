@@ -483,7 +483,7 @@ include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/http-re
 .request example
 |===
 |url|예시
-|/posts/qna-answer/{qna-answer-id}|/posts/qna-answer/1
+|/posts/qna-answers/{qnaAnswerId}|/posts/qna-answers/1
 |===
 
 .response

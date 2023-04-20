@@ -556,18 +556,21 @@ class QnaAnswerServiceTest {
                     .createdAt(LocalDateTime.now().minusDays(1))
                     .updatedAt(LocalDateTime.now())
                     .pinId(i == 1 ? i : null)
+                    .isFollow(true)
+                    .isLike(false)
                     .build());
         }
 
         PageRequest pageable = PageRequest.of(0, 3);
         pageable.withSort(Sort.Direction.DESC, "likeCount");
 
-        given(qnaAnswerRepositoryQuerydsl.findAllByPostIdAndQnaAnswerStatusNotLike(anyLong(), any()))
+        given(qnaAnswerRepositoryQuerydsl.findAllByPostIdAndQnaAnswerStatusNotLike(anyLong(), anyLong(), any()))
                 .willReturn(new PageImpl<>(list, pageable, 10));
 
         //when
         Page<SearchQnaAnswer.Response> qnaAnswersPages =
-                qnaAnswerService.searchQnaAnswers(1L, pageable);
+                qnaAnswerService.searchQnaAnswers(Member.builder().id(1L).build(),
+                        1L, pageable);
 
         //then
         assertEquals("내용입니다1", qnaAnswersPages.getContent().get(0).getContent());
@@ -578,6 +581,8 @@ class QnaAnswerServiceTest {
         assertTrue(qnaAnswersPages.getContent().get(0).isQnaAnswerPin());
         assertFalse(qnaAnswersPages.getContent().get(1).isQnaAnswerPin());
         assertFalse(qnaAnswersPages.getContent().get(2).isQnaAnswerPin());
+        assertTrue(qnaAnswersPages.getContent().get(0).isFollow());
+        assertFalse(qnaAnswersPages.getContent().get(0).isLike());
     }
 
     @Test
