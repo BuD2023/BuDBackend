@@ -1,27 +1,36 @@
 package zerobase.bud.post.dto;
 
-import lombok.*;
-import zerobase.bud.post.domain.Image;
-import zerobase.bud.post.domain.Scrap;
+import com.querydsl.core.annotations.QueryProjection;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import zerobase.bud.post.domain.Post;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@NoArgsConstructor
 public class ScrapDto {
-    private Long id;
-    private SearchPost.Response post;
+    private Long scrapId;
+
+    private Post post;
+
+    private boolean isPostLike;
+    private boolean isPostRegisterMemberFollow;
+
     private LocalDateTime createdAt;
 
-    public static ScrapDto of(Scrap scrap, List<Image> images) {
-        return ScrapDto.builder()
-                .id(scrap.getId())
-                .post(SearchPost.Response.of(PostDto.of(scrap.getPost()), images))
-                .createdAt(scrap.getCreatedAt())
-                .build();
+    @QueryProjection
+    public ScrapDto(Long scrapId, Post post, boolean isPostLike,
+                    boolean isPostRegisterMemberFollow,
+                    LocalDateTime createdAt) {
+        this.scrapId = scrapId;
+        this.post = post;
+        this.isPostLike = isPostLike;
+        this.isPostRegisterMemberFollow = isPostRegisterMemberFollow;
+        this.createdAt = createdAt;
     }
 }
