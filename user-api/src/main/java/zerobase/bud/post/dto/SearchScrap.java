@@ -27,6 +27,8 @@ public class SearchScrap {
 
         private String content;
 
+        private List<String> imageUrls;
+
         private long commentCount;
 
         private long likeCount;
@@ -39,7 +41,6 @@ public class SearchScrap {
 
         private PostType postType;
 
-        private List<String> postImgUrls;
 
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
@@ -52,7 +53,7 @@ public class SearchScrap {
         public static Response of(ScrapDto scrapDto, List<Image> images) {
             Post post = scrapDto.getPost();
 
-            List<String> imagePath = images.stream()
+            List<String> imagePaths = images.stream()
                     .map(Image::getImagePath)
                     .collect(Collectors.toList());
 
@@ -61,11 +62,11 @@ public class SearchScrap {
                     .postId(post.getId())
                     .title(post.getTitle())
                     .content(post.getContent())
+                    .imageUrls(imagePaths)
                     .commentCount(post.getCommentCount())
                     .likeCount(post.getLikeCount())
                     .scrapCount(post.getScrapCount())
                     .hitCount(post.getHitCount())
-                    .postImgUrls(imagePath)
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
                     .isLike(scrapDto.isPostLike())
