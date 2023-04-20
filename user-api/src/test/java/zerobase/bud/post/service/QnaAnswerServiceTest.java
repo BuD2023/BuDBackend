@@ -35,17 +35,12 @@ import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.notification.domain.NotificationInfo;
 import zerobase.bud.notification.service.SendNotificationService;
-import zerobase.bud.post.domain.Post;
-import zerobase.bud.post.domain.QnaAnswer;
-import zerobase.bud.post.domain.QnaAnswerPin;
+import zerobase.bud.post.domain.*;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
 import zerobase.bud.post.dto.QnaAnswerDto;
 import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
-import zerobase.bud.post.repository.PostRepository;
-import zerobase.bud.post.repository.QnaAnswerPinRepository;
-import zerobase.bud.post.repository.QnaAnswerRepository;
-import zerobase.bud.post.repository.QnaAnswerRepositoryQuerydslImpl;
+import zerobase.bud.post.repository.*;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.repository.MemberRepository;
@@ -58,6 +53,9 @@ class QnaAnswerServiceTest {
 
     @Mock
     private QnaAnswerRepository qnaAnswerRepository;
+
+    @Mock
+    private QnaAnswerLikeRepository qnaAnswerLikeRepository;
 
     @Mock
     private QnaAnswerPinRepository qnaAnswerPinRepository;
@@ -565,6 +563,76 @@ class QnaAnswerServiceTest {
         assertEquals(ALREADY_DELETE_QNA_ANSWER, exception.getErrorCode());
     }
 
+    @Test
+    @DisplayName("성공 - 게시물 좋아요 추가")
+    void success_AddQnaAnswerLike(){
+        //given
+        QnaAnswer qnaAnswer = getQnaAnswer();
+
+        Member member = getReceiver();
+
+        given(qnaAnswerRepository.findById(anyLong()))
+                .willReturn(Optional.of(qnaAnswer));
+
+        given(qnaAnswerLikeRepository.findByQnaAnswerIdAndMemberId(anyLong(), anyLong()))
+                .willReturn(Optional.empty());
+
+        ArgumentCaptor<QnaAnswer> qnaAnswerCaptor = ArgumentCaptor.forClass(QnaAnswer.class);
+
+        //when
+        boolean setLike = qnaAnswerService.setLike(qnaAnswer.getId(), member);
+
+        //then
+        verify(qnaAnswerRepository, times(1)).save(qnaAnswerCaptor.capture());
+        assertEquals(1L, qnaAnswer.getId());
+        assertEquals(3, qnaAnswerCaptor.getValue().getLikeCount());
+        assertTrue(setLike);
+    }
+
+    @Test
+    @DisplayName("성공 - 게시물 좋아요 해제")
+    void success_CancelQnaAnswerLike(){
+        //given
+        //given
+        QnaAnswer qnaAnswer = getQnaAnswer();
+
+        Member member = getReceiver();
+
+        QnaAnswerLike postLike = getQnaAnswerLike();
+
+        given(qnaAnswerRepository.findById(anyLong()))
+                .willReturn(Optional.of(qnaAnswer));
+
+        given(qnaAnswerLikeRepository.findByQnaAnswerIdAndMemberId(anyLong(), anyLong()))
+                .willReturn(Optional.of(postLike));
+
+        ArgumentCaptor<QnaAnswer> qnaAnswerCaptor = ArgumentCaptor.forClass(QnaAnswer.class);
+
+        //when
+        boolean setLike = qnaAnswerService.setLike(qnaAnswer.getId(), member);
+
+        //then
+        verify(qnaAnswerRepository, times(1)).save(qnaAnswerCaptor.capture());
+        assertEquals(1L, qnaAnswer.getId());
+        assertEquals(1, qnaAnswerCaptor.getValue().getLikeCount());
+        assertFalse(setLike);
+    }
+
+    @Test
+    @DisplayName("실패 - 존재하지 않는 게시글 좋아요 ")
+    void fail_postLike() {
+        //given
+        given(qnaAnswerRepository.findById(anyLong()))
+                .willReturn(Optional.empty());
+
+        //when
+        BudException budException = assertThrows(BudException.class,
+                () -> qnaAnswerService.setLike((long)1, new Member()));
+
+        //then
+        assertEquals(NOT_FOUND_QNA_ANSWER, budException.getErrorCode());
+    }
+
     private QnaAnswerPin getQnaAnswerPin() {
         return QnaAnswerPin.builder()
             .post(getPost())
@@ -574,12 +642,21 @@ class QnaAnswerServiceTest {
 
     private static QnaAnswer getQnaAnswer() {
         return QnaAnswer.builder()
-            .id(1L)
-            .member(getSender())
-            .post(getPost())
-            .content("content")
-            .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
-            .build();
+                .id(1L)
+                .member(getSender())
+                .post(getPost())
+                .content("content")
+                .likeCount(2)
+                .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
+                .build();
+    }
+
+    private static QnaAnswerLike getQnaAnswerLike() {
+        return QnaAnswerLike.builder()
+                .id(1L)
+                .member(getPostMaker())
+                .qnaAnswer(getQnaAnswer())
+                .build();
     }
 
     private static Post getPost() {

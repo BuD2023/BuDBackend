@@ -42,6 +42,7 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
@@ -533,5 +534,53 @@ class QnaAnswerControllerTest {
                                         prettyPrint()),
                                 preprocessResponse(prettyPrint())
                         ));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("성공 - 게시글 좋아요")
+    void success_addQnaAnswerLike() throws Exception {
+        //given
+        given(qnaAnswerService.setLike(anyLong(), any()))
+                .willReturn(true);
+        //when
+        //then
+        mockMvc.perform(post("/posts/qna-answers/1/like")
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(jsonPath("$").value("좋아요"))
+                .andExpect(status().isOk())
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("성공 - 게시글 좋아요 해제")
+    void success_removeQnaAnswerLike() throws Exception {
+        //given
+        given(qnaAnswerService.setLike(anyLong(), any()))
+                .willReturn(false);
+        //when
+        //then
+        mockMvc.perform(post("/posts/qna-answers/1/like")
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(jsonPath("$").value("좋아요 해제"))
+                .andExpect(status().isOk())
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
     }
 }
