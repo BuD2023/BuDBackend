@@ -42,6 +42,8 @@ import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.event.AddLikePostEvent;
+import zerobase.bud.notification.event.CreatePostEvent;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;
@@ -123,6 +125,7 @@ class PostServiceTest {
         //then 이런 결과가 나온다.
         verify(postRepository, times(1)).save(captor.capture());
         verify(imageRepository, times(1)).save(imageCaptor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(CreatePostEvent.class));
         assertEquals("resultTitle", captor.getValue().getTitle());
         assertEquals("resultContent", captor.getValue().getContent());
         assertEquals(ACTIVE, captor.getValue().getPostStatus());
@@ -153,6 +156,7 @@ class PostServiceTest {
 
         //then 이런 결과가 나온다.
         verify(postRepository, times(1)).save(captor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(CreatePostEvent.class));
         assertEquals("resultTitle", captor.getValue().getTitle());
         assertEquals("resultContent", captor.getValue().getContent());
         assertEquals(ACTIVE, captor.getValue().getPostStatus());
@@ -464,6 +468,7 @@ class PostServiceTest {
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(AddLikePostEvent.class));
         assertEquals(1L, post.getId());
         assertEquals(3, postCaptor.getValue().getLikeCount());
         assertTrue(isAdd);

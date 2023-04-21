@@ -12,6 +12,8 @@ import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.event.CreatePostEvent;
+import zerobase.bud.notification.event.FollowEvent;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.MemberStatus;
@@ -113,6 +115,7 @@ class UserServiceTest {
         Long targetId = userService.follow(123L, member);
         //then
         verify(followRepository, times(1)).save(captor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(FollowEvent.class));
         assertEquals(2L, targetId);
 
     }
@@ -147,6 +150,7 @@ class UserServiceTest {
         Long targetId = userService.follow(123L, member);
         //then
         verify(followRepository, times(1)).delete(captor.capture());
+        verify(eventPublisher, times(0)).publishEvent(any(CreatePostEvent.class));
         assertEquals(2L, targetId);
 
     }
