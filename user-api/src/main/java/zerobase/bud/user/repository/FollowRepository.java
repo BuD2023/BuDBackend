@@ -11,11 +11,11 @@ import java.util.stream.Stream;
 
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
-    Optional<Follow> findByTargetAndAndMember(Member target, Member member);
+    Optional<Follow> findByTargetAndMember(Member target, Member member);
 
-    Stream<Follow> findByTarget(Member target);
+    List<Follow> findByTarget(Member target);
 
-    Stream<Follow> findByMember(Member member);
+    List<Follow> findByMember(Member member);
 
     Long countByTarget(Member target);
 

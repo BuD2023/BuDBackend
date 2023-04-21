@@ -24,7 +24,6 @@ import zerobase.bud.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -53,19 +52,18 @@ class UserServiceTest {
     private UserService userService;
 
     Level level = Level.builder()
-        .id(1L)
-        .levelCode("씩씩한사람")
-        .levelStartCommitCount(0)
-        .nextLevelStartCommitCount(17)
-        .build();
+            .id(1L)
+            .levelCode("씩씩한사람")
+            .levelStartCommitCount(0)
+            .nextLevelStartCommitCount(17)
+            .build();
 
     Level level2 = Level.builder()
-        .id(1L)
-        .levelCode("씩씩하지않은새싹")
-        .levelStartCommitCount(0)
-        .nextLevelStartCommitCount(17)
-        .build();
-
+            .id(1L)
+            .levelCode("씩씩하지않은새싹")
+            .levelStartCommitCount(0)
+            .nextLevelStartCommitCount(17)
+            .build();
 
 
     Member member = Member.builder()
@@ -98,7 +96,7 @@ class UserServiceTest {
         given(memberRepository.findById(anyLong()))
                 .willReturn(Optional.of(targetMember));
 
-        given(followRepository.findByTargetAndAndMember(any(), any()))
+        given(followRepository.findByTargetAndMember(any(), any()))
                 .willReturn(Optional.empty());
 
         given(followRepository.save(any()))
@@ -135,7 +133,7 @@ class UserServiceTest {
         given(memberRepository.findById(anyLong()))
                 .willReturn(Optional.of(targetMember));
 
-        given(followRepository.findByTargetAndAndMember(any(), any()))
+        given(followRepository.findByTargetAndMember(any(), any()))
                 .willReturn(Optional.of(Follow.builder()
                         .member(member)
                         .target(targetMember)
@@ -294,7 +292,7 @@ class UserServiceTest {
                         .member(member)
                         .build()
         );
-        given(followRepository.findByMember(any())).willReturn(follows.stream());
+        given(followRepository.findByMember(any())).willReturn(follows);
         //when
         List<FollowDto> followDtos = userService.readMyFollowings(member);
         //then
@@ -343,7 +341,7 @@ class UserServiceTest {
                         .member(member)
                         .build()
         );
-        given(followRepository.findByTarget(any())).willReturn(follows.stream());
+        given(followRepository.findByTarget(any())).willReturn(follows);
         //when
         List<FollowDto> followDtos = userService.readMyFollowers(member);
         //then
@@ -379,7 +377,7 @@ class UserServiceTest {
                 .nickname("하이")
                 .build();
 
-        Stream<Follow> follows = Stream.of(
+        List<Follow> follows = List.of(
                 Follow.builder()
                         .id(1L)
                         .target(member)
@@ -435,7 +433,7 @@ class UserServiceTest {
                 .nickname("하이")
                 .build();
 
-        Stream<Follow> follows = Stream.of(
+        List<Follow> follows = List.of(
                 Follow.builder()
                         .id(1L)
                         .target(profileMember)
@@ -492,7 +490,6 @@ class UserServiceTest {
         //then
         assertEquals(ErrorCode.NOT_REGISTERED_MEMBER, exception.getErrorCode());
     }
-
 
 
 }
