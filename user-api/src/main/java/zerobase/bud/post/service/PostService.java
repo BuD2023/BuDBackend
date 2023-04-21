@@ -67,7 +67,7 @@ public class PostService {
 
         Post post = postRepository.save(Post.of(member, request));
 
-        saveImageWithPost(images, post);
+        saveImages(images, post);
 
         eventPublisher.publishEvent(new CreatePostEvent(member, post));
 
@@ -95,9 +95,9 @@ public class PostService {
 
         post.update(request);
 
-        deleteImages(post.getId());
+        deleteImages(post);
 
-        saveImageWithPost(images, post);
+        saveImages(images, post);
 
         return request.getTitle();
     }
@@ -145,8 +145,15 @@ public class PostService {
     }
 
     public SearchPost.Response searchPost(Member member, Long postId) {
-        PostDto postDto = postRepositoryQuerydsl.findByPostId(member.getId(), postId)
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_POST));
+
+        PostDto postDto =
+                postRepositoryQuerydsl.findByPostId(member.getId(), postId);
+
+        post.hitCountUp();
+
+        postRepository.save(post);
 
         return SearchPost.Response.of(postDto,
                 imageRepository.findAllByPostId(postId));
@@ -196,28 +203,22 @@ public class PostService {
         return true;
     }
 
-    private void saveImageWithPost(List<MultipartFile> images, Post post) {
+    private void saveImages(List<MultipartFile> images, Post post) {
         if (Objects.nonNull(images)) {
             for (MultipartFile image : images) {
-                saveImage(post, image);
+                String imagePath = awsS3Api.uploadImage(image, POSTS);
+                imageRepository.save(Image.of(post,imagePath));
             }
         }
     }
 
-    private void saveImage(Post post, MultipartFile image) {
-        String imagePath = awsS3Api.uploadImage(image, POSTS);
-        imageRepository.save(Image.builder()
-                .post(post)
-                .imagePath(imagePath)
-                .build());
-    }
-
-    private void deleteImages(Long postId) {
-        List<Image> imageList = imageRepository.findAllByPostId(postId);
+    private void deleteImages(Post post) {
+        List<Image> imageList = post.getImages();
         for (Image image : imageList) {
             awsS3Api.deleteImage(image.getImagePath());
         }
 
-        imageRepository.deleteAllByPostId(postId);
+        imageRepository.deleteAllByPostId(post.getId());
     }
 }
+
