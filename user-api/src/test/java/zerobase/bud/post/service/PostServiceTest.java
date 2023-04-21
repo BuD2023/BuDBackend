@@ -449,7 +449,7 @@ class PostServiceTest {
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
         //when
-        boolean isAdd = postService.isLike(post.getId(), member);
+        boolean isAdd = postService.addLike(post.getId(), member);
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
@@ -491,7 +491,7 @@ class PostServiceTest {
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
         //when
-        boolean isAdd = postService.isLike(post.getId(), member);
+        boolean isAdd = postService.addLike(post.getId(), member);
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
@@ -509,7 +509,7 @@ class PostServiceTest {
 
         //when
         BudException budException = assertThrows(BudException.class,
-                () -> postService.isLike((long)1, new Member()));
+                () -> postService.addLike((long)1, new Member()));
 
         //then
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
@@ -542,7 +542,7 @@ class PostServiceTest {
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
         //when
-        boolean isAdd = scrapService.isScrap(post.getId(), member);
+        boolean isAdd = scrapService.addScrap(post.getId(), member);
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
@@ -583,7 +583,7 @@ class PostServiceTest {
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
         //when
-        boolean isAdd = scrapService.isScrap(post.getId(), member);
+        boolean isAdd = scrapService.addScrap(post.getId(), member);
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
@@ -601,7 +601,7 @@ class PostServiceTest {
 
         //when
         BudException budException = assertThrows(BudException.class,
-                () -> scrapService.isScrap(1L, Member.builder().id(1L).build()));
+                () -> scrapService.addScrap(1L, Member.builder().id(1L).build()));
 
         //then
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
@@ -639,7 +639,7 @@ class PostServiceTest {
         given(imageRepository.findAllByPostId(anyLong()))
                 .willReturn(images);
 
-        given(postRepositoryQuerydsl.findAllByMyPagePost(anyLong(), anyLong(), any()))
+        given(postRepositoryQuerydsl.findAllByMyPagePost(anyLong(), anyLong(), any(), any()))
                 .willReturn(new PageImpl<>(posts, PageRequest.of(0, 3), 3));
 
         //when
@@ -648,6 +648,7 @@ class PostServiceTest {
                                 .id(1L)
                                 .build(),
                         1L,
+                        FEED,
                         PageRequest.of(0, 3)
                 );
 

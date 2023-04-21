@@ -11,14 +11,24 @@ import zerobase.bud.post.type.PostType;
 import java.util.Optional;
 
 public interface PostRepositoryQuerydsl {
-    Page<PostDto> findAllByPostStatus(Long memberId,
-                                      String keyword,
-                                      PostSortType sortType,
-                                      Order order,
-                                      Pageable pageable,
-                                      PostType pageType);
+    Page<PostDto> findAllByPostStatus(
+            Long memberId,
+            String keyword,
+            PostSortType sortType,
+            Order order,
+            Pageable pageable,
+            PostType pageType
+    );
 
-    Page<PostDto> findAllByMyPagePost(Long memberId, Long myPageUserId, Pageable pageable);
+    Page<PostDto> findAllByMyPagePost(
+            Long memberId,
+            Long myPageUserId,
+            PostType postType,
+            Pageable pageable
+    );
 
-    Optional<PostDto> findByPostId(Long memberId, Long postId);
+    Optional<PostDto> findByPostId(
+            Long memberId,
+            Long postId
+    );
 }

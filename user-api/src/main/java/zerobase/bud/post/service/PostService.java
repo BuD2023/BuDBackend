@@ -122,10 +122,15 @@ public class PostService {
 
     public Page<SearchMyPagePost.Response> searchMyPagePosts(Member member,
                                                              Long myPageUserId,
+                                                             PostType postType,
                                                              Pageable pageable) {
 
-        Page<PostDto> posts = postRepositoryQuerydsl
-                .findAllByMyPagePost(member.getId(), myPageUserId, pageable);
+        Page<PostDto> posts = postRepositoryQuerydsl.findAllByMyPagePost(
+                member.getId(),
+                myPageUserId,
+                postType,
+                pageable
+        );
 
         return new PageImpl<>(
                 posts.stream()
@@ -155,14 +160,14 @@ public class PostService {
         return post.getId();
     }
 
-    public boolean isLike(Long postId, Member member) {
+    public boolean addLike(Long postId, Member member) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
         var isAdd = new AtomicReference<>(false);
 
         postLikeRepository.findByPostIdAndMemberId(postId, member.getId()).ifPresentOrElse(
-                        postLike -> removeLike(postLike, post),
+                        postLike -> cancelLike(postLike, post),
                         () -> isAdd.set(addLike(post, member)));
 
         postRepository.save(post);
@@ -170,7 +175,7 @@ public class PostService {
         return isAdd.get();
     }
 
-    private void removeLike(PostLike postLike, Post post) {
+    private void cancelLike(PostLike postLike, Post post) {
         postLikeRepository.delete(postLike);
 
         post.likeCountDown();

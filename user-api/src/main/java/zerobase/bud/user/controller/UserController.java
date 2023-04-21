@@ -3,7 +3,6 @@ package zerobase.bud.user.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import zerobase.bud.domain.Member;
 import zerobase.bud.notification.dto.NotificationInfoDto;
 import zerobase.bud.notification.service.NotificationInfoService;
-import zerobase.bud.post.dto.ScrapDto;
 import zerobase.bud.post.dto.SearchMyPagePost;
+import zerobase.bud.post.dto.SearchScrap;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
+import zerobase.bud.post.type.PostType;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.service.UserService;
@@ -74,13 +74,13 @@ public class UserController {
     }
 
     @GetMapping("/posts/scraps")
-    public ResponseEntity<Slice<ScrapDto>> searchScraps(
-            @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC)
+    public ResponseEntity<Page<SearchScrap.Response>> searchScraps(
+            @PageableDefault(size = 5, sort = "POST_DATE", direction = Sort.Direction.DESC)
             Pageable pageable,
             @AuthenticationPrincipal Member member
     ) {
 
-        return ResponseEntity.ok(scrapService.searchScrap(pageable, member));
+        return ResponseEntity.ok(scrapService.searchScrap(member, pageable));
     }
 
     @DeleteMapping("/posts/scraps/{scrapId}")
@@ -88,15 +88,16 @@ public class UserController {
         return ResponseEntity.ok(scrapService.removeScrap(scrapId));
     }
 
-    @GetMapping("/{my-page-userId}/posts")
+    @GetMapping("/{myPageUserId}/posts")
     public ResponseEntity<Page<SearchMyPagePost.Response>> searchMyPosts(
             @AuthenticationPrincipal Member member,
-            @PathVariable("my-page-userId") Long myPageUserId,
+            @PathVariable Long myPageUserId,
+            @RequestParam(required = false) PostType postType,
             @PageableDefault(size = 5, sort = "DATE", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
         return ResponseEntity.ok(postService.searchMyPagePosts(member,
-                myPageUserId, pageable));
+                myPageUserId, postType, pageable));
     }
 
     @PutMapping("/{userId}/notification-info")

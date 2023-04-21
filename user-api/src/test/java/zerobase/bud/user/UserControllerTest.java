@@ -1,29 +1,6 @@
 package zerobase.bud.user;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
@@ -49,9 +25,8 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.notification.dto.NotificationInfoDto;
 import zerobase.bud.notification.service.NotificationInfoService;
-import zerobase.bud.post.dto.ScrapDto;
 import zerobase.bud.post.dto.SearchMyPagePost;
-import zerobase.bud.post.dto.SearchPost;
+import zerobase.bud.post.dto.SearchScrap;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostStatus;
@@ -60,6 +35,25 @@ import zerobase.bud.user.controller.UserController;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
 import zerobase.bud.user.service.UserService;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith({RestDocumentationExtension.class})
 @WebMvcTest(UserController.class)
@@ -501,14 +495,14 @@ class UserControllerTest {
     @DisplayName("성공 - 마이페이지 스크랩 불러오기")
     void successSearchScrap() throws Exception {
         //given
-        List<SearchPost.Response> list = new ArrayList<>();
+        List<SearchScrap.Response> list = new ArrayList<>();
 
         for (int i = 1; i <= 3; i++) {
-            list.add(SearchPost.Response.builder()
-                    .id(i)
-                    .title("제목" + i)
-                    .content("내용" + i)
-                    .member(null)
+            list.add(SearchScrap.Response.builder()
+                    .scrapId(1L)
+                    .postId(1L)
+                    .title("제목")
+                    .content("내용")
                     .commentCount(i)
                     .imageUrls(getImageUrlList(3))
                     .likeCount(i)
@@ -516,65 +510,102 @@ class UserControllerTest {
                     .hitCount(i)
                     .postStatus(PostStatus.ACTIVE)
                     .postType(PostType.FEED)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build());
-        }
-
-        List<ScrapDto> scrapDtos = new ArrayList<>();
-
-        for (int i = 1; i <= 3; i++) {
-            scrapDtos.add(ScrapDto.builder()
-                    .id((long)i)
-                    .post(list.get(i - 1))
-                    .createdAt(LocalDateTime.now().plusDays(1))
+                    .createdAt(LocalDateTime.now().minusDays(2))
+                    .updatedAt(LocalDateTime.now().minusDays(1))
+                    .isLike(true)
+                    .isFollow(true)
+                    .scrapCreatedAt(LocalDateTime.now())
                     .build());
         }
 
         given(scrapService.searchScrap(any(), any()))
-                .willReturn(new SliceImpl<>(scrapDtos));
+                .willReturn(new PageImpl<>(list));
         //when
         //then
 
         mockMvc.perform(get("/users/posts/scraps")
                         .param("size", "2")
                         .param("page", "0")
-                        .param("sort", "postCreatedAt,desc")
+                        .param("sort", "POST_DATE,DESC")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("content[0].post.title").value("제목1"))
-                .andExpect(jsonPath("content[0].post.scrapCount").value("1"))
-                .andExpect(jsonPath("content[0].post.content").value("내용1"))
-                .andExpect(jsonPath("content[0].post.imageUrls[0]").value("img0"))
-                .andExpect(jsonPath("content[0].post.imageUrls[1]").value("img1"))
-                .andExpect(jsonPath("content[0].post.postStatus").value("ACTIVE"))
-                .andExpect(jsonPath("content[0].id").value("1"))
+                .andExpect(jsonPath("content[0].title").value("제목"))
+                .andExpect(jsonPath("content[0].scrapCount").value("1"))
+                .andExpect(jsonPath("content[0].content").value("내용"))
+                .andExpect(jsonPath("content[0].imageUrls[0]").value("img0"))
+                .andExpect(jsonPath("content[0].imageUrls[1]").value("img1"))
+                .andExpect(jsonPath("content[0].postStatus").value("ACTIVE"))
+                .andExpect(jsonPath("content[0].like").value(true))
+                .andExpect(jsonPath("content[0].follow").value(true))
                 .andDo(
                         document("{class-name}/{method-name}",
                                 preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
                                 preprocessResponse(prettyPrint()),
                                 relaxedResponseFields(
-                                        fieldWithPath("content[].id").type(JsonFieldType.NUMBER)
+                                        fieldWithPath("content[].scrapId").type(JsonFieldType.NUMBER)
                                                 .description("스크랩 고유 id"),
-                                        fieldWithPath("content[].post").type(JsonFieldType.OBJECT)
-                                                .description("게시글 정보"),
-                                        fieldWithPath("content[].post.createdAt").type(JsonFieldType.STRING)
-                                                .description("게시글 등록 날짜"),
-                                        fieldWithPath("content[].post.member")
-                                                .description("게시글 작성한 멤버 정보"),
-                                        fieldWithPath("content[].createdAt").type(JsonFieldType.STRING)
-                                                .description("스크랩 등록 날짜"),
+                                        fieldWithPath("content[].postId").type(JsonFieldType.NUMBER)
+                                                .description("스크랩한 게시글 고유 id"),
+                                        fieldWithPath("content[].title").type(
+                                                        JsonFieldType.STRING)
+                                                .description("스크랩한 게시글 제목"),
+                                        fieldWithPath("content[].imageUrls").type(
+                                                        JsonFieldType.ARRAY)
+                                                .description("스크랩한 게시글 이미지 링크들"),
+                                        fieldWithPath("content[].content").type(
+                                                        JsonFieldType.STRING)
+                                                .description("스크랩한 게시글 본문"),
+                                        fieldWithPath("content[].commentCount").type(
+                                                        JsonFieldType.NUMBER)
+                                                .description("스크랩한 게시글 댓글 수"),
+                                        fieldWithPath("content[].likeCount").type(
+                                                        JsonFieldType.NUMBER)
+                                                .description("스크랩한 게시글 좋아요 수"),
+                                        fieldWithPath("content[].scrapCount").type(
+                                                        JsonFieldType.NUMBER)
+                                                .description("스크랩한 게시글 스크랩 수"),
+                                        fieldWithPath("content[].hitCount").type(
+                                                        JsonFieldType.NUMBER)
+                                                .description("스크랩한 게시글 죄회수"),
+                                        fieldWithPath("content[].postStatus").type(
+                                                        JsonFieldType.STRING)
+                                                .description("스크랩한 게시글 상태(게시, 삭제 등)"),
+                                        fieldWithPath("content[].postType").type(
+                                                        JsonFieldType.STRING)
+                                                .description("스크랩한 게시글 종류(FEED, QNA)"),
+                                        fieldWithPath("content[].createdAt").type(
+                                                        JsonFieldType.STRING)
+                                                .description("스크랩한 게시글 등록일"),
+                                        fieldWithPath("content[].updatedAt").type(
+                                                        JsonFieldType.STRING)
+                                                .description("스크랩한 게시글 업데이트일"),
+                                        fieldWithPath("content[].like").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 좋아요 클릭 여부"),
+                                        fieldWithPath("content[].follow").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 작성자 팔로우 여부"),
+                                        fieldWithPath("content[].scrapCreatedAt").type(
+                                                        JsonFieldType.STRING)
+                                                .description("스크랩한 등록일"),
                                         fieldWithPath("first").type(JsonFieldType.BOOLEAN)
                                                 .description("첫번째 페이지인지 여부"),
                                         fieldWithPath("last").type(JsonFieldType.BOOLEAN)
                                                 .description("마지막 페이지인지 여부"),
-                                        fieldWithPath("number").type(JsonFieldType.NUMBER)
-                                                .description("현재 페이지"),
+                                        fieldWithPath("totalElements").type(
+                                                        JsonFieldType.NUMBER)
+                                                .description("검색 데이터 전체 개수"),
+                                        fieldWithPath("totalElements").type(
+                                                        JsonFieldType.NUMBER)
+                                                .description("검색 데이터 전체 개수"),
+                                        fieldWithPath("totalPages").type(JsonFieldType.NUMBER)
+                                                .description("검색 데이터 전체 페이지 수"),
                                         fieldWithPath("size").type(JsonFieldType.NUMBER)
-                                                .description("현재 페이지의 데이터 수")
+                                                .description("요청 데이터 수"),
+                                        fieldWithPath("numberOfElements").type(
+                                                        JsonFieldType.NUMBER)
+                                                .description("현재 페이지에서 보여지는 데이터 수")
                                 )
                         )
                 );
@@ -617,7 +648,7 @@ class UserControllerTest {
                     .title("제목")
                     .postRegisterMemberId(1)
                     .postRegisterMemberId(i)
-                    .imageUrls(getImageUrlList(3))
+                    .imageUrls(getImageUrlArray(3))
                     .content("내용")
                     .commentCount(i)
                     .likeCount(i)
@@ -633,7 +664,7 @@ class UserControllerTest {
                     .build());
         }
 
-        given(postService.searchMyPagePosts(any(), anyLong(), any()))
+        given(postService.searchMyPagePosts(any(), anyLong(), any(), any()))
                 .willReturn(new PageImpl<>(list, PageRequest.of(0, 3), 3));
 
         //when
@@ -712,11 +743,21 @@ class UserControllerTest {
                 );
     }
 
-    private static String[] getImageUrlList(int size) {
+    private static String[] getImageUrlArray(int size) {
         String[] images = new String[size];
 
         for (int i = 0; i < size; i++) {
             images[i] = "img" + i;
+        }
+
+        return images;
+    }
+
+    private static List<String> getImageUrlList(int size) {
+        List<String> images = new ArrayList<>();
+
+        for (int i = 0; i < size; i++) {
+            images.add("img" + i);
         }
 
         return images;
