@@ -40,7 +40,7 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private final TokenProvider tokenProvider;
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate redisTemplate;
 
     private final ChannelTopic channelTopic;
 
