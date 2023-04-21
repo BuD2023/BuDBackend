@@ -25,6 +25,8 @@ public class GetNotifications {
 
         private String senderNickName;
 
+        private String senderProfileImage;
+
         private String notificationId;
 
         private NotificationType notificationType;
@@ -43,12 +45,12 @@ public class GetNotifications {
             return Response.builder()
                 .senderId(notification.getSender().getId())
                 .senderNickName(notification.getSender().getNickname())
+                .senderProfileImage(notification.getSender().getProfileImg())
                 .notificationId(notification.getNotificationId())
                 .notificationType(notification.getNotificationType())
                 .pageType(notification.getPageType())
                 .pageId(notification.getPageId())
-                .notificationDetailType(
-                    notification.getNotificationDetailType())
+                .notificationDetailType(notification.getNotificationDetailType())
                 .notificationStatus(notification.getNotificationStatus())
                 .notifiedAt(notification.getNotifiedAt())
                 .build();

@@ -1,7 +1,10 @@
 package zerobase.bud.post.service;
 
 import static com.querydsl.core.types.Order.ASC;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -38,15 +42,24 @@ import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.service.SendNotificationService;
+import zerobase.bud.notification.event.AddLikePostEvent;
+import zerobase.bud.notification.event.CreatePostEvent;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.domain.QnaAnswerPin;
 import zerobase.bud.post.domain.Scrap;
-import zerobase.bud.post.dto.*;
-import zerobase.bud.post.repository.*;
+import zerobase.bud.post.dto.CreatePost;
+import zerobase.bud.post.dto.PostDto;
+import zerobase.bud.post.dto.SearchMyPagePost;
+import zerobase.bud.post.dto.SearchPost;
+import zerobase.bud.post.dto.UpdatePost;
+import zerobase.bud.post.repository.ImageRepository;
+import zerobase.bud.post.repository.PostLikeRepository;
+import zerobase.bud.post.repository.PostRepository;
+import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
+import zerobase.bud.post.repository.ScrapRepository;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.type.MemberStatus;
@@ -73,7 +86,7 @@ class PostServiceTest {
     private AwsS3Api awsS3Api;
 
     @Mock
-    private SendNotificationService sendNotificationService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private PostService postService;
@@ -87,31 +100,32 @@ class PostServiceTest {
         List<MultipartFile> images = getMockMultipartFiles();
 
         given(postRepository.save(any()))
-            .willReturn(getPost());
+                .willReturn(getPost());
 
         given(awsS3Api.uploadImage(any(), any()))
-            .willReturn("awsS3Image");
+                .willReturn("awsS3Image");
 
         given(imageRepository.save(any()))
-            .willReturn(Image.builder()
-                .post(getPost())
-                .imagePath("imagePath")
-                .build());
+                .willReturn(Image.builder()
+                        .post(getPost())
+                        .imagePath("imagePath")
+                        .build());
 
         ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
         ArgumentCaptor<Image> imageCaptor = ArgumentCaptor.forClass(
-            Image.class);
+                Image.class);
         //when 어떤 경우에
         String result = postService.createPost(getMember(), images,
-            CreatePost.Request.builder()
-                .title("resultTitle")
-                .content("resultContent")
-                .postType(PostType.FEED)
-                .build());
+                CreatePost.Request.builder()
+                        .title("resultTitle")
+                        .content("resultContent")
+                        .postType(PostType.FEED)
+                        .build());
 
         //then 이런 결과가 나온다.
         verify(postRepository, times(1)).save(captor.capture());
         verify(imageRepository, times(1)).save(imageCaptor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(CreatePostEvent.class));
         assertEquals("resultTitle", captor.getValue().getTitle());
         assertEquals("resultContent", captor.getValue().getContent());
         assertEquals(ACTIVE, captor.getValue().getPostStatus());
@@ -128,20 +142,21 @@ class PostServiceTest {
         List<MultipartFile> images = getMockMultipartFiles();
 
         given(postRepository.save(any()))
-            .willReturn(getPost());
+                .willReturn(getPost());
 
         ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
 
         //when 어떤 경우에
         String result = postService.createPost(getMember(), images,
-            CreatePost.Request.builder()
-                .title("resultTitle")
-                .content("resultContent")
-                .postType(PostType.FEED)
-                .build());
+                CreatePost.Request.builder()
+                        .title("resultTitle")
+                        .content("resultContent")
+                        .postType(PostType.FEED)
+                        .build());
 
         //then 이런 결과가 나온다.
         verify(postRepository, times(1)).save(captor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(CreatePostEvent.class));
         assertEquals("resultTitle", captor.getValue().getTitle());
         assertEquals("resultContent", captor.getValue().getContent());
         assertEquals(ACTIVE, captor.getValue().getPostStatus());
@@ -155,27 +170,27 @@ class PostServiceTest {
         List<MultipartFile> images = getMockMultipartFiles();
 
         given(postRepository.findByIdAndPostStatus(anyLong(), any()))
-            .willReturn(Optional.ofNullable(getPost()));
+                .willReturn(Optional.ofNullable(getPost()));
 
         given(awsS3Api.uploadImage(any(), any()))
-            .willReturn("awsS3Image");
+                .willReturn("awsS3Image");
 
         given(imageRepository.save(any()))
-            .willReturn(Image.builder()
-                .post(getPost())
-                .imagePath("updateImageUrl")
-                .build());
+                .willReturn(Image.builder()
+                        .post(getPost())
+                        .imagePath("updateImageUrl")
+                        .build());
 
         ArgumentCaptor<Image> imageCaptor = ArgumentCaptor.forClass(
-            Image.class);
+                Image.class);
         //when 어떤 경우에
         String result = postService.updatePost(1L, images,
-            UpdatePost.Request.builder()
-                .title("resultTitle")
-                .content("resultContent")
-                .postType(PostType.QNA)
-                .build()
-        , getMember());
+                UpdatePost.Request.builder()
+                        .title("resultTitle")
+                        .content("resultContent")
+                        .postType(PostType.QNA)
+                        .build()
+                , getMember());
 
         //then 이런 결과가 나온다.
         verify(imageRepository, times(1)).save(imageCaptor.capture());
@@ -183,7 +198,7 @@ class PostServiceTest {
         assertEquals("resultTitle", imageCaptor.getValue().getPost().getTitle());
         assertEquals("resultContent", imageCaptor.getValue().getPost().getContent());
         assertEquals(PostType.QNA,
-            imageCaptor.getValue().getPost().getPostType());
+                imageCaptor.getValue().getPost().getPostType());
         assertEquals("resultTitle", result);
     }
 
@@ -192,17 +207,17 @@ class PostServiceTest {
     void NOT_FOUND_POST_updatePost() {
         //given 어떤 데이터가 주어졌을 때
         given(postRepository.findByIdAndPostStatus(anyLong(), any()))
-            .willReturn(Optional.empty());
+                .willReturn(Optional.empty());
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> postService.updatePost(1L, getMockMultipartFiles()
-                , UpdatePost.Request.builder()
-                    .title("resultTitle")
-                    .content("resultContent")
-                    .postType(PostType.FEED)
-                    .build()
-                , getMember()));
+                () -> postService.updatePost(1L, getMockMultipartFiles()
+                        , UpdatePost.Request.builder()
+                                .title("resultTitle")
+                                .content("resultContent")
+                                .postType(PostType.FEED)
+                                .build()
+                        , getMember()));
 
         //then 이런 결과가 나온다.
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
@@ -213,25 +228,25 @@ class PostServiceTest {
     void NOT_POST_OWNER_updatePost() {
         //given 어떤 데이터가 주어졌을 때
         Member diffMember = Member.builder()
-            .id(3L)
-            .nickname("nick")
-            .level(getLevel())
-            .userId("")
-            .createdAt(LocalDateTime.now().minusDays(1))
-            .build();
+                .id(3L)
+                .nickname("nick")
+                .level(getLevel())
+                .userId("")
+                .createdAt(LocalDateTime.now().minusDays(1))
+                .build();
 
         given(postRepository.findByIdAndPostStatus(anyLong(), any()))
-            .willReturn(Optional.ofNullable(getPost()));
+                .willReturn(Optional.ofNullable(getPost()));
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> postService.updatePost(1L, getMockMultipartFiles()
-                , UpdatePost.Request.builder()
-                    .title("resultTitle")
-                    .content("resultContent")
-                    .postType(PostType.FEED)
-                    .build()
-                , diffMember));
+                () -> postService.updatePost(1L, getMockMultipartFiles()
+                        , UpdatePost.Request.builder()
+                                .title("resultTitle")
+                                .content("resultContent")
+                                .postType(PostType.FEED)
+                                .build()
+                        , diffMember));
 
         //then 이런 결과가 나온다.
         assertEquals(NOT_POST_OWNER, budException.getErrorCode());
@@ -244,26 +259,26 @@ class PostServiceTest {
         //given 어떤 데이터가 주어졌을 때
 
         Post post = Post.builder()
-            .member(getMember())
-            .title("title")
-            .content("content")
-            .postStatus(ACTIVE)
-            .postType(FEED)
-            .qnaAnswerPin(getQnaAnswerPin())
-            .build();
+                .member(getMember())
+                .title("title")
+                .content("content")
+                .postStatus(ACTIVE)
+                .postType(FEED)
+                .qnaAnswerPin(getQnaAnswerPin())
+                .build();
 
         given(postRepository.findByIdAndPostStatus(anyLong(), any()))
-            .willReturn(Optional.ofNullable(post));
+                .willReturn(Optional.ofNullable(post));
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> postService.updatePost(1L, getMockMultipartFiles()
-                , UpdatePost.Request.builder()
-                    .title("resultTitle")
-                    .content("resultContent")
-                    .postType(PostType.FEED)
-                    .build()
-                , getMember()));
+                () -> postService.updatePost(1L, getMockMultipartFiles()
+                        , UpdatePost.Request.builder()
+                                .title("resultTitle")
+                                .content("resultContent")
+                                .postType(PostType.FEED)
+                                .build()
+                        , getMember()));
 
         //then 이런 결과가 나온다.
         assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER, budException.getErrorCode());
@@ -293,7 +308,7 @@ class PostServiceTest {
                     .isLike(true)
                     .isFollow(true)
                     .isScrap(true)
-                .build());
+                    .build());
         }
 
         List<Image> images = getImageList();
@@ -301,11 +316,11 @@ class PostServiceTest {
         PageRequest pageRequest = PageRequest.of(0, 3);
 
         given(postRepositoryQuerydsl.findAllByPostStatus(anyLong(),anyString(), any(),
-            any(), any(), any()))
-            .willReturn(new PageImpl<>(posts, pageRequest, 3));
+                any(), any(), any()))
+                .willReturn(new PageImpl<>(posts, pageRequest, 3));
 
         given(imageRepository.findAllByPostId(anyLong()))
-            .willReturn(images);
+                .willReturn(images);
 
         //when
         Page<SearchPost.Response> responses = postService.searchPosts(
@@ -334,26 +349,25 @@ class PostServiceTest {
     @DisplayName("성공 - 게시물 상세 데이터 검색")
     void success_searchPost() {
         //given
-        given(postRepository.findById(anyLong()))
-                .willReturn(Optional.ofNullable(getPost()));
+        PostDto postDto = getPostDto();
 
         given(postRepositoryQuerydsl.findByPostId(any(), anyLong()))
-            .willReturn(getPostDto());
+                .willReturn(Optional.of(postDto));
 
         given(imageRepository.findAllByPostId(anyLong()))
-            .willReturn(getImageList());
+                .willReturn(getImageList());
 
         //when
         SearchPost.Response response = postService.searchPost(Member.builder()
-                .id(1L)
-                .build(),
-               1L);
+                        .id(1L)
+                        .build(),
+                1L);
 
         //then
         assertEquals(1L, response.getId());
         assertEquals("title", response.getTitle());
         assertEquals(Arrays.toString(new String[]{"img0", "img1", "img2"}),
-            Arrays.toString(response.getImageUrls()));
+                Arrays.toString(response.getImageUrls()));
         assertEquals("content", response.getContent());
         assertEquals(ACTIVE, response.getPostStatus());
         assertEquals(FEED, response.getPostType());
@@ -371,7 +385,7 @@ class PostServiceTest {
         post.setId((long) 1);
 
         given(postRepository.findById(anyLong()))
-            .willReturn(Optional.of(post));
+                .willReturn(Optional.of(post));
 
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
 
@@ -389,12 +403,12 @@ class PostServiceTest {
     @DisplayName("실패 - 게시물 상세 데이터 검색")
     void fail_searchPost() {
         //given
-        given(postRepository.findById(anyLong()))
-            .willReturn(Optional.empty());
+        given(postRepositoryQuerydsl.findByPostId(any(), anyLong()))
+                .willReturn(Optional.empty());
 
         //when
         BudException budException = assertThrows(BudException.class,
-            () -> postService.searchPost(Member.builder().id(1L).build(), 1L));
+                () -> postService.searchPost(Member.builder().id(1L).build(), 1L));
 
         //then
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
@@ -406,11 +420,11 @@ class PostServiceTest {
     void fail_deletePost() {
         //given
         given(postRepository.findById(anyLong()))
-            .willReturn(Optional.empty());
+                .willReturn(Optional.empty());
 
         //when
         BudException budException = assertThrows(BudException.class,
-            () -> postService.deletePost((long) 1));
+                () -> postService.deletePost((long) 1));
 
         //then
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
@@ -454,6 +468,7 @@ class PostServiceTest {
 
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(AddLikePostEvent.class));
         assertEquals(1L, post.getId());
         assertEquals(3, postCaptor.getValue().getLikeCount());
         assertTrue(isAdd);
@@ -657,7 +672,7 @@ class PostServiceTest {
         assertEquals(3, searchMyPagePosts.getContent().size());
         assertEquals(1, searchMyPagePosts.getContent().get(0).getPostId());
         assertEquals("제목", searchMyPagePosts.getContent().get(0).getTitle());
-        assertEquals(1, searchMyPagePosts.getContent().get(0).getPostRegisterMember().getId());
+        assertEquals(1, searchMyPagePosts.getContent().get(0).getPostRegisterMemberId());
         assertEquals(Arrays.toString(new String[]{"img0", "img1", "img2"}),
                 Arrays.toString(searchMyPagePosts.getContent().get(2).getImageUrls()));
         assertEquals("내용", searchMyPagePosts.getContent().get(0).getContent());
@@ -673,29 +688,29 @@ class PostServiceTest {
     }
     private QnaAnswerPin getQnaAnswerPin() {
         return QnaAnswerPin.builder()
-            .post(getPost())
-            .qnaAnswer(getQnaAnswer())
-            .build();
+                .post(getPost())
+                .qnaAnswer(getQnaAnswer())
+                .build();
     }
 
     private static QnaAnswer getQnaAnswer() {
         return QnaAnswer.builder()
-            .id(1L)
-            .member(getMember())
-            .post(getPost())
-            .content("content")
-            .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
-            .build();
+                .id(1L)
+                .member(getMember())
+                .post(getPost())
+                .content("content")
+                .qnaAnswerStatus(QnaAnswerStatus.ACTIVE)
+                .build();
     }
 
     private static Post getPost() {
         return Post.builder()
-            .member(getMember())
-            .title("title")
-            .content("content")
-            .postStatus(ACTIVE)
-            .postType(PostType.FEED)
-            .build();
+                .member(getMember())
+                .title("title")
+                .content("content")
+                .postStatus(ACTIVE)
+                .postType(PostType.FEED)
+                .build();
     }
 
     private static PostDto getPostDto() {
@@ -714,28 +729,28 @@ class PostServiceTest {
 
     private static Member getMember() {
         return Member.builder()
-            .nickname("nick")
-            .level(getLevel())
-            .userId("")
-            .createdAt(LocalDateTime.now().minusDays(1))
-            .build();
+                .nickname("nick")
+                .level(getLevel())
+                .userId("")
+                .createdAt(LocalDateTime.now().minusDays(1))
+                .build();
     }
 
     private static Level getLevel() {
         return Level.builder()
-            .levelCode("씩씩한_새싹")
-            .levelStartCommitCount(0)
-            .nextLevelStartCommitCount(17)
-            .levelNumber(1)
-            .build();
+                .levelCode("씩씩한_새싹")
+                .levelStartCommitCount(0)
+                .nextLevelStartCommitCount(17)
+                .levelNumber(1)
+                .build();
     }
 
     private static List<MultipartFile> getMockMultipartFiles() {
         List<MultipartFile> images = new ArrayList<>();
         images.add(new MockMultipartFile("multipartFile",
-            "health.jpg",
-            "image/jpg",
-            "<<jpeg data>>".getBytes()));
+                "health.jpg",
+                "image/jpg",
+                "<<jpeg data>>".getBytes()));
         return images;
     }
 
@@ -744,11 +759,11 @@ class PostServiceTest {
 
         for (int i = 0; i < 3; i++) {
             images.add(Image.builder()
-                .id((long) (i + 1))
-                .imagePath("img" + i)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build());
+                    .id((long) (i + 1))
+                    .imagePath("img" + i)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build());
         }
 
         return images;

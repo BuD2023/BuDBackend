@@ -96,9 +96,5 @@ public class Post extends BaseEntity {
     public void scrapCountDown() {
         this.scrapCount--;
     }
-
-    public void hitCountUp() {
-        this.hitCount++;
-    }
 }
 

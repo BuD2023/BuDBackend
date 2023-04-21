@@ -368,6 +368,7 @@ class ChatRoomServiceTest {
 
         Member newHost = Member.builder()
                 .id(2L)
+                .userId("thefn")
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .build();
@@ -375,7 +376,7 @@ class ChatRoomServiceTest {
         given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(newHost));
         given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.range("CHATROOM1", 0, -1)).willReturn(List.of(1L, 2L, 3L));
+        given(listOperations.range("CHATROOM1", 0, -1)).willReturn(List.of("trowds", "thefn"));
         //when
         ArgumentCaptor<ChatRoom> captor = ArgumentCaptor.forClass(ChatRoom.class);
         Long result = chatRoomService.modifyHost(1L, 2L, member);
@@ -465,6 +466,7 @@ class ChatRoomServiceTest {
 
         Member newHost = Member.builder()
                 .id(2L)
+                .userId("abcde")
                 .createdAt(LocalDateTime.now())
                 .status(MemberStatus.VERIFIED)
                 .build();
@@ -472,7 +474,7 @@ class ChatRoomServiceTest {
         given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(newHost));
         given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of(2L, 3L));
+        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of("trowds", "thefn"));
         //when
         ChatRoomException exception = assertThrows(ChatRoomException.class,
                 () -> chatRoomService.modifyHost(12L, 1L, member));
@@ -516,9 +518,9 @@ class ChatRoomServiceTest {
 
         given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
         given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of(2L, 3L));
-        given(memberRepository.findAllByIdIn(anyList()))
-                .willReturn(Stream.of(member, chatUser1, chatUser2));
+        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of("trowds", "thefn"));
+        given(memberRepository.findAllByUserIdIn(anyList()))
+                .willReturn(List.of(member, chatUser1, chatUser2));
         given(followRepository.existsByTargetAndMember(member, member)).willReturn(false);
         given(followRepository.existsByTargetAndMember(chatUser1, member)).willReturn(true);
         given(followRepository.existsByTargetAndMember(chatUser2, member)).willReturn(false);

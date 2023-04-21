@@ -34,13 +34,13 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private static HashOperations<String, String, ChatRoomSession> hashOperations;
 
-    private static ListOperations<String, Long> listOperations;
+    private static ListOperations<String, String> listOperations;
 
     private final ChatRoomRepository chatRoomRepository;
 
     private final TokenProvider tokenProvider;
 
-    private final RedisTemplate<String, Long> redisTemplate;
+    private final RedisTemplate redisTemplate;
 
     private final ChannelTopic channelTopic;
 
@@ -67,9 +67,11 @@ public class WebSocketHandler implements ChannelInterceptor {
         } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
             String sessionId = accessor.getSessionId();
             hashOperations = redisTemplate.opsForHash();
+            assert sessionId != null;
             ChatRoomSession session = hashOperations.get(SESSION, sessionId);
 
             try {
+                assert session != null;
                 ChatRoom chatRoom = getChatRoom(session.getChatroomId());
 
                 removeUser(chatRoom.getId(), session.getUserId());
@@ -107,12 +109,12 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private void addUser(Long chatroomId, String userId) {
         listOperations = redisTemplate.opsForList();
-        listOperations.rightPush(CHATROOM + chatroomId, Long.parseLong(userId));
+        listOperations.rightPush(CHATROOM + chatroomId, userId);
     }
 
     private void removeUser(Long chatroomId, String userId) {
         listOperations = redisTemplate.opsForList();
-        listOperations.remove(CHATROOM + chatroomId, 0, Long.parseLong(userId));
+        listOperations.remove(CHATROOM + chatroomId, 0, userId);
     }
 
     private Long getChatroomIdFromDestination(String destination) {

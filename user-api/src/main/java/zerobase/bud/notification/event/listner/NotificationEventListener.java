@@ -1,4 +1,4 @@
-package zerobase.bud.notification.service;
+package zerobase.bud.notification.event.listner;
 
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION_INFO;
 
@@ -8,13 +8,26 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 import zerobase.bud.comment.domain.Comment;
+import zerobase.bud.comment.domain.QnaAnswerComment;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.fcm.FcmApi;
 import zerobase.bud.notification.domain.NotificationInfo;
 import zerobase.bud.notification.dto.NotificationDto;
+import zerobase.bud.notification.event.AddLikeCommentEvent;
+import zerobase.bud.notification.event.AddLikePostEvent;
+import zerobase.bud.notification.event.AddLikeQnaAnswerCommentEvent;
+import zerobase.bud.notification.event.AddLikeQnaAnswerEvent;
+import zerobase.bud.notification.event.CommentPinEvent;
+import zerobase.bud.notification.event.CreatePostEvent;
+import zerobase.bud.notification.event.CreateQnaAnswerEvent;
+import zerobase.bud.notification.event.FollowEvent;
+import zerobase.bud.notification.event.QnaAnswerCommentPinEvent;
+import zerobase.bud.notification.event.QnaAnswerPinEvent;
 import zerobase.bud.notification.repository.NotificationInfoRepository;
 import zerobase.bud.notification.type.NotificationDetailType;
 import zerobase.bud.notification.type.NotificationType;
@@ -25,9 +38,10 @@ import zerobase.bud.user.domain.Follow;
 import zerobase.bud.user.repository.FollowRepository;
 
 @Slf4j
-@Service
+@Component
+@Async("asyncNotification")
 @RequiredArgsConstructor
-public class SendNotificationService {
+public class NotificationEventListener {
 
     private final NotificationInfoRepository notificationInfoRepository;
 
@@ -35,8 +49,11 @@ public class SendNotificationService {
 
     private final FollowRepository followRepository;
 
-    public void sendCreatePostNotification(Member sender, Post post) {
+    @EventListener
+    public void handleCreatePostEvent(CreatePostEvent createPostEvent){
         try {
+            Member sender = createPostEvent.getMember();
+            Post post = createPostEvent.getPost();
             List<Member> followerList = followRepository.findAllByTargetId(sender.getId())
                 .stream()
                 .map(Follow::getMember)
@@ -72,13 +89,43 @@ public class SendNotificationService {
                 }
             }
         } catch (Exception e) {
-            log.error("sendCreatePostNotification 알림을 보내는 중 오류가 발생했습니다. {}",
-                e.getMessage(), e);
+            log.error("CreatePost 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
         }
     }
 
-    public void sendCreateQnaAnswerNotification(Member sender, Post post) {
+    @EventListener
+    public void handleAddLikePostEvent(AddLikePostEvent addLikePostEvent){
         try {
+            Member sender = addLikePostEvent.getMember();
+            Post post = addLikePostEvent.getPost();
+            Member receiver = post.getMember();
+
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
+                fcmApi.sendNotification(
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.POST
+                        , PageType.valueOf(post.getPostType().name())
+                        , post.getId()
+                        , NotificationDetailType.LIKE
+                    )
+                );
+            }
+        } catch (Exception e) {
+            log.error("AddLikePost 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
+        }
+    }
+
+    @EventListener
+    public void handleCreateQnaAnswerEvent(CreateQnaAnswerEvent createQnaAnswerEvent){
+        try {
+            Member sender = createQnaAnswerEvent.getMember();
+            Post post = createQnaAnswerEvent.getPost();
             Member receiver = post.getMember();
 
             NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
@@ -99,14 +146,15 @@ public class SendNotificationService {
             }
 
         } catch (Exception e) {
-            log.error(
-                "sendCreateQnaAnswerNotification 알림을 보내는 중 오류가 발생했습니다. {}",
-                e.getMessage(), e);
+            log.error("CreateQnaAnswer 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
         }
     }
 
-    public void sendQnaAnswerPinNotification(Member sender, QnaAnswer qnaAnswer) {
+    @EventListener
+    public void handleQnaAnswerPinEvent(QnaAnswerPinEvent qnaAnswerPinEvent){
         try {
+            Member sender = qnaAnswerPinEvent.getMember();
+            QnaAnswer qnaAnswer = qnaAnswerPinEvent.getQnaAnswer();
             Member receiver = qnaAnswer.getMember();
 
             NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
@@ -127,13 +175,46 @@ public class SendNotificationService {
             }
 
         } catch (Exception e) {
-            log.error("sendQnaAnswerPinNotification 알림을 보내는 중 오류가 발생했습니다. {}",
-                e.getMessage(), e);
+            log.error("QnaAnswerPin 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
         }
     }
 
-    public void sendFollowedNotification(Member sender, Member receiver) {
+    @EventListener
+    public void handleAddLikeQnaAnswerEvent(
+        AddLikeQnaAnswerEvent addLikeQnaAnswerEvent){
         try {
+            Member sender = addLikeQnaAnswerEvent.getMember();
+            QnaAnswer qnaAnswer = addLikeQnaAnswerEvent.getQnaAnswer();
+            Member receiver = qnaAnswer.getMember();
+
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
+                fcmApi.sendNotification(
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.POST
+                        , PageType.QNA
+                        , qnaAnswer.getPost().getId()
+                        , NotificationDetailType.LIKE
+                    )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error("AddLikeQnaAnswer 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
+        }
+    }
+
+    @EventListener
+    public void handleFollowEvent(FollowEvent followEvent){
+        try {
+            Member sender = followEvent.getMember();
+            Member receiver = followEvent.getTargetMember();
+
             NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
 
             if (!Objects.equals(receiver.getId(), sender.getId())
@@ -152,45 +233,19 @@ public class SendNotificationService {
             }
 
         } catch (Exception e) {
-            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
-                e.getMessage(), e);
+            log.error("Follow 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
         }
     }
 
-    public void sendAddLikeNotification(Member sender, Post post) {
+    @EventListener
+    public void handleAddLikeCommentEvent(AddLikeCommentEvent addLikeCommentEvent){
         try {
-            Member receiver = post.getMember();
-
-            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
-
-            if (!Objects.equals(receiver.getId(), sender.getId())
-                && notificationInfo.isPostPushAvailable()) {
-                fcmApi.sendNotification(
-                    NotificationDto.of(
-                        notificationInfo.getFcmToken()
-                        , receiver
-                        , sender
-                        , NotificationType.POST
-                        , PageType.valueOf(post.getPostType().name())
-                        , post.getId()
-                        , NotificationDetailType.LIKE
-                    )
-                );
-            }
-
-        } catch (Exception e) {
-            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
-                e.getMessage(), e);
-        }
-    }
-    public void sendCommentLikeNotification(Member sender, Comment comment) {
-        try {
+            Member sender = addLikeCommentEvent.getMember();
+            Comment comment = addLikeCommentEvent.getComment();
             Member receiver = comment.getMember();
 
             NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
 
-            Post post = comment.getPost();
-
             if (!Objects.equals(receiver.getId(), sender.getId())
                 && notificationInfo.isPostPushAvailable()) {
                 fcmApi.sendNotification(
@@ -199,21 +254,23 @@ public class SendNotificationService {
                         , receiver
                         , sender
                         , NotificationType.POST
-                        , PageType.valueOf(post.getPostType().name())
-                        , post.getId()
+                        , PageType.valueOf(addLikeCommentEvent.getPostType().name())
+                        , addLikeCommentEvent.getPostId()
                         , NotificationDetailType.LIKE
                     )
                 );
             }
 
         } catch (Exception e) {
-            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
-                e.getMessage(), e);
+            log.error("AddLikeComment 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
         }
     }
 
-    public void sendCommentPinNotification(Member sender, Comment comment) {
+    @EventListener
+    public void handleCommentPinEvent(CommentPinEvent commentPinEvent){
         try {
+            Member sender = commentPinEvent.getMember();
+            Comment comment = commentPinEvent.getComment();
             Member receiver = comment.getMember();
 
             NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
@@ -234,35 +291,70 @@ public class SendNotificationService {
             }
 
         } catch (Exception e) {
-            log.error("sendFollowedNotification 알림을 보내는 중 오류가 발생했습니다. {}",
-                e.getMessage(), e);
+            log.error(
+                "CommentPin 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
         }
     }
 
-    public void sendQnaAnswerAddLikeNotification(Member sender, QnaAnswer qnaAnswer) {
+    @EventListener
+    public void handleAddLikeQnaAnswerCommentEvent(
+        AddLikeQnaAnswerCommentEvent addLikeQnaAnswerCommentEvent){
         try {
-            Member receiver = qnaAnswer.getMember();
+            Member sender = addLikeQnaAnswerCommentEvent.getMember();
+            QnaAnswerComment qnaAnswerComment = addLikeQnaAnswerCommentEvent.getQnaAnswerComment();
+            Member receiver = qnaAnswerComment.getMember();
 
             NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
 
             if (!Objects.equals(receiver.getId(), sender.getId())
-                    && notificationInfo.isPostPushAvailable()) {
+                && notificationInfo.isPostPushAvailable()) {
                 fcmApi.sendNotification(
-                        NotificationDto.of(
-                                notificationInfo.getFcmToken()
-                                , receiver
-                                , sender
-                                , NotificationType.POST
-                                , PageType.QNA
-                                , qnaAnswer.getPost().getId()
-                                , NotificationDetailType.LIKE
-                        )
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.POST
+                        , PageType.valueOf(addLikeQnaAnswerCommentEvent.getPostType().name())
+                        , addLikeQnaAnswerCommentEvent.getPostId()
+                        , NotificationDetailType.LIKE
+                    )
                 );
             }
 
         } catch (Exception e) {
-            log.error("sendQnaAnswerAddLikeNotification 알림을 보내는 중 오류가 발생했습니다. {}",
-                    e.getMessage(), e);
+            log.error("AddLikeQnaAnswerComment 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
+        }
+    }
+
+    @EventListener
+    public void handleQnaAnswerCommentPinEvent(
+        QnaAnswerCommentPinEvent qnaAnswerCommentPinEvent){
+        try {
+            Member sender = qnaAnswerCommentPinEvent.getMember();
+            QnaAnswerComment qnaAnswerComment = qnaAnswerCommentPinEvent.getQnaAnswerComment();
+            Member receiver = qnaAnswerComment.getMember();
+
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
+                Post post = qnaAnswerComment.getQnaAnswer().getPost();
+                fcmApi.sendNotification(
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.POST
+                        , PageType.valueOf(post.getPostType().name())
+                        , post.getId()
+                        , NotificationDetailType.PIN
+                    )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error(
+                "QnaAnswerCommentPin 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
         }
     }
 
@@ -270,5 +362,4 @@ public class SendNotificationService {
         return notificationInfoRepository.findByMemberId(receiverId)
             .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION_INFO));
     }
-
 }

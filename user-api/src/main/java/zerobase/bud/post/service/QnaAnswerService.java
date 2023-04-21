@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +30,9 @@ import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.service.SendNotificationService;
+import zerobase.bud.notification.event.AddLikeQnaAnswerEvent;
+import zerobase.bud.notification.event.CreateQnaAnswerEvent;
+import zerobase.bud.notification.event.QnaAnswerPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.domain.QnaAnswerImage;
@@ -60,8 +63,6 @@ public class QnaAnswerService {
 
     private final QnaAnswerPinRepository qnaAnswerPinRepository;
 
-    private final SendNotificationService sendNotificationService;
-
     private final QnaAnswerRepositoryQuerydslImpl qnaAnswerRepositoryQuerydsl;
 
     private final QnaAnswerLikeRepository qnaAnswerLikeRepository;
@@ -69,6 +70,8 @@ public class QnaAnswerService {
     private final AwsS3Api awsS3Api;
 
     private final QnaAnswerImageRepository qnaAnswerImageRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public String createQnaAnswer(
@@ -87,7 +90,7 @@ public class QnaAnswerService {
 
         post.plusCommentCount();
 
-        sendNotificationService.sendCreateQnaAnswerNotification(member, post);
+        eventPublisher.publishEvent(new CreateQnaAnswerEvent(member, post));
 
         return member.getUserId();
     }
@@ -218,7 +221,8 @@ public class QnaAnswerService {
         }
 
         qnaAnswerPinRepository.save(QnaAnswerPin.of(qnaAnswer, post));
-        sendNotificationService.sendQnaAnswerPinNotification(member, qnaAnswer);
+
+        eventPublisher.publishEvent(new QnaAnswerPinEvent(member, qnaAnswer));
 
         return qnaAnswerId;
     }
@@ -268,7 +272,7 @@ public class QnaAnswerService {
 
         qnaAnswer.likeCountUp();
 
-        sendNotificationService.sendQnaAnswerAddLikeNotification(member, qnaAnswer);
+        eventPublisher.publishEvent(new AddLikeQnaAnswerEvent(member, qnaAnswer));
 
         return true;
     }

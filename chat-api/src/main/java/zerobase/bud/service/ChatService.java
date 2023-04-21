@@ -80,27 +80,27 @@ public class ChatService {
             throw new ChatException(ErrorCode.NOT_SUPPORTED_IMAGE);
         }
 
-        String filepath;
 
         try {
             File imageFile = getFile(imageCodes[1], extension);
-            filepath = awsS3Api.uploadFileImage(imageFile, CHATS);
+            String filepath = awsS3Api.uploadFileImage(imageFile, CHATS);
             FileUtils.delete(imageFile);
+
+            ChatDto dto = ChatDto.from(
+                    chatRepository.save(
+                            Chat.builder()
+                                    .chatRoom(chatRoom)
+                                    .message(filepath)
+                                    .member(member)
+                                    .type(ChatType.IMAGE)
+                                    .build())
+            );
+
+            redisTemplate.convertAndSend(channelTopic.getTopic(), dto);
+
         } catch (IOException e) {
             throw new ChatException(ErrorCode.CANNOT_COVERT_IMAGE);
         }
-
-        ChatDto dto = ChatDto.from(
-                chatRepository.save(
-                        Chat.builder()
-                                .chatRoom(chatRoom)
-                                .message(filepath)
-                                .member(member)
-                                .type(ChatType.IMAGE)
-                                .build())
-        );
-
-        redisTemplate.convertAndSend(channelTopic.getTopic(), dto);
     }
 
     private File getFile(String imageCode, String extension) throws IOException {

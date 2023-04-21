@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.comment.service.CommentService;
-import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
@@ -33,7 +32,6 @@ import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
-import zerobase.bud.type.MemberStatus;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -192,11 +190,6 @@ class PostControllerTest {
                     .id(i)
                     .title("제목" + i)
                     .imageUrls(new String[]{"url1", "url2"})
-                    .member(Member
-                            .builder()
-                            .id(1L)
-                            .status(MemberStatus.VERIFIED)
-                            .build())
                     .content("내용" + i)
                     .commentCount(i)
                     .likeCount(i)
@@ -244,9 +237,6 @@ class PostControllerTest {
                                 relaxedResponseFields(
                                         fieldWithPath("content[].id").type(JsonFieldType.NUMBER)
                                                 .description("게시물 id"),
-                                        fieldWithPath("content[].member").type(
-                                                        JsonFieldType.OBJECT)
-                                                .description("게시물 작성자"),
                                         fieldWithPath("content[].title").type(
                                                         JsonFieldType.STRING)
                                                 .description("게시물 제목"),
@@ -318,11 +308,6 @@ class PostControllerTest {
                 .title("제목")
                 .imageUrls(new String[]{"url1", "url2"})
                 .content("내용")
-                .member(Member
-                        .builder()
-                        .id(1L)
-                        .status(MemberStatus.VERIFIED)
-                        .build())
                 .commentCount(1)
                 .likeCount(1)
                 .scrapCount(1)
@@ -364,8 +349,6 @@ class PostControllerTest {
                                                 .description("게시물 id"),
                                         fieldWithPath("title").type(JsonFieldType.STRING)
                                                 .description("게시물 제목"),
-                                        fieldWithPath("member").type(JsonFieldType.OBJECT)
-                                                .description("게시물 작성자"),
                                         fieldWithPath("imageUrls").type(JsonFieldType.ARRAY)
                                                 .description("게시물 이미지 링크들"),
                                         fieldWithPath("content").type(JsonFieldType.STRING)

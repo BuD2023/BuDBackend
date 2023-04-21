@@ -1,6 +1,12 @@
 package zerobase.bud.comment.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -16,17 +22,13 @@ import zerobase.bud.comment.type.CommentStatus;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.service.SendNotificationService;
+import zerobase.bud.notification.event.AddLikeCommentEvent;
+import zerobase.bud.notification.event.CommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostStatus;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import zerobase.bud.post.type.PostType;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +42,7 @@ public class CommentService {
 
     private final PostRepository postRepository;
 
-    private final SendNotificationService sendNotificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Long commentLike(Long commentId, Member member) {
@@ -58,7 +60,11 @@ public class CommentService {
                     .comment(comment)
                     .member(member)
                     .build());
-            sendNotificationService.sendCommentLikeNotification(member, comment);
+            PostType postType = comment.getPost().getPostType();
+            Long postId = comment.getPost().getId();
+            eventPublisher.publishEvent(new AddLikeCommentEvent(
+                member, comment , postType, postId
+            ));
         }
 
         commentRepository.save(comment);
@@ -85,8 +91,7 @@ public class CommentService {
                 .comment(comment)
                 .post(post)
                 .build());
-
-        sendNotificationService.sendCommentPinNotification(member, comment);
+        eventPublisher.publishEvent(new CommentPinEvent(member, comment));
 
         return commentId;
     }
