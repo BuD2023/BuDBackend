@@ -67,9 +67,11 @@ public class WebSocketHandler implements ChannelInterceptor {
         } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
             String sessionId = accessor.getSessionId();
             hashOperations = redisTemplate.opsForHash();
+            assert sessionId != null;
             ChatRoomSession session = hashOperations.get(SESSION, sessionId);
 
             try {
+                assert session != null;
                 ChatRoom chatRoom = getChatRoom(session.getChatroomId());
 
                 removeUser(chatRoom.getId(), session.getUserId());

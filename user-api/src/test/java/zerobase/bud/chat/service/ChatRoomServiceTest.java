@@ -518,7 +518,7 @@ class ChatRoomServiceTest {
         given(redisTemplate.opsForList()).willReturn(listOperations);
         given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of(2L, 3L));
         given(memberRepository.findAllByIdIn(anyList()))
-                .willReturn(Stream.of(member, chatUser1, chatUser2));
+                .willReturn(List.of(member, chatUser1, chatUser2));
         given(followRepository.existsByTargetAndMember(member, member)).willReturn(false);
         given(followRepository.existsByTargetAndMember(chatUser1, member)).willReturn(true);
         given(followRepository.existsByTargetAndMember(chatUser2, member)).willReturn(false);
