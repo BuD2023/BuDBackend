@@ -47,22 +47,22 @@ public class ChatRoomService {
 
     private final FollowRepository followRepository;
 
-    private final RedisTemplate<String, Long> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    private static ListOperations<String, Long> listOperations;
+    private static ListOperations<String, String> listOperations;
 
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
 
-        String hastStr = "";
+        String hashStr = "";
         if (!hashTag.isEmpty()) {
-            hastStr = "#" + String.join("#", hashTag) + "#";
+            hashStr = "#" + String.join("#", hashTag) + "#";
         }
 
         return chatRoomRepository.save(
                 ChatRoom.builder()
                         .title(title)
                         .status(ACTIVE)
-                        .hashTag(hastStr)
+                        .hashTag(hashStr)
                         .description(description)
                         .member(member)
                         .build()).getId();
@@ -124,7 +124,6 @@ public class ChatRoomService {
     }
 
 
-    @Transactional
     public Long modifyHost(Long chatroomId, Long userId, Member member) {
         ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
@@ -136,7 +135,7 @@ public class ChatRoomService {
         Member newHost = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        if (!getUserList(chatroomId).contains(userId)) {
+        if (!getUserList(chatroomId).contains(newHost.getUserId())) {
             throw new ChatRoomException(MEMBER_NOT_FOUND_IN_CHATROOM);
         }
 
@@ -150,15 +149,15 @@ public class ChatRoomService {
         chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
 
-        return memberRepository.findAllByIdIn(getUserList(chatroomId))
+        return memberRepository.findAllByUserIdIn(getUserList(chatroomId)).stream()
                 .map(chatUser -> ChatUserDto.of(
                         chatUser,
-                        Objects.equals(chatUser.getUserId(), member.getUserId()),
+                        Objects.equals(chatUser.getId(), member.getId()),
                         followRepository.existsByTargetAndMember(chatUser, member)))
                 .collect(Collectors.toList());
     }
 
-    private List<Long> getUserList(Long chatroomId) {
+    private List<String> getUserList(Long chatroomId) {
         listOperations = redisTemplate.opsForList();
         return listOperations.range(CHATROOM + chatroomId, 0, -1);
     }
