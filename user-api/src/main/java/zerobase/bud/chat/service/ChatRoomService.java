@@ -53,16 +53,16 @@ public class ChatRoomService {
 
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
 
-        String hastStr = "";
+        String hashStr = "";
         if (!hashTag.isEmpty()) {
-            hastStr = "#" + String.join("#", hashTag) + "#";
+            hashStr = "#" + String.join("#", hashTag) + "#";
         }
 
         return chatRoomRepository.save(
                 ChatRoom.builder()
                         .title(title)
                         .status(ACTIVE)
-                        .hashTag(hastStr)
+                        .hashTag(hashStr)
                         .description(description)
                         .member(member)
                         .build()).getId();
