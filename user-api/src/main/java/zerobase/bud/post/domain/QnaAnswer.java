@@ -1,6 +1,19 @@
 package zerobase.bud.post.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,9 +22,6 @@ import zerobase.bud.comment.domain.QnaAnswerCommentPin;
 import zerobase.bud.domain.BaseEntity;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.type.QnaAnswerStatus;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -43,6 +53,10 @@ public class QnaAnswer extends BaseEntity {
 
     @OneToOne(mappedBy = "qnaAnswer")
     private QnaAnswerCommentPin qnaAnswerCommentPin;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "qnaAnswer", orphanRemoval = true)
+    private List<QnaAnswerImage> qnaAnswerImages = new ArrayList<>();
 
     public void updateContent(String content) {
         this.content = content;

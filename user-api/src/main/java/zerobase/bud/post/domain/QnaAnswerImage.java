@@ -18,22 +18,20 @@ import zerobase.bud.domain.BaseEntity;
 @AllArgsConstructor
 @SuperBuilder
 @Entity
-public class Image extends BaseEntity {
-
+public class QnaAnswerImage extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    private Post post;
+    private QnaAnswer qnaAnswer;
 
     private String imagePath;
 
-    public static Image of(Post post, String imagePath){
-        return Image.builder()
-            .post(post)
+    public static QnaAnswerImage of(QnaAnswer qnaAnswer, String imagePath) {
+        return QnaAnswerImage.builder()
+            .qnaAnswer(qnaAnswer)
             .imagePath(imagePath)
             .build();
     }
-
 }

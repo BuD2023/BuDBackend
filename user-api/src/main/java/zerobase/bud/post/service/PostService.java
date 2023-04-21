@@ -65,7 +65,7 @@ public class PostService {
 
         Post post = postRepository.save(Post.of(member, request));
 
-        saveImageWithPost(images, post);
+        saveImages(images, post);
 
         sendNotificationService.sendCreatePostNotification(member, post);
 
@@ -93,9 +93,9 @@ public class PostService {
 
         post.update(request);
 
-        deleteImages(post.getId());
+        deleteImages(post);
 
-        saveImageWithPost(images, post);
+        saveImages(images, post);
 
         return request.getTitle();
     }
@@ -194,7 +194,7 @@ public class PostService {
         return true;
     }
 
-    private void saveImageWithPost(List<MultipartFile> images, Post post) {
+    private void saveImages(List<MultipartFile> images, Post post) {
         if (Objects.nonNull(images)) {
             for (MultipartFile image : images) {
                 String imagePath = awsS3Api.uploadImage(image, POSTS);
@@ -203,13 +203,13 @@ public class PostService {
         }
     }
 
-    private void deleteImages(Long postId) {
-        List<Image> imageList = imageRepository.findAllByPostId(postId);
+    private void deleteImages(Post post) {
+        List<Image> imageList = post.getImages();
         for (Image image : imageList) {
             awsS3Api.deleteImage(image.getImagePath());
         }
 
-        imageRepository.deleteAllByPostId(postId);
+        imageRepository.deleteAllByPostId(post.getId());
     }
 }
 

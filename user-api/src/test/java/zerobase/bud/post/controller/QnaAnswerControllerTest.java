@@ -1,6 +1,33 @@
 package zerobase.bud.post.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +42,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
@@ -26,31 +54,10 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.comment.service.QnaAnswerCommentService;
 import zerobase.bud.jwt.TokenProvider;
-import zerobase.bud.post.dto.CreateQnaAnswer;
 import zerobase.bud.post.dto.QnaAnswerCommentDto;
 import zerobase.bud.post.dto.SearchQnaAnswer;
-import zerobase.bud.post.dto.UpdateQnaAnswer;
 import zerobase.bud.post.service.QnaAnswerService;
 import zerobase.bud.post.type.QnaAnswerStatus;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith({RestDocumentationExtension.class})
 @WebMvcTest(QnaAnswerController.class)
@@ -98,22 +105,34 @@ class QnaAnswerControllerTest {
     @WithMockUser
     void success_createQnaAnswer() throws Exception {
         //given
-        given(qnaAnswerService.createQnaAnswer(any(), any()))
+        Map<String, String> input = new HashMap<>();
+        input.put("postId", "1");
+        input.put("content", "답변 본문 테스트");
+
+        List<MockMultipartFile> images = new ArrayList<>();
+        images.add(new MockMultipartFile("multipartFile",
+            "health.jpg",
+            "image/jpg",
+            "<<jpeg data>>".getBytes()));
+
+        String contents = objectMapper.writeValueAsString(input);
+
+        given(qnaAnswerService.createQnaAnswer(any(), any(), any()))
                 .willReturn("finish");
 
         //when
         //then
-        mockMvc.perform(post("/posts/qna-answers")
+        mockMvc.perform(multipart("/posts/qna-answers")
+                        .file(images.get(0))
+                        .file(new MockMultipartFile("createQnaAnswerRequest", "",
+                            "application/json", contents.getBytes(
+                            StandardCharsets.UTF_8)))
                         .header("Authorization", TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                CreateQnaAnswer.Request.builder()
-                                        .postId(1L)
-                                        .content("content")
-                                        .build()
-                        )).with(csrf()))
+                        .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value("finish"))
                 .andDo(
                         document("{class-name}/{method-name}",
                                 preprocessRequest(prettyPrint()),
@@ -125,27 +144,38 @@ class QnaAnswerControllerTest {
     @WithMockUser
     void success_updateQnaAnswer() throws Exception {
         //given
-        given(qnaAnswerService.updateQnaAnswer(any(), any()))
+        Map<String, String> input = new HashMap<>();
+        input.put("content", "답변 업데이트 본문 테스트");
+
+        List<MockMultipartFile> images = new ArrayList<>();
+        images.add(new MockMultipartFile("multipartFile",
+            "health.jpg",
+            "image/jpg",
+            "<<jpeg data>>".getBytes()));
+
+        String contents = objectMapper.writeValueAsString(input);
+
+        given(qnaAnswerService.updateQnaAnswer(anyLong(), any(), any(), any()))
                 .willReturn(3L);
 
         //when
         //then
-        mockMvc.perform(put("/posts/qna-answers")
+        mockMvc.perform(multipart("/posts/qna-answers/1")
+                        .file(images.get(0))
+                        .file(new MockMultipartFile("updateQnaAnswerRequest", "",
+                            "application/json", contents.getBytes(
+                            StandardCharsets.UTF_8)))
                         .header("Authorization", TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                UpdateQnaAnswer.Request.builder()
-                                        .qnaAnswerId(1L)
-                                        .content("content")
-                                        .build()
-                        )).with(csrf()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andDo(
-                        document("{class-name}/{method-name}",
-                                preprocessRequest(prettyPrint()),
-                                preprocessResponse(prettyPrint()))
-                );
+                        .with(csrf()))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$").value(3L))
+                        .andDo(
+                                document("{class-name}/{method-name}",
+                                        preprocessRequest(prettyPrint()),
+                                        preprocessResponse(prettyPrint()))
+                        );
     }
 
     @Test
