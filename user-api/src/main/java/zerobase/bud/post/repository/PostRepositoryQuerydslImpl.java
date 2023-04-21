@@ -21,6 +21,7 @@ import zerobase.bud.post.type.PostType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static zerobase.bud.post.domain.QPost.post;
 import static zerobase.bud.post.domain.QPostLike.postLike;
@@ -66,11 +67,11 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
     }
 
     @Override
-    public PostDto findByPostId(
+    public Optional<PostDto> findByPostId(
             Long memberId,
             Long postId
     ) {
-        return jpaQueryFactory
+        return Optional.ofNullable(jpaQueryFactory
                 .select(new QPostDto(
                         post.id,
                         post.member,
@@ -90,7 +91,7 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
                 ))
                 .from(post)
                 .where(post.id.eq(postId), eqStatus())
-                .fetchOne();
+                .fetchOne());
     }
 
     private List<PostDto> searchPosts(

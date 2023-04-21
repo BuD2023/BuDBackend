@@ -1,7 +1,6 @@
 package zerobase.bud.post.dto;
 
 import lombok.*;
-import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
@@ -21,7 +20,7 @@ public class SearchMyPagePost {
 
         private String title;
 
-        private Member postRegisterMember;
+        private long postRegisterMemberId;
 
         private String[] imageUrls;
 
@@ -53,7 +52,7 @@ public class SearchMyPagePost {
             return Response.builder()
                     .postId(post.getId())
                     .title(post.getTitle())
-                    .postRegisterMember(post.getMember())
+                    .postRegisterMemberId(post.getMember().getId())
                     .imageUrls(imageUrls)
                     .content(post.getContent())
                     .commentCount(post.getCommentCount())

@@ -60,14 +60,14 @@ public class PostService {
 
     @Transactional
     public String createPost(
-        Member member
-        , List<MultipartFile> images
-        , Request request
+            Member member
+            , List<MultipartFile> images
+            , Request request
     ) {
 
         Post post = postRepository.save(Post.of(member, request));
 
-        saveImages(images, post);
+        saveImageWithPost(images, post);
 
         eventPublisher.publishEvent(new CreatePostEvent(member, post));
 
@@ -76,14 +76,14 @@ public class PostService {
 
     @Transactional
     public String updatePost(
-        Long postId
-        , List<MultipartFile> images
-        , UpdatePost.Request request
-        , Member member
+            Long postId
+            , List<MultipartFile> images
+            , UpdatePost.Request request
+            , Member member
     ) {
 
         Post post = postRepository.findByIdAndPostStatus(postId, PostStatus.ACTIVE)
-            .orElseThrow(() -> new BudException(NOT_FOUND_POST));
+                .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
         if(!Objects.equals(post.getMember().getId() , member.getId())){
             throw new BudException(NOT_POST_OWNER);
@@ -95,9 +95,9 @@ public class PostService {
 
         post.update(request);
 
-        deleteImages(post);
+        deleteImages(post.getId());
 
-        saveImages(images, post);
+        saveImageWithPost(images, post);
 
         return request.getTitle();
     }
@@ -145,15 +145,8 @@ public class PostService {
     }
 
     public SearchPost.Response searchPost(Member member, Long postId) {
-        Post post = postRepository.findById(postId)
+        PostDto postDto = postRepositoryQuerydsl.findByPostId(member.getId(), postId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_POST));
-
-        PostDto postDto =
-                postRepositoryQuerydsl.findByPostId(member.getId(), postId);
-
-        post.hitCountUp();
-
-        postRepository.save(post);
 
         return SearchPost.Response.of(postDto,
                 imageRepository.findAllByPostId(postId));
@@ -161,7 +154,7 @@ public class PostService {
 
     public Long deletePost(Long postId) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new BudException(NOT_FOUND_POST));
+                .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
         post.setPostStatus(PostStatus.INACTIVE);
         postRepository.save(post);
@@ -176,8 +169,8 @@ public class PostService {
         var isAdd = new AtomicReference<>(false);
 
         postLikeRepository.findByPostIdAndMemberId(postId, member.getId()).ifPresentOrElse(
-                        postLike -> cancelLike(postLike, post),
-                        () -> isAdd.set(addLike(post, member)));
+                postLike -> cancelLike(postLike, post),
+                () -> isAdd.set(addLike(post, member)));
 
         postRepository.save(post);
 
@@ -203,22 +196,28 @@ public class PostService {
         return true;
     }
 
-    private void saveImages(List<MultipartFile> images, Post post) {
+    private void saveImageWithPost(List<MultipartFile> images, Post post) {
         if (Objects.nonNull(images)) {
             for (MultipartFile image : images) {
-                String imagePath = awsS3Api.uploadImage(image, POSTS);
-                imageRepository.save(Image.of(post,imagePath));
+                saveImage(post, image);
             }
         }
     }
 
-    private void deleteImages(Post post) {
-        List<Image> imageList = post.getImages();
+    private void saveImage(Post post, MultipartFile image) {
+        String imagePath = awsS3Api.uploadImage(image, POSTS);
+        imageRepository.save(Image.builder()
+                .post(post)
+                .imagePath(imagePath)
+                .build());
+    }
+
+    private void deleteImages(Long postId) {
+        List<Image> imageList = imageRepository.findAllByPostId(postId);
         for (Image image : imageList) {
             awsS3Api.deleteImage(image.getImagePath());
         }
 
-        imageRepository.deleteAllByPostId(post.getId());
+        imageRepository.deleteAllByPostId(postId);
     }
 }
-
