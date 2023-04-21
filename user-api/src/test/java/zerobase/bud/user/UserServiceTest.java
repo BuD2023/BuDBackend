@@ -200,6 +200,7 @@ class UserServiceTest {
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("안녕하세요 저는 어쩌구저쩌구")
                 .level(level)
+                .job("시스템프로그래머")
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .build();
