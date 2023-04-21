@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.type.PostStatus;
@@ -24,6 +25,8 @@ public class SearchScrap {
         private Long postId;
 
         private String title;
+
+        private Member postRegisterMember;
 
         private String content;
 
@@ -61,6 +64,7 @@ public class SearchScrap {
                     .scrapId(scrapDto.getScrapId())
                     .postId(post.getId())
                     .title(post.getTitle())
+                    .postRegisterMember(post.getMember())
                     .content(post.getContent())
                     .imageUrls(imagePaths)
                     .commentCount(post.getCommentCount())
