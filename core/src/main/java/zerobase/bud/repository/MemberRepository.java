@@ -12,5 +12,5 @@ import java.util.stream.Stream;
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByUserId(String userId);
 
-    List<Member> findAllByIdIn(List<Long> userIds);
+    List<Member> findAllByUserIdIn(List<String> userIds);
 }
