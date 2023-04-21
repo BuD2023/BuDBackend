@@ -27,7 +27,7 @@ public interface PostRepositoryQuerydsl {
             Pageable pageable
     );
 
-    PostDto findByPostId(
+    Optional<PostDto> findByPostId(
             Long memberId,
             Long postId
     );

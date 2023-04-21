@@ -143,18 +143,11 @@ public class PostService {
     }
 
     public SearchPost.Response searchPost(Member member, Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BudException(NOT_FOUND_POST));
-
-        PostDto postDto =
-                postRepositoryQuerydsl.findByPostId(member.getId(), postId);
-
-        post.hitCountUp();
-
-        postRepository.save(post);
+        PostDto postDto = postRepositoryQuerydsl.findByPostId(member.getId(), postId)
+            .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
         return SearchPost.Response.of(postDto,
-                imageRepository.findAllByPostId(postId));
+            imageRepository.findAllByPostId(postId));
     }
 
     public Long deletePost(Long postId) {

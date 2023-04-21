@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.notification.dto.NotificationInfoDto;
 import zerobase.bud.notification.service.NotificationInfoService;
@@ -32,7 +31,6 @@ import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
-import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.controller.UserController;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
@@ -510,11 +508,6 @@ class UserControllerTest {
                     .scrapId(1L)
                     .postId(1L)
                     .title("제목")
-                    .postRegisterMember(Member
-                            .builder()
-                            .id(1L)
-                            .status(MemberStatus.VERIFIED)
-                            .build())
                     .content("내용")
                     .commentCount(i)
                     .imageUrls(getImageUrlList(3))
@@ -562,8 +555,6 @@ class UserControllerTest {
                                                 .description("스크랩 고유 id"),
                                         fieldWithPath("content[].postId").type(JsonFieldType.NUMBER)
                                                 .description("스크랩한 게시글 고유 id"),
-                                        fieldWithPath("content[].postRegisterMember").type(JsonFieldType.OBJECT)
-                                                .description("스크랩한 게시글 작성자"),
                                         fieldWithPath("content[].title").type(
                                                         JsonFieldType.STRING)
                                                 .description("스크랩한 게시글 제목"),
@@ -661,11 +652,8 @@ class UserControllerTest {
             list.add(SearchMyPagePost.Response.builder()
                     .postId(i)
                     .title("제목")
-                    .postRegisterMember(Member
-                            .builder()
-                            .id(1L)
-                            .status(MemberStatus.VERIFIED)
-                            .build())
+                    .postRegisterMemberId(1)
+                    .postRegisterMemberId(i)
                     .imageUrls(getImageUrlArray(3))
                     .content("내용")
                     .commentCount(i)
@@ -698,6 +686,7 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("content[0].title").value("제목"))
                 .andExpect(jsonPath("content[0].content").value("내용"))
+                .andExpect(jsonPath("content[0].postRegisterMemberId").value(1))
                 .andExpect(jsonPath("content[0].imageUrls[0]").value("img0"))
                 .andExpect(jsonPath("content[0].imageUrls[1]").value("img1"))
                 .andExpect(jsonPath("content[0].imageUrls[2]").value("img2"))
@@ -715,8 +704,8 @@ class UserControllerTest {
                                                 .description("게시글 고유 번호"),
                                         fieldWithPath("content[].title").type(JsonFieldType.STRING)
                                                 .description("게시글 제목"),
-                                        fieldWithPath("content[].postRegisterMember").type(JsonFieldType.OBJECT)
-                                                .description("게시글 작성자"),
+                                        fieldWithPath("content[].postRegisterMemberId").type(JsonFieldType.NUMBER)
+                                                .description("게시글 작성자 고유 번호"),
                                         fieldWithPath("content[].imageUrls").type(JsonFieldType.ARRAY)
                                                 .description("게시글 이미지 링크들"),
                                         fieldWithPath("content[].content").type(JsonFieldType.STRING)

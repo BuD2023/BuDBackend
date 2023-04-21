@@ -334,11 +334,10 @@ class PostServiceTest {
     @DisplayName("성공 - 게시물 상세 데이터 검색")
     void success_searchPost() {
         //given
-        given(postRepository.findById(anyLong()))
-                .willReturn(Optional.ofNullable(getPost()));
+        PostDto postDto = getPostDto();
 
         given(postRepositoryQuerydsl.findByPostId(any(), anyLong()))
-            .willReturn(getPostDto());
+            .willReturn(Optional.of(postDto));
 
         given(imageRepository.findAllByPostId(anyLong()))
             .willReturn(getImageList());
@@ -389,7 +388,7 @@ class PostServiceTest {
     @DisplayName("실패 - 게시물 상세 데이터 검색")
     void fail_searchPost() {
         //given
-        given(postRepository.findById(anyLong()))
+        given(postRepositoryQuerydsl.findByPostId(any(), anyLong()))
             .willReturn(Optional.empty());
 
         //when
@@ -657,7 +656,7 @@ class PostServiceTest {
         assertEquals(3, searchMyPagePosts.getContent().size());
         assertEquals(1, searchMyPagePosts.getContent().get(0).getPostId());
         assertEquals("제목", searchMyPagePosts.getContent().get(0).getTitle());
-        assertEquals(1, searchMyPagePosts.getContent().get(0).getPostRegisterMember().getId());
+        assertEquals(1, searchMyPagePosts.getContent().get(0).getPostRegisterMemberId());
         assertEquals(Arrays.toString(new String[]{"img0", "img1", "img2"}),
                 Arrays.toString(searchMyPagePosts.getContent().get(2).getImageUrls()));
         assertEquals("내용", searchMyPagePosts.getContent().get(0).getContent());
