@@ -40,17 +40,29 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.web.multipart.MultipartFile;
+import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.notification.domain.NotificationInfo;
 import zerobase.bud.notification.service.SendNotificationService;
-import zerobase.bud.post.domain.*;
+import zerobase.bud.post.domain.Post;
+import zerobase.bud.post.domain.QnaAnswer;
+import zerobase.bud.post.domain.QnaAnswerImage;
+import zerobase.bud.post.domain.QnaAnswerLike;
+import zerobase.bud.post.domain.QnaAnswerPin;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
 import zerobase.bud.post.dto.QnaAnswerDto;
 import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
-import zerobase.bud.post.repository.*;
+import zerobase.bud.post.repository.PostRepository;
+import zerobase.bud.post.repository.QnaAnswerImageRepository;
+import zerobase.bud.post.repository.QnaAnswerLikeRepository;
+import zerobase.bud.post.repository.QnaAnswerPinRepository;
+import zerobase.bud.post.repository.QnaAnswerRepository;
+import zerobase.bud.post.repository.QnaAnswerRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.repository.MemberRepository;
@@ -79,36 +91,59 @@ class QnaAnswerServiceTest {
     @Mock
     private MemberRepository memberRepository;
 
+    @Mock
+    private QnaAnswerImageRepository qnaAnswerImageRepository;
+
+    @Mock
+    private AwsS3Api awsS3Api;
+
     @InjectMocks
     private QnaAnswerService qnaAnswerService;
 
     @Test
     void success_createQnaAnswer() {
         //given
-
+        List<MultipartFile> images = getMockMultipartFiles();
         given(postRepository.findById(anyLong()))
             .willReturn(Optional.ofNullable(getPost()));
 
         given(qnaAnswerRepository.save(any()))
             .willReturn(getQnaAnswer());
 
+        given(awsS3Api.uploadImage(any(), any()))
+            .willReturn("awsS3Image");
+
+        given(qnaAnswerImageRepository.save(any()))
+            .willReturn(QnaAnswerImage.builder()
+                .qnaAnswer(getQnaAnswer())
+                .imagePath("imagePath")
+                .build());
+
         ArgumentCaptor<QnaAnswer> captor = ArgumentCaptor.forClass(
             QnaAnswer.class);
 
+        ArgumentCaptor<QnaAnswerImage> imageCaptor = ArgumentCaptor.forClass(
+            QnaAnswerImage.class);
+
         //when
-        String answer = qnaAnswerService.createQnaAnswer(getSender(),
-            Request.builder()
+        String answer = qnaAnswerService.createQnaAnswer(
+            images
+            , Request.builder()
                 .postId(1L)
                 .content("content")
-                .build());
+                .build()
+            , getSender());
 
         //then
         verify(qnaAnswerRepository, times(1)).save(captor.capture());
+        verify(qnaAnswerImageRepository, times(1)).save(imageCaptor.capture());
         assertEquals("postContent", captor.getValue().getPost().getContent());
         assertEquals(1, captor.getValue().getPost().getCommentCount());
         assertEquals("content", captor.getValue().getContent());
         assertEquals(QnaAnswerStatus.ACTIVE,
             captor.getValue().getQnaAnswerStatus());
+        assertEquals("awsS3Image", imageCaptor.getValue().getImagePath());
+        assertEquals("content", imageCaptor.getValue().getQnaAnswer().getContent());
         assertEquals("sender", answer);
 
     }
@@ -131,11 +166,13 @@ class QnaAnswerServiceTest {
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getSender(),
-                Request.builder()
+            () -> qnaAnswerService.createQnaAnswer(
+                getMockMultipartFiles()
+               , Request.builder()
                     .postId(1L)
                     .content("content")
-                    .build()));
+                    .build()
+                , getSender()));
         //then 이런 결과가 나온다.
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
     }
@@ -145,6 +182,7 @@ class QnaAnswerServiceTest {
     void CANNOT_ANSWER_YOURSELF_createQnaAnswer() {
         //given 어떤 데이터가 주어졌을 때
         Post post = Post.builder()
+            .id(1L)
             .member(getSender())
             .title("title")
             .content("postContent")
@@ -153,15 +191,17 @@ class QnaAnswerServiceTest {
             .build();
 
         given(postRepository.findById(anyLong()))
-            .willReturn(Optional.ofNullable(post));
+            .willReturn(Optional.of(post));
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getSender(),
-                Request.builder()
-                    .postId(1L)
-                    .content("content")
-                    .build()));
+            () -> qnaAnswerService.createQnaAnswer(
+                    new ArrayList<>()
+                    , Request.builder()
+                        .postId(1L)
+                        .content("content")
+                        .build()
+                    , getSender()));
         //then 이런 결과가 나온다.
         assertEquals(CANNOT_ANSWER_YOURSELF, budException.getErrorCode());
     }
@@ -179,15 +219,17 @@ class QnaAnswerServiceTest {
             .build();
 
         given(postRepository.findById(anyLong()))
-            .willReturn(Optional.ofNullable(post));
+            .willReturn(Optional.of(post));
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getSender(),
-                Request.builder()
+            () -> qnaAnswerService.createQnaAnswer(
+                new ArrayList<>()
+                , Request.builder()
                     .postId(1L)
                     .content("content")
-                    .build()));
+                    .build()
+                , getSender()));
         //then 이런 결과가 나온다.
         assertEquals(INVALID_POST_TYPE_FOR_ANSWER, budException.getErrorCode());
     }
@@ -205,15 +247,17 @@ class QnaAnswerServiceTest {
             .build();
 
         given(postRepository.findById(anyLong()))
-            .willReturn(Optional.ofNullable(post));
+            .willReturn(Optional.of(post));
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getSender(),
-                Request.builder()
-                    .postId(1L)
-                    .content("content")
-                    .build()));
+            () -> qnaAnswerService.createQnaAnswer(
+                            new ArrayList<>()
+                            , Request.builder()
+                                .postId(1L)
+                                .content("content")
+                                .build()
+                            , getSender()));
         //then 이런 결과가 나온다.
         assertEquals(INVALID_POST_STATUS, budException.getErrorCode());
     }
@@ -237,11 +281,13 @@ class QnaAnswerServiceTest {
 
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
-            () -> qnaAnswerService.createQnaAnswer(getSender(),
-                Request.builder()
+            () -> qnaAnswerService.createQnaAnswer(
+                getMockMultipartFiles()
+                , Request.builder()
                     .postId(1L)
                     .content("content")
-                    .build()));
+                    .build()
+                , getSender()));
         //then 이런 결과가 나온다.
         assertEquals(ADD_IMPOSSIBLE_PINNED_ANSWER, budException.getErrorCode());
     }
@@ -257,8 +303,9 @@ class QnaAnswerServiceTest {
 
         //when
         Long answer = qnaAnswerService.updateQnaAnswer(
-            UpdateQnaAnswer.Request.builder()
-                .qnaAnswerId(3L)
+            3L
+            , getMockMultipartFiles()
+            , UpdateQnaAnswer.Request.builder()
                 .content("content")
                 .build()
         , getSender());
@@ -277,11 +324,12 @@ class QnaAnswerServiceTest {
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
             () -> qnaAnswerService.updateQnaAnswer(
-                UpdateQnaAnswer.Request.builder()
-                    .qnaAnswerId(1L)
+                1L
+                , getMockMultipartFiles()
+                , UpdateQnaAnswer.Request.builder()
                     .content("content")
                     .build()
-            ,getSender()));
+                , getSender()));
         //then 이런 결과가 나온다.
         assertEquals(NOT_FOUND_QNA_ANSWER, budException.getErrorCode());
     }
@@ -303,10 +351,12 @@ class QnaAnswerServiceTest {
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
             () -> qnaAnswerService.updateQnaAnswer(
-                UpdateQnaAnswer.Request.builder()
-                    .qnaAnswerId(1L)
+                1L
+                , getMockMultipartFiles()
+                , UpdateQnaAnswer.Request.builder()
                     .content("content")
-                    .build(), getSender()));
+                    .build()
+                , getSender()));
         //then 이런 결과가 나온다.
         assertEquals(NOT_QNA_ANSWER_OWNER, budException.getErrorCode());
     }
@@ -328,10 +378,12 @@ class QnaAnswerServiceTest {
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
             () -> qnaAnswerService.updateQnaAnswer(
-                UpdateQnaAnswer.Request.builder()
-                    .qnaAnswerId(1L)
+                1L
+                , getMockMultipartFiles()
+                , UpdateQnaAnswer.Request.builder()
                     .content("content")
-                    .build(), getSender()));
+                    .build()
+                , getSender()));
         //then 이런 결과가 나온다.
         assertEquals(INVALID_QNA_ANSWER_STATUS, budException.getErrorCode());
     }
@@ -350,10 +402,12 @@ class QnaAnswerServiceTest {
         //when 어떤 경우에
         BudException budException = assertThrows(BudException.class,
             () -> qnaAnswerService.updateQnaAnswer(
-                UpdateQnaAnswer.Request.builder()
-                    .qnaAnswerId(1L)
+                1L
+                , getMockMultipartFiles()
+                , UpdateQnaAnswer.Request.builder()
                     .content("content")
-                    .build(), getSender()));
+                    .build()
+                , getSender()));
         //then 이런 결과가 나온다.
         assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER,
             budException.getErrorCode());
@@ -794,6 +848,15 @@ class QnaAnswerServiceTest {
             .userId("receiver")
             .createdAt(LocalDateTime.now().minusDays(1))
             .build();
+    }
+
+    private static List<MultipartFile> getMockMultipartFiles() {
+        List<MultipartFile> images = new ArrayList<>();
+        images.add(new MockMultipartFile("multipartFile",
+            "health.jpg",
+            "image/jpg",
+            "<<jpeg data>>".getBytes()));
+        return images;
     }
 
 }
