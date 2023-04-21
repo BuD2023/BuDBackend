@@ -1,5 +1,23 @@
 package zerobase.bud.post.service;
 
+import static zerobase.bud.common.type.ErrorCode.ADD_IMPOSSIBLE_PINNED_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.ALREADY_DELETE_QNA_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.CANNOT_ANSWER_YOURSELF;
+import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
+import static zerobase.bud.common.type.ErrorCode.INVALID_POST_TYPE_FOR_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.INVALID_QNA_ANSWER_STATUS;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_POST;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER;
+import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_QNA_ANSWER_PIN;
+import static zerobase.bud.common.type.ErrorCode.NOT_POST_OWNER;
+import static zerobase.bud.common.type.ErrorCode.NOT_QNA_ANSWER_OWNER;
+import static zerobase.bud.util.Constants.QNA_ANSWERS;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -7,27 +25,29 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
+import zerobase.bud.post.domain.QnaAnswerImage;
 import zerobase.bud.post.domain.QnaAnswerLike;
 import zerobase.bud.post.domain.QnaAnswerPin;
 import zerobase.bud.post.dto.CreateQnaAnswer.Request;
 import zerobase.bud.post.dto.QnaAnswerDto;
 import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
-import zerobase.bud.post.repository.*;
+import zerobase.bud.post.repository.PostRepository;
+import zerobase.bud.post.repository.QnaAnswerImageRepository;
+import zerobase.bud.post.repository.QnaAnswerLikeRepository;
+import zerobase.bud.post.repository.QnaAnswerPinRepository;
+import zerobase.bud.post.repository.QnaAnswerRepository;
+import zerobase.bud.post.repository.QnaAnswerRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
-
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import static zerobase.bud.common.type.ErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,15 +66,24 @@ public class QnaAnswerService {
 
     private final QnaAnswerLikeRepository qnaAnswerLikeRepository;
 
+    private final AwsS3Api awsS3Api;
+
+    private final QnaAnswerImageRepository qnaAnswerImageRepository;
+
     @Transactional
-    public String createQnaAnswer(Member member, Request request) {
+    public String createQnaAnswer(
+        List<MultipartFile> images, Request request , Member member
+    ) {
 
         Post post = postRepository.findById(request.getPostId())
             .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
         validateCreateQnaAnswer(post, member);
 
-        qnaAnswerRepository.save(QnaAnswer.of(member, post, request.getContent()));
+        QnaAnswer qnaAnswer =
+            qnaAnswerRepository.save(QnaAnswer.of(member, post, request.getContent()));
+
+        saveImages(images, qnaAnswer);
 
         post.plusCommentCount();
 
@@ -64,22 +93,44 @@ public class QnaAnswerService {
     }
 
     @Transactional
-    public Long updateQnaAnswer(UpdateQnaAnswer.Request request , Member member) {
+    public Long updateQnaAnswer(
+        Long qnaAnswerId, List<MultipartFile> images, UpdateQnaAnswer.Request request , Member member
+    ) {
 
-        QnaAnswer qnaAnswer = qnaAnswerRepository.findById(
-                request.getQnaAnswerId())
+        QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
             .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
 
-        validateUpdateQnaAnswer(qnaAnswer, request, member);
+        validateUpdateQnaAnswer(qnaAnswer, member);
 
         qnaAnswer.updateContent(request.getContent());
 
-        return request.getQnaAnswerId();
+        deleteImages(qnaAnswer);
+
+        saveImages(images, qnaAnswer);
+
+        return qnaAnswerId;
+    }
+
+    private void saveImages(List<MultipartFile> images, QnaAnswer qnaAnswer) {
+        if (Objects.nonNull(images)) {
+            for (MultipartFile image : images) {
+                String imagePath = awsS3Api.uploadImage(image, QNA_ANSWERS);
+                qnaAnswerImageRepository.save(QnaAnswerImage.of(qnaAnswer, imagePath));
+            }
+        }
+    }
+
+    private void deleteImages(QnaAnswer qnaAnswer) {
+        List<QnaAnswerImage> imageList = qnaAnswer.getQnaAnswerImages();
+        for (QnaAnswerImage image : imageList) {
+            awsS3Api.deleteImage(image.getImagePath());
+        }
+
+        qnaAnswerImageRepository.deleteAllByQnaAnswerId(qnaAnswer.getId());
     }
 
     private void validateUpdateQnaAnswer(
         QnaAnswer qnaAnswer
-        , UpdateQnaAnswer.Request request
         , Member member
     ) {
 
@@ -91,7 +142,7 @@ public class QnaAnswerService {
             throw new BudException(INVALID_QNA_ANSWER_STATUS);
         }
 
-        qnaAnswerPinRepository.findByQnaAnswerId(request.getQnaAnswerId())
+        qnaAnswerPinRepository.findByQnaAnswerId(qnaAnswer.getId())
             .ifPresent(ap -> {
                 throw new BudException(CHANGE_IMPOSSIBLE_PINNED_ANSWER);
             });
@@ -221,4 +272,5 @@ public class QnaAnswerService {
 
         return true;
     }
+
 }

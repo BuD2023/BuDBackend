@@ -1,5 +1,7 @@
 package zerobase.bud.post.controller;
 
+import static zerobase.bud.post.util.Constants.*;
+
 import com.querydsl.core.types.Order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,11 +31,6 @@ public class PostController {
     private final ScrapService scrapService;
 
     private final CommentService commentService;
-
-    private static final String IMAGES = "images";
-    private static final String CREATE_POST_REQUEST = "createPostRequest";
-    private static final String UPDATE_POST_REQUEST = "updatePostRequest";
-
 
     @PostMapping
     public ResponseEntity<String> createPost(
