@@ -36,6 +36,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -47,7 +48,10 @@ import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.notification.domain.NotificationInfo;
-import zerobase.bud.notification.service.SendNotificationService;
+import zerobase.bud.notification.event.AddLikeQnaAnswerEvent;
+import zerobase.bud.notification.event.CreatePostEvent;
+import zerobase.bud.notification.event.CreateQnaAnswerEvent;
+import zerobase.bud.notification.event.QnaAnswerPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.domain.QnaAnswerImage;
@@ -83,9 +87,6 @@ class QnaAnswerServiceTest {
     private QnaAnswerPinRepository qnaAnswerPinRepository;
 
     @Mock
-    private SendNotificationService sendNotificationService;
-
-    @Mock
     private QnaAnswerRepositoryQuerydslImpl qnaAnswerRepositoryQuerydsl;
 
     @Mock
@@ -96,6 +97,9 @@ class QnaAnswerServiceTest {
 
     @Mock
     private AwsS3Api awsS3Api;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private QnaAnswerService qnaAnswerService;
@@ -137,6 +141,7 @@ class QnaAnswerServiceTest {
         //then
         verify(qnaAnswerRepository, times(1)).save(captor.capture());
         verify(qnaAnswerImageRepository, times(1)).save(imageCaptor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(CreateQnaAnswerEvent.class));
         assertEquals("postContent", captor.getValue().getPost().getContent());
         assertEquals(1, captor.getValue().getPost().getCommentCount());
         assertEquals("content", captor.getValue().getContent());
@@ -174,6 +179,7 @@ class QnaAnswerServiceTest {
                     .build()
                 , getSender()));
         //then 이런 결과가 나온다.
+        verify(eventPublisher, times(0)).publishEvent(any(CreatePostEvent.class));
         assertEquals(NOT_FOUND_POST, budException.getErrorCode());
     }
 
@@ -450,6 +456,7 @@ class QnaAnswerServiceTest {
 
         //then
         verify(qnaAnswerPinRepository, times(1)).save(captor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(QnaAnswerPinEvent.class));
         assertEquals(QNA, captor.getValue().getPost().getPostType());
         assertEquals("content", captor.getValue().getQnaAnswer().getContent());
         assertEquals(1L, answer);
@@ -738,6 +745,7 @@ class QnaAnswerServiceTest {
 
         //then
         verify(qnaAnswerRepository, times(1)).save(qnaAnswerCaptor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(AddLikeQnaAnswerEvent.class));
         assertEquals(1L, qnaAnswer.getId());
         assertEquals(3, qnaAnswerCaptor.getValue().getLikeCount());
         assertTrue(setLike);

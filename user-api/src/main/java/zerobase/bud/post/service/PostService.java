@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;
@@ -31,6 +31,8 @@ import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.SearchMyPagePost;
 import zerobase.bud.post.dto.SearchPost;
 import zerobase.bud.post.dto.UpdatePost;
+import zerobase.bud.notification.event.AddLikePostEvent;
+import zerobase.bud.notification.event.CreatePostEvent;
 import zerobase.bud.post.repository.ImageRepository;
 import zerobase.bud.post.repository.PostLikeRepository;
 import zerobase.bud.post.repository.PostRepository;
@@ -54,7 +56,7 @@ public class PostService {
 
     private final AwsS3Api awsS3Api;
 
-    private final SendNotificationService sendNotificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public String createPost(
@@ -67,7 +69,7 @@ public class PostService {
 
         saveImages(images, post);
 
-        sendNotificationService.sendCreatePostNotification(member, post);
+        eventPublisher.publishEvent(new CreatePostEvent(member, post));
 
         return request.getTitle();
     }
@@ -196,7 +198,7 @@ public class PostService {
 
         post.likeCountUp();
 
-        sendNotificationService.sendAddLikeNotification(member, post);
+        eventPublisher.publishEvent(new AddLikePostEvent(member, post));
 
         return true;
     }
