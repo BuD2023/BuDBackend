@@ -135,6 +135,7 @@ class UserControllerTest {
                         .isReader(false)
                         .nickName("닉넴")
                         .level(1L)
+                        .job("시스템프로그래머")
                         .profileUrl("ahd.jpg")
                         .numberOfFollows(3L)
                         .numberOfFollowers(4L)
@@ -157,6 +158,8 @@ class UserControllerTest {
                                                 .description("깃허브 유저 아이디"),
                                         fieldWithPath("id").type(JsonFieldType.NUMBER)
                                                 .description("회원 고유값"),
+                                        fieldWithPath("job").type(JsonFieldType.STRING)
+                                                .description("직무"),
                                         fieldWithPath("description").type(JsonFieldType.STRING)
                                                 .description("한줄 소개"),
                                         fieldWithPath("numberOfFollows").type(JsonFieldType.NUMBER)
@@ -191,6 +194,7 @@ class UserControllerTest {
                         .id(1L)
                         .nickName("닉넴")
                         .level(1L)
+                        .job("시스템프로그래머")
                         .profileUrl("ahd.jpg")
                         .numberOfFollows(3L)
                         .numberOfFollowers(4L)
@@ -213,6 +217,8 @@ class UserControllerTest {
                                                 .description("깃허브 유저 아이디"),
                                         fieldWithPath("id").type(JsonFieldType.NUMBER)
                                                 .description("회원 고유값"),
+                                        fieldWithPath("job").type(JsonFieldType.STRING)
+                                                .description("직무"),
                                         fieldWithPath("description").type(JsonFieldType.STRING)
                                                 .description("한줄 소개"),
                                         fieldWithPath("numberOfFollows").type(JsonFieldType.NUMBER)

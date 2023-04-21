@@ -81,7 +81,7 @@ public class WebSocketHandler implements ChannelInterceptor {
                     notifyChatroomStatus(chatRoom.getId(), ChatType.EXPIRE);
                 }
 
-            } catch (ChatRoomException | NullPointerException e) {
+            } catch (ChatRoomException | NullPointerException | NumberFormatException e) {
                 log.error("{}", e.getMessage());
             } finally {
                 hashOperations.delete(SESSION, sessionId);
