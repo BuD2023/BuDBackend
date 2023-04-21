@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.notification.dto.NotificationInfoDto;
 import zerobase.bud.notification.service.NotificationInfoService;
@@ -32,7 +31,6 @@ import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
-import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.controller.UserController;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
@@ -137,7 +135,6 @@ class UserControllerTest {
                         .isReader(false)
                         .nickName("닉넴")
                         .level(1L)
-                        .job("시스템프로그래머")
                         .profileUrl("ahd.jpg")
                         .numberOfFollows(3L)
                         .numberOfFollowers(4L)
@@ -160,8 +157,6 @@ class UserControllerTest {
                                                 .description("깃허브 유저 아이디"),
                                         fieldWithPath("id").type(JsonFieldType.NUMBER)
                                                 .description("회원 고유값"),
-                                        fieldWithPath("job").type(JsonFieldType.STRING)
-                                                .description("직무"),
                                         fieldWithPath("description").type(JsonFieldType.STRING)
                                                 .description("한줄 소개"),
                                         fieldWithPath("numberOfFollows").type(JsonFieldType.NUMBER)
@@ -196,7 +191,6 @@ class UserControllerTest {
                         .id(1L)
                         .nickName("닉넴")
                         .level(1L)
-                        .job("시스템프로그래머")
                         .profileUrl("ahd.jpg")
                         .numberOfFollows(3L)
                         .numberOfFollowers(4L)
@@ -219,8 +213,6 @@ class UserControllerTest {
                                                 .description("깃허브 유저 아이디"),
                                         fieldWithPath("id").type(JsonFieldType.NUMBER)
                                                 .description("회원 고유값"),
-                                        fieldWithPath("job").type(JsonFieldType.STRING)
-                                                .description("직무"),
                                         fieldWithPath("description").type(JsonFieldType.STRING)
                                                 .description("한줄 소개"),
                                         fieldWithPath("numberOfFollows").type(JsonFieldType.NUMBER)
@@ -276,8 +268,8 @@ class UserControllerTest {
         //when
         //then
         this.mockMvc.perform(get("/users/follows")
-                .header(HttpHeaders.AUTHORIZATION, token)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
 
                 .andDo(
@@ -510,11 +502,6 @@ class UserControllerTest {
                     .scrapId(1L)
                     .postId(1L)
                     .title("제목")
-                    .postRegisterMember(Member
-                            .builder()
-                            .id(1L)
-                            .status(MemberStatus.VERIFIED)
-                            .build())
                     .content("내용")
                     .commentCount(i)
                     .imageUrls(getImageUrlList(3))
@@ -562,8 +549,6 @@ class UserControllerTest {
                                                 .description("스크랩 고유 id"),
                                         fieldWithPath("content[].postId").type(JsonFieldType.NUMBER)
                                                 .description("스크랩한 게시글 고유 id"),
-                                        fieldWithPath("content[].postRegisterMember").type(JsonFieldType.OBJECT)
-                                                .description("스크랩한 게시글 작성자"),
                                         fieldWithPath("content[].title").type(
                                                         JsonFieldType.STRING)
                                                 .description("스크랩한 게시글 제목"),
@@ -661,11 +646,8 @@ class UserControllerTest {
             list.add(SearchMyPagePost.Response.builder()
                     .postId(i)
                     .title("제목")
-                    .postRegisterMember(Member
-                            .builder()
-                            .id(1L)
-                            .status(MemberStatus.VERIFIED)
-                            .build())
+                    .postRegisterMemberId(1)
+                    .postRegisterMemberId(i)
                     .imageUrls(getImageUrlArray(3))
                     .content("내용")
                     .commentCount(i)
@@ -693,11 +675,12 @@ class UserControllerTest {
                         .param("sort", "DATE,DESC")
                         .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        )
+                )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("content[0].title").value("제목"))
                 .andExpect(jsonPath("content[0].content").value("내용"))
+                .andExpect(jsonPath("content[0].postRegisterMemberId").value(1))
                 .andExpect(jsonPath("content[0].imageUrls[0]").value("img0"))
                 .andExpect(jsonPath("content[0].imageUrls[1]").value("img1"))
                 .andExpect(jsonPath("content[0].imageUrls[2]").value("img2"))
@@ -715,8 +698,8 @@ class UserControllerTest {
                                                 .description("게시글 고유 번호"),
                                         fieldWithPath("content[].title").type(JsonFieldType.STRING)
                                                 .description("게시글 제목"),
-                                        fieldWithPath("content[].postRegisterMember").type(JsonFieldType.OBJECT)
-                                                .description("게시글 작성자"),
+                                        fieldWithPath("content[].postRegisterMemberId").type(JsonFieldType.NUMBER)
+                                                .description("게시글 작성자 고유 번호"),
                                         fieldWithPath("content[].imageUrls").type(JsonFieldType.ARRAY)
                                                 .description("게시글 이미지 링크들"),
                                         fieldWithPath("content[].content").type(JsonFieldType.STRING)
@@ -786,28 +769,28 @@ class UserControllerTest {
     void success_changeNotificationAvailable() throws Exception {
         //given
         given(notificationInfoService.changeNotificationAvailable(any(), any()))
-            .willReturn("nickName");
+                .willReturn("nickName");
 
         //when
         //then
         mockMvc.perform(put("/users/1/notification-info")
-                .header(HttpHeaders.AUTHORIZATION, token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(
-                    NotificationInfoDto.builder()
-                        .isPostPushAvailable(true)
-                        .isFollowPushAvailable(false)
-                        .build()
-                ))
-                .with(csrf()))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$").value("nickName"))
-            .andDo(
-                document("{class-name}/{method-name}",
-                    preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
-                    preprocessResponse(prettyPrint())
-                )
-            );
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                NotificationInfoDto.builder()
+                                        .isPostPushAvailable(true)
+                                        .isFollowPushAvailable(false)
+                                        .build()
+                        ))
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value("nickName"))
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint())
+                        )
+                );
     }
 }
