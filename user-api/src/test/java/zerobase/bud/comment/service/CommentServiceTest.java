@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import zerobase.bud.comment.domain.Comment;
@@ -18,10 +19,10 @@ import zerobase.bud.comment.repository.CommentRepository;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.repository.PostRepository;
+import zerobase.bud.post.type.PostType;
 import zerobase.bud.type.MemberStatus;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static zerobase.bud.post.type.PostStatus.ACTIVE;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -48,10 +50,10 @@ class CommentServiceTest {
     private CommentPinRepository commentPinRepository;
 
     @Mock
-    private SendNotificationService sendNotificationService;
+    private PostRepository postRepository;
 
     @Mock
-    private PostRepository postRepository;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private CommentService commentService;
@@ -80,8 +82,17 @@ class CommentServiceTest {
                 .oAuthAccessToken("tokenvalue")
                 .build();
 
+        Post post = Post.builder()
+            .member(writer)
+            .title("title")
+            .content("content")
+            .postStatus(ACTIVE)
+            .postType(PostType.FEED)
+            .build();
+
         Comment comment = Comment.builder()
                 .member(writer)
+                .post(post)
                 .commentCount(1)
                 .likeCount(0)
                 .id(3L)

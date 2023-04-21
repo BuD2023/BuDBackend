@@ -1,6 +1,7 @@
 package zerobase.bud.comment.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -38,6 +39,8 @@ public class QnaAnswerCommentService {
     private final QnaAnswerCommentPinRepository qnaAnswerCommentPinRepository;
 
     private final QnaAnswerRepository qnaAnswerRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Long commentLike(Long commentId, Member member) {

@@ -7,11 +7,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.MemberStatus;
@@ -47,7 +47,7 @@ class UserServiceTest {
     private PostRepository postRepository;
 
     @Mock
-    private SendNotificationService sendNotificationService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private UserService userService;

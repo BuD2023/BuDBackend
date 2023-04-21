@@ -36,6 +36,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -47,7 +48,6 @@ import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.notification.domain.NotificationInfo;
-import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.domain.QnaAnswerImage;
@@ -83,9 +83,6 @@ class QnaAnswerServiceTest {
     private QnaAnswerPinRepository qnaAnswerPinRepository;
 
     @Mock
-    private SendNotificationService sendNotificationService;
-
-    @Mock
     private QnaAnswerRepositoryQuerydslImpl qnaAnswerRepositoryQuerydsl;
 
     @Mock
@@ -96,6 +93,9 @@ class QnaAnswerServiceTest {
 
     @Mock
     private AwsS3Api awsS3Api;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private QnaAnswerService qnaAnswerService;

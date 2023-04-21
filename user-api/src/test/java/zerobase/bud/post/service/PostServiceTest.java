@@ -1,7 +1,10 @@
 package zerobase.bud.post.service;
 
 import static com.querydsl.core.types.Order.ASC;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -38,15 +42,22 @@ import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.service.SendNotificationService;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.domain.QnaAnswerPin;
 import zerobase.bud.post.domain.Scrap;
-import zerobase.bud.post.dto.*;
-import zerobase.bud.post.repository.*;
+import zerobase.bud.post.dto.CreatePost;
+import zerobase.bud.post.dto.PostDto;
+import zerobase.bud.post.dto.SearchMyPagePost;
+import zerobase.bud.post.dto.SearchPost;
+import zerobase.bud.post.dto.UpdatePost;
+import zerobase.bud.post.repository.ImageRepository;
+import zerobase.bud.post.repository.PostLikeRepository;
+import zerobase.bud.post.repository.PostRepository;
+import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
+import zerobase.bud.post.repository.ScrapRepository;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.type.MemberStatus;
@@ -73,7 +84,7 @@ class PostServiceTest {
     private AwsS3Api awsS3Api;
 
     @Mock
-    private SendNotificationService sendNotificationService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private PostService postService;

@@ -1,12 +1,13 @@
 package zerobase.bud.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.service.SendNotificationService;
+import zerobase.bud.notification.event.FollowEvent;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.user.domain.Follow;
@@ -27,7 +28,7 @@ public class UserService {
 
     private final PostRepository postRepository;
 
-    private final SendNotificationService sendNotificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Long follow(Long memberId, Member member) {
@@ -45,9 +46,9 @@ public class UserService {
                                 .member(member)
                                 .build())
                 );
-        
-        sendNotificationService.sendFollowedNotification(member, targetMember);
-        
+
+        eventPublisher.publishEvent(new FollowEvent(member, targetMember));
+
         return targetMember.getId();
     }
 
