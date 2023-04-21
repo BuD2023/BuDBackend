@@ -1,5 +1,10 @@
 package zerobase.bud.comment.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -17,16 +22,13 @@ import zerobase.bud.comment.type.QnaAnswerCommentStatus;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.event.AddLikeQnaAnswerCommentEvent;
+import zerobase.bud.notification.event.QnaAnswerCommentPinEvent;
+import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.dto.QnaAnswerCommentDto;
 import zerobase.bud.post.repository.QnaAnswerRepository;
 import zerobase.bud.post.type.QnaAnswerStatus;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +61,11 @@ public class QnaAnswerCommentService {
                     .qnaAnswerComment(qnaAnswerComment)
                     .member(member)
                     .build());
+
+            Post post = qnaAnswerComment.getQnaAnswer().getPost();
+            eventPublisher.publishEvent(new AddLikeQnaAnswerCommentEvent(
+                member, qnaAnswerComment, post.getPostType(), post.getId()
+            ));
         }
         qnaAnswerCommentRepository.save(qnaAnswerComment);
         return commentId;
@@ -84,6 +91,8 @@ public class QnaAnswerCommentService {
                 .qnaAnswerComment(qnaAnswerComment)
                 .qnaAnswer(qnaAnswer)
                 .build());
+
+        eventPublisher.publishEvent(new QnaAnswerCommentPinEvent(member, qnaAnswerComment));
 
         return commentId;
     }

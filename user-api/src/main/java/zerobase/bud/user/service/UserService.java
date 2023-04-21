@@ -41,15 +41,19 @@ public class UserService {
 
         followRepository.findByTargetAndAndMember(targetMember, member)
                 .ifPresentOrElse(followRepository::delete,
-                        () -> followRepository.save(Follow.builder()
-                                .target(targetMember)
-                                .member(member)
-                                .build())
+                        () -> saveFollowAndPublishEvent(member, targetMember)
                 );
 
-        eventPublisher.publishEvent(new FollowEvent(member, targetMember));
-
         return targetMember.getId();
+    }
+
+    private void saveFollowAndPublishEvent(Member member, Member targetMember) {
+        followRepository.save(Follow.builder()
+            .target(targetMember)
+            .member(member)
+            .build());
+
+        eventPublisher.publishEvent(new FollowEvent(member, targetMember));
     }
 
     public UserDto readProfile(Long userId, Member member) {

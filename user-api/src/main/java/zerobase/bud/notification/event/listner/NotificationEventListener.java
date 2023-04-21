@@ -12,6 +12,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import zerobase.bud.comment.domain.Comment;
+import zerobase.bud.comment.domain.QnaAnswerComment;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.fcm.FcmApi;
@@ -19,11 +20,13 @@ import zerobase.bud.notification.domain.NotificationInfo;
 import zerobase.bud.notification.dto.NotificationDto;
 import zerobase.bud.notification.event.AddLikeCommentEvent;
 import zerobase.bud.notification.event.AddLikePostEvent;
+import zerobase.bud.notification.event.AddLikeQnaAnswerCommentEvent;
 import zerobase.bud.notification.event.AddLikeQnaAnswerEvent;
 import zerobase.bud.notification.event.CommentPinEvent;
 import zerobase.bud.notification.event.CreatePostEvent;
 import zerobase.bud.notification.event.CreateQnaAnswerEvent;
 import zerobase.bud.notification.event.FollowEvent;
+import zerobase.bud.notification.event.QnaAnswerCommentPinEvent;
 import zerobase.bud.notification.event.QnaAnswerPinEvent;
 import zerobase.bud.notification.repository.NotificationInfoRepository;
 import zerobase.bud.notification.type.NotificationDetailType;
@@ -289,7 +292,69 @@ public class NotificationEventListener {
 
         } catch (Exception e) {
             log.error(
-                "Follow 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
+                "CommentPin 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
+        }
+    }
+
+    @EventListener
+    public void handleAddLikeQnaAnswerCommentEvent(
+        AddLikeQnaAnswerCommentEvent addLikeQnaAnswerCommentEvent){
+        try {
+            Member sender = addLikeQnaAnswerCommentEvent.getMember();
+            QnaAnswerComment qnaAnswerComment = addLikeQnaAnswerCommentEvent.getQnaAnswerComment();
+            Member receiver = qnaAnswerComment.getMember();
+
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
+                fcmApi.sendNotification(
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.POST
+                        , PageType.valueOf(addLikeQnaAnswerCommentEvent.getPostType().name())
+                        , addLikeQnaAnswerCommentEvent.getPostId()
+                        , NotificationDetailType.LIKE
+                    )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error("AddLikeQnaAnswerComment 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
+        }
+    }
+
+    @EventListener
+    public void handleQnaAnswerCommentPinEvent(
+        QnaAnswerCommentPinEvent qnaAnswerCommentPinEvent){
+        try {
+            Member sender = qnaAnswerCommentPinEvent.getMember();
+            QnaAnswerComment qnaAnswerComment = qnaAnswerCommentPinEvent.getQnaAnswerComment();
+            Member receiver = qnaAnswerComment.getMember();
+
+            NotificationInfo notificationInfo = getNotificationInfo(receiver.getId());
+
+            if (!Objects.equals(receiver.getId(), sender.getId())
+                && notificationInfo.isPostPushAvailable()) {
+                Post post = qnaAnswerComment.getQnaAnswer().getPost();
+                fcmApi.sendNotification(
+                    NotificationDto.of(
+                        notificationInfo.getFcmToken()
+                        , receiver
+                        , sender
+                        , NotificationType.POST
+                        , PageType.valueOf(post.getPostType().name())
+                        , post.getId()
+                        , NotificationDetailType.PIN
+                    )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error(
+                "QnaAnswerCommentPin 알림을 보내는 중 오류가 발생했습니다. {}", e.getMessage(), e);
         }
     }
 
