@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.ChatRoomStatusDto;
@@ -143,6 +144,7 @@ public class ChatRoomService {
         return userId;
     }
 
+    @Transactional(readOnly = true)
     public List<ChatUserDto> readChatUsers(Long chatroomId, Member member) {
         chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
