@@ -67,11 +67,11 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
     }
 
     @Override
-    public Optional<PostDto> findByPostId(
+    public PostDto findByPostId(
             Long memberId,
             Long postId
     ) {
-        return Optional.ofNullable(jpaQueryFactory
+        return jpaQueryFactory
                 .select(new QPostDto(
                         post.id,
                         post.member,
@@ -91,8 +91,9 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
                 ))
                 .from(post)
                 .where(post.id.eq(postId), eqStatus())
-                .fetchOne());
+                .fetchOne();
     }
+
 
     private List<PostDto> searchPosts(
             Long memberId,
