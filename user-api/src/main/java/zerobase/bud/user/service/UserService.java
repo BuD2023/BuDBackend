@@ -44,8 +44,6 @@ public class UserService {
                         () -> saveFollowAndPublishEvent(member, targetMember)
                 );
 
-        sendNotificationService.sendFollowedNotification(member, targetMember);
-
         return targetMember.getId();
     }
 
