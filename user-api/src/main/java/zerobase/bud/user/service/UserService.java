@@ -39,10 +39,12 @@ public class UserService {
             throw new MemberException(ErrorCode.CANNOT_FOLLOW_YOURSELF);
         }
 
-        followRepository.findByTargetAndAndMember(targetMember, member)
+        followRepository.findByTargetAndMember(targetMember, member)
                 .ifPresentOrElse(followRepository::delete,
                         () -> saveFollowAndPublishEvent(member, targetMember)
                 );
+
+        sendNotificationService.sendFollowedNotification(member, targetMember);
 
         return targetMember.getId();
     }
@@ -79,14 +81,14 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowings(Member member) {
-        return followRepository.findByMember(member)
+        return followRepository.findByMember(member).stream()
                 .map(follow -> FollowDto.of(follow.getTarget()))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowers(Member member) {
-        return followRepository.findByTarget(member)
+        return followRepository.findByTarget(member).stream()
                 .map(follow -> FollowDto.of(follow.getMember()))
                 .collect(Collectors.toList());
     }
@@ -96,7 +98,7 @@ public class UserService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        return followRepository.findByMember(member)
+        return followRepository.findByMember(member).stream()
                 .map(follow -> toFollowDto(reader, follow.getTarget()))
                 .collect(Collectors.toList());
     }
@@ -106,7 +108,7 @@ public class UserService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        return followRepository.findByTarget(member)
+        return followRepository.findByTarget(member).stream()
                 .map(follow -> toFollowDto(reader, follow.getMember()))
                 .collect(Collectors.toList());
     }
