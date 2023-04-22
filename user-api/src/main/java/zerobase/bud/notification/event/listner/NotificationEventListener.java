@@ -112,7 +112,7 @@ public class NotificationEventListener {
                         , NotificationType.POST
                         , PageType.valueOf(post.getPostType().name())
                         , post.getId()
-                        , NotificationDetailType.LIKE
+                        , NotificationDetailType.ADD_LIKE_POST
                     )
                 );
             }
@@ -169,7 +169,7 @@ public class NotificationEventListener {
                         , NotificationType.POST
                         , PageType.QNA
                         , qnaAnswer.getPost().getId()
-                        , NotificationDetailType.PIN
+                        , NotificationDetailType.ANSWER_PIN
                     )
                 );
             }
@@ -199,7 +199,7 @@ public class NotificationEventListener {
                         , NotificationType.POST
                         , PageType.QNA
                         , qnaAnswer.getPost().getId()
-                        , NotificationDetailType.LIKE
+                        , NotificationDetailType.ADD_LIKE_ANSWER
                     )
                 );
             }
@@ -256,7 +256,7 @@ public class NotificationEventListener {
                         , NotificationType.POST
                         , PageType.valueOf(addLikeCommentEvent.getPostType().name())
                         , addLikeCommentEvent.getPostId()
-                        , NotificationDetailType.LIKE
+                        , NotificationDetailType.ADD_LIKE_COMMENT
                     )
                 );
             }
@@ -285,7 +285,7 @@ public class NotificationEventListener {
                         , NotificationType.POST
                         , PageType.valueOf(comment.getPost().getPostType().name())
                         , comment.getPost().getId()
-                        , NotificationDetailType.PIN
+                        , NotificationDetailType.COMMENT_PIN
                     )
                 );
             }
@@ -316,7 +316,7 @@ public class NotificationEventListener {
                         , NotificationType.POST
                         , PageType.valueOf(addLikeQnaAnswerCommentEvent.getPostType().name())
                         , addLikeQnaAnswerCommentEvent.getPostId()
-                        , NotificationDetailType.LIKE
+                        , NotificationDetailType.ADD_LIKE_ANSWER_COMMENT
                     )
                 );
             }
@@ -347,7 +347,7 @@ public class NotificationEventListener {
                         , NotificationType.POST
                         , PageType.valueOf(post.getPostType().name())
                         , post.getId()
-                        , NotificationDetailType.PIN
+                        , NotificationDetailType.ANSWER_COMMENT_PIN
                     )
                 );
             }
