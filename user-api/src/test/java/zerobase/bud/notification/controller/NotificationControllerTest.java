@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,31 @@ class NotificationControllerTest {
                 "ANSWER"))
             .andExpect(
                 jsonPath("$.content.[0].notificationStatus").value("UNREAD"))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()))
+            );
+
+    }
+
+    @Test
+    @WithMockUser
+    void success_getUnreadNotificationCount() throws Exception {
+        //given
+        given(notificationService.getUnreadNotificationCount(any()))
+            .willReturn(Map.of("unreadCount", 3L));
+
+        //when 어떤 경우에
+        //then 이런 결과가 나온다.
+        mockMvc.perform(get("/notifications/unread-count")
+                .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(
+                jsonPath("unreadCount").value(3))
             .andDo(
                 document("{class-name}/{method-name}",
                     preprocessRequest(prettyPrint()),
