@@ -23,6 +23,10 @@ public class SearchScrap {
 
         private Long postId;
 
+        private Long postRegisterMemberId;
+        private String postRegisterMemberNickname;
+        private String postRegisterMemberProfileImg;
+
         private String title;
 
         private String content;
@@ -40,7 +44,6 @@ public class SearchScrap {
         private PostStatus postStatus;
 
         private PostType postType;
-
 
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
@@ -60,6 +63,10 @@ public class SearchScrap {
             return Response.builder()
                     .scrapId(scrapDto.getScrapId())
                     .postId(post.getId())
+                    .postRegisterMemberId(post.getMember().getId())
+                    .postRegisterMemberNickname(post.getMember().getNickname())
+                    .postRegisterMemberProfileImg(post.getMember()
+                            .getProfileImg())
                     .title(post.getTitle())
                     .content(post.getContent())
                     .imageUrls(imagePaths)
@@ -67,6 +74,8 @@ public class SearchScrap {
                     .likeCount(post.getLikeCount())
                     .scrapCount(post.getScrapCount())
                     .hitCount(post.getHitCount())
+                    .postStatus(post.getPostStatus())
+                    .postType(post.getPostType())
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
                     .isLike(scrapDto.isPostLike())
