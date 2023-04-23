@@ -38,6 +38,10 @@ public class Member extends BaseEntity implements UserDetails {
     @OneToOne
     private Level level;
 
+    @Column(unique = true)
+    private String userCode;
+
+    @Column(unique = true)
     private String nickname;
 
     private String profileImg;
