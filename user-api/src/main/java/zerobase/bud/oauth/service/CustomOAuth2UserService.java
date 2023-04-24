@@ -68,7 +68,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         }
         else if(optionalGithubInfo.isEmpty()) {
             member = optionalMember.get();
-            member.update(attributes.getNickname());
+            member.update(attributes.getNickname(), attributes.getUserCode());
             githubInfo = GithubInfo.builder()
                     .userId(attributes.getUserId())
                     .username(attributes.getNickname())
@@ -77,7 +77,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         }
         else {
             member = optionalMember.get();
-            member.update(attributes.getNickname());
+            member.update(attributes.getNickname(), attributes.getUserCode());
             githubInfo = optionalGithubInfo.get();
 
             githubInfo.setUsername(attributes.getNickname());
