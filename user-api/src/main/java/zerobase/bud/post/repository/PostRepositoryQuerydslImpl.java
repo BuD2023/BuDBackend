@@ -1,12 +1,10 @@
 package zerobase.bud.post.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +19,6 @@ import zerobase.bud.post.type.PostType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static zerobase.bud.post.domain.QPost.post;
 import static zerobase.bud.post.domain.QPostLike.postLike;
@@ -48,7 +45,7 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
         return new PageImpl<>(
                 searchPosts(memberId, keyword, sortType, order, pageable, postType),
                 pageable,
-                searchPostsCount(keyword, postType)
+                countSearchPosts(keyword, postType)
         );
     }
 
@@ -71,26 +68,9 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
             Long memberId,
             Long postId
     ) {
-        return jpaQueryFactory
-                .select(new QPostDto(
-                        post.id,
-                        post.member,
-                        post.title,
-                        post.content,
-                        post.commentCount,
-                        post.likeCount,
-                        post.scrapCount,
-                        post.hitCount,
-                        post.postStatus,
-                        post.postType,
-                        post.createdAt,
-                        post.updatedAt,
-                        isUserPostLike(memberId),
-                        isUserPostScrap(memberId),
-                        isUserPostRegisterUserFollow(memberId)
-                ))
-                .from(post)
+        return searchPost(memberId)
                 .where(post.id.eq(postId), eqStatus())
+                .groupBy(post.id)
                 .fetchOne();
     }
 
@@ -103,38 +83,13 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
             Pageable pageable,
             PostType postType
     ) {
-        return jpaQueryFactory
-                .select(new QPostDto(
-                        post.id,
-                        post.member,
-                        post.title,
-                        post.content,
-                        post.commentCount,
-                        post.likeCount,
-                        post.scrapCount,
-                        post.hitCount,
-                        post.postStatus,
-                        post.postType,
-                        post.createdAt,
-                        post.updatedAt,
-                        isUserPostLike(memberId),
-                        isUserPostScrap(memberId),
-                        isUserPostRegisterUserFollow(memberId)
-                ))
-                .from(post)
+        return searchPost(memberId)
                 .where(search(keyword), neStatus(), eqPostType(postType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(sortPostsList(sortType, order))
+                .groupBy(post.id)
                 .fetch();
-    }
-
-    private Long searchPostsCount(String keyword, PostType postType) {
-        return jpaQueryFactory
-                .select(post.count())
-                .from(post)
-                .where(search(keyword), neStatus(), eqPostType(postType))
-                .fetchOne();
     }
 
     private List<PostDto> searchMyPagePosts(
@@ -145,6 +100,32 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
     ) {
         List<OrderSpecifier<?>> orders = getOrders(pageable);
 
+        return searchPost(memberId)
+                .where(neStatus(), eqPostRegisterMemberId(myPageUserId), eqPostType(postType))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(orders.toArray(OrderSpecifier[]::new))
+                .groupBy(post.id)
+                .fetch();
+    }
+
+    private Long countSearchPosts(String keyword, PostType postType) {
+        return jpaQueryFactory
+                .select(post.count())
+                .from(post)
+                .where(search(keyword), neStatus(), eqPostType(postType))
+                .fetchOne();
+    }
+
+    private Long countMyPagePosts(Long memberId, PostType postType) {
+        return jpaQueryFactory
+                .select(post.count())
+                .from(post)
+                .where(neStatus(), eqPostRegisterMemberId(memberId), eqPostType(postType))
+                .fetchOne();
+    }
+
+    private JPAQuery<PostDto> searchPost(Long memberId) {
         return jpaQueryFactory
                 .select(new QPostDto(
                         post.id,
@@ -159,66 +140,18 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
                         post.postType,
                         post.createdAt,
                         post.updatedAt,
-                        isUserPostLike(memberId),
-                        isUserPostScrap(memberId),
-                        isUserPostRegisterUserFollow(memberId)
+                        postLike.member.id.eq(memberId).as("isLike"),
+                        scrap.member.id.eq(memberId).as("isScrap"),
+                        follow.member.id.eq(memberId).as("isFollow")
                 ))
                 .from(post)
-                .where(neStatus(), eqPostRegisterMemberId(myPageUserId), eqPostType(postType))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(orders.toArray(OrderSpecifier[]::new))
-                .fetch();
+                .leftJoin(postLike)
+                .on(post.id.eq(postLike.post.id), postLike.member.id.eq(memberId))
+                .leftJoin(scrap)
+                .on(post.id.eq(scrap.post.id), scrap.member.id.eq(memberId))
+                .leftJoin(follow)
+                .on(post.member.id.eq(follow.target.id), follow.member.id.eq(memberId));
     }
-
-    private Long countMyPagePosts(Long memberId, PostType postType) {
-        return jpaQueryFactory
-                .select(post.count())
-                .from(post)
-                .where(neStatus(), eqPostRegisterMemberId(memberId), eqPostType(postType))
-                .fetchOne();
-    }
-
-    private Expression<Boolean> isUserPostLike(Long memberId) {
-        return ExpressionUtils.as(
-                JPAExpressions.select(postLike.count()
-                                .when(0L)
-                                .then(false)
-                                .otherwise(true)
-                        )
-                        .from(postLike)
-                        .where(postLike.post.id.eq(post.id),
-                                postLike.member.id.eq(memberId)), "isLike");
-
-    }
-
-    private Expression<Boolean> isUserPostScrap(Long memberId) {
-        return ExpressionUtils.as(
-                JPAExpressions.select(scrap.count()
-                                .when(0L)
-                                .then(false)
-                                .otherwise(true)
-                        )
-                        .from(scrap)
-                        .where(scrap.post.id.eq(post.id),
-                                scrap.member.id.eq(memberId)), "isScrap");
-
-    }
-
-    private Expression<Boolean> isUserPostRegisterUserFollow(Long memberId) {
-        return ExpressionUtils.as(
-                JPAExpressions.select(follow.count()
-                                .when(0L)
-                                .then(false)
-                                .otherwise(true)
-                        )
-                        .from(follow)
-                        .where(follow.target.id.eq(post.member.id),
-                                follow.member.id.eq(memberId)), "isFollow");
-
-    }
-
-
 
     private BooleanBuilder search(String keyword) {
         return keyword == null ? null :

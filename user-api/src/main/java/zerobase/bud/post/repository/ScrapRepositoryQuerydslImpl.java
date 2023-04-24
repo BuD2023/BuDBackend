@@ -1,12 +1,8 @@
 package zerobase.bud.post.repository;
 
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.NumberPath;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -55,17 +51,23 @@ public class ScrapRepositoryQuerydslImpl implements ScrapRepositoryQuerydsl {
                         new QScrapDto(
                                 scrap.id,
                                 scrap.post,
-                                isUserScrapPostLike(memberId, scrap.post.id),
-                                isUserPostRegisterUserFollow(memberId,
-                                        scrap.post.member.id),
+                                postLike.member.id.eq(memberId).as("isLike"),
+                                follow.member.id.eq(memberId).as("isFollow"),
                                 scrap.createdAt
                         )
                 )
                 .from(scrap)
+                .leftJoin(postLike)
+                .on(scrap.post.id.eq(postLike.post.id),
+                        postLike.member.id.eq(memberId))
+                .leftJoin(follow)
+                .on(scrap.post.member.id.eq(follow.target.id),
+                        follow.member.id.eq(memberId))
                 .where(eqUserId(memberId), neStatus())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(orders.toArray(OrderSpecifier[]::new))
+                .groupBy(scrap.id)
                 .fetch();
     }
 
@@ -85,35 +87,6 @@ public class ScrapRepositoryQuerydslImpl implements ScrapRepositoryQuerydsl {
 
     private BooleanExpression neStatus() {
         return scrap.post.postStatus.ne(PostStatus.INACTIVE);
-    }
-
-    private Expression<Boolean> isUserScrapPostLike(
-            Long memberId,
-            NumberPath<Long> postId
-    ) {
-        return ExpressionUtils.as(
-                JPAExpressions.select(postLike.count()
-                                .when(0L)
-                                .then(false)
-                                .otherwise(true))
-                        .from(postLike)
-                        .where(postLike.post.id.eq(postId),
-                                postLike.member.id.eq(memberId)), "isLike");
-    }
-
-    private Expression<Boolean> isUserPostRegisterUserFollow(
-            Long memberId,
-            NumberPath<Long> qnaAnswerMemberId
-    ) {
-        return ExpressionUtils.as(
-                JPAExpressions.select(follow.count()
-                                .when(0L)
-                                .then(false)
-                                .otherwise(true))
-                        .from(follow)
-                        .where(follow.target.id.eq(qnaAnswerMemberId),
-                                follow.member.id.eq(memberId)), "isFollow");
-
     }
 
     private List<OrderSpecifier<?>> getOrders(Pageable pageable) {
