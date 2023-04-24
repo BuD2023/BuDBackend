@@ -57,6 +57,11 @@ public class NotificationService {
         return notificationId;
     }
 
+    @Transactional
+    public Integer updateAllNotificationStatusRead(Member member) {
+        return notificationRepository.updateAllNotificationStatusReadByReceiverId(member.getId());
+    }
+
     public String deleteNotification(String notificationId, Member member) {
 
         Notification notification = notificationRepository.findByNotificationId(
@@ -70,5 +75,10 @@ public class NotificationService {
         notificationRepository.deleteById(notification.getId());
 
         return notificationId;
+    }
+
+    @Transactional
+    public Integer deleteAllReadNotifications(Member member) {
+        return notificationRepository.deleteAllReadNotificationsByReceiverId(member.getId());
     }
 }
