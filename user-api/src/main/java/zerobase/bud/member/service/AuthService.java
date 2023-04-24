@@ -46,8 +46,10 @@ public class AuthService {
             throw new BudException(ErrorCode.ALREADY_USING_NICKNAME);
         }
 
+        if(!ObjectUtils.isEmpty(file))
+            member.setProfileImg(awsS3Api.getImageUrl(awsS3Api.uploadImage(file, file.getName())));
+        
         member.setNickname(nickname);
-        member.setProfileImg(awsS3Api.getImageUrl(awsS3Api.uploadImage(file, file.getName())));
         member.setJob(job);
         member.setLevel(levelRepository.findById(1L).get());
         member.setAddInfoYn(true);
