@@ -35,13 +35,13 @@ public class MemberService implements UserDetailsService {
         if(memberRepository.findByNickname(nickname).isPresent()) {
             throw new BudException(ErrorCode.ALREADY_USING_NICKNAME);
         }
-        if(ObjectUtils.isEmpty(nickname))
+        if(!ObjectUtils.isEmpty(nickname))
             member.setNickname(nickname);
-        if(ObjectUtils.isEmpty(file))
+        if(!ObjectUtils.isEmpty(file))
             member.setProfileImg(awsS3Api.getImageUrl(awsS3Api.uploadImage(file, file.getName())));
-        if(ObjectUtils.isEmpty(introduceMessage))
+        if(!ObjectUtils.isEmpty(introduceMessage))
             member.setIntroduceMessage(introduceMessage);
-        if(ObjectUtils.isEmpty(job))
+        if(!ObjectUtils.isEmpty(job))
             member.setJob(job);
 
         memberRepository.save(member);
