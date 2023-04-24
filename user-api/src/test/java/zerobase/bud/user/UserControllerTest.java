@@ -648,7 +648,7 @@ class UserControllerTest {
                     .title("제목")
                     .postRegisterMemberId(1)
                     .postRegisterMemberId(i)
-                    .imageUrls(getImageUrlArray(3))
+                    .imageUrls(getImageUrlList(3))
                     .content("내용")
                     .commentCount(i)
                     .likeCount(i)
@@ -743,26 +743,6 @@ class UserControllerTest {
                 );
     }
 
-    private static String[] getImageUrlArray(int size) {
-        String[] images = new String[size];
-
-        for (int i = 0; i < size; i++) {
-            images[i] = "img" + i;
-        }
-
-        return images;
-    }
-
-    private static List<String> getImageUrlList(int size) {
-        List<String> images = new ArrayList<>();
-
-        for (int i = 0; i < size; i++) {
-            images.add("img" + i);
-        }
-
-        return images;
-    }
-
     @Test
     @WithMockUser
     @DisplayName("success_changeNotificationAvailable")
@@ -792,5 +772,15 @@ class UserControllerTest {
                                 preprocessResponse(prettyPrint())
                         )
                 );
+    }
+
+    private static List<String> getImageUrlList(int size) {
+        List<String> images = new ArrayList<>();
+
+        for (int i = 0; i < size; i++) {
+            images.add("img" + i);
+        }
+
+        return images;
     }
 }

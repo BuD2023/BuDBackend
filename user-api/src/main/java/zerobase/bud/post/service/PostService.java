@@ -33,10 +33,7 @@ import zerobase.bud.post.dto.SearchPost;
 import zerobase.bud.post.dto.UpdatePost;
 import zerobase.bud.notification.event.AddLikePostEvent;
 import zerobase.bud.notification.event.CreatePostEvent;
-import zerobase.bud.post.repository.ImageRepository;
-import zerobase.bud.post.repository.PostLikeRepository;
-import zerobase.bud.post.repository.PostRepository;
-import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
+import zerobase.bud.post.repository.*;
 import zerobase.bud.post.type.PostSortType;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
@@ -52,7 +49,9 @@ public class PostService {
 
     private final ImageRepository imageRepository;
 
-    private final PostRepositoryQuerydslImpl postRepositoryQuerydsl;
+    private final PostQuerydsl postQuerydsl;
+
+    private final PostImageQuerydsl postImageQuerydsl;
 
     private final AwsS3Api awsS3Api;
 
@@ -110,13 +109,14 @@ public class PostService {
                                                  int size,
                                                  PostType postType) {
 
-        Page<PostDto> posts = postRepositoryQuerydsl.findAllByPostStatus(member.getId(),
+        Page<PostDto> posts = postQuerydsl.findAllByPostStatus(member.getId(),
                 keyword, sort, order, PageRequest.of(page, size), postType);
 
         return new PageImpl<>(
                 posts.stream()
                         .map(post -> SearchPost.Response.of(post,
-                                imageRepository.findAllByPostId(post.getId())))
+                                postImageQuerydsl
+                                        .findImagePathAllByPostId(post.getId())))
                         .collect(Collectors.toList()),
                 posts.getPageable(),
                 posts.getTotalElements());
@@ -127,7 +127,7 @@ public class PostService {
                                                              PostType postType,
                                                              Pageable pageable) {
 
-        Page<PostDto> posts = postRepositoryQuerydsl.findAllByMyPagePost(
+        Page<PostDto> posts = postQuerydsl.findAllByMyPagePost(
                 member.getId(),
                 myPageUserId,
                 postType,
@@ -137,7 +137,7 @@ public class PostService {
         return new PageImpl<>(
                 posts.stream()
                         .map(post -> SearchMyPagePost.Response.of(post,
-                                imageRepository.findAllByPostId(post.getId())))
+                                postImageQuerydsl.findImagePathAllByPostId(post.getId())))
                         .collect(Collectors.toList()),
                 pageable,
                 posts.getTotalElements()
@@ -149,14 +149,14 @@ public class PostService {
                 .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
         PostDto postDto =
-                postRepositoryQuerydsl.findByPostId(member.getId(), postId);
+                postQuerydsl.findByPostId(member.getId(), postId);
 
         post.hitCountUp();
 
         postRepository.save(post);
 
         return SearchPost.Response.of(postDto,
-                imageRepository.findAllByPostId(postId));
+                postImageQuerydsl.findImagePathAllByPostId(postId));
     }
 
     public Long deletePost(Long postId) {

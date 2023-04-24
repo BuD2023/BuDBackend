@@ -25,12 +25,10 @@ import static zerobase.bud.user.domain.QFollow.follow;
 
 @Repository
 @RequiredArgsConstructor
-public class QnaAnswerRepositoryQuerydslImpl
-        implements QnaAnswerRepositoryQuerydsl {
+public class QnaAnswerQuerydsl {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    @Override
     public Page<QnaAnswerDto> findAllByPostIdAndQnaAnswerStatusNotLike(
             Long memberId, Long postId, Pageable pageable) {
 
