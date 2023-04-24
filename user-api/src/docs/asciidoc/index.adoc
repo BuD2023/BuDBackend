@@ -1058,6 +1058,16 @@ include::{snippets}/notification-controller-test/success_delete-notification/htt
 .response field
 include::{snippets}/notification-controller-test/success_delete-notification/response-body.adoc[]
 
+=== 4. 읽지 않은 알림의 수 반환
+.request
+include::{snippets}/notification-controller-test/success_get-unread-notification-count/http-request.adoc[]
+
+.response
+include::{snippets}/notification-controller-test/success_get-unread-notification-count/http-response.adoc[]
+
+.response field
+include::{snippets}/notification-controller-test/success_get-unread-notification-count/response-body.adoc[]
+
 
 == 파이어베이스토큰 API
 === 1. 파이어베이스토큰 저장
