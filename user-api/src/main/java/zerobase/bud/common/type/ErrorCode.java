@@ -22,6 +22,7 @@ public enum ErrorCode {
     CHANGE_IMPOSSIBLE_PINNED_ANSWER("고정된 답글은 수정하거나 삭제할 수 없습니다."),
     NOT_FOUND_QNA_ANSWER("존재하지 않는 답변입니다."),
     ALREADY_DELETE_QNA_ANSWER("이미 삭제한 답변입니다."),
+    ALREADY_USING_NICKNAME("이미 사용중인 닉네임입니다."),
     INVALID_POST_STATUS("게시글의 상태가 유효하지 않습니다."),
     INVALID_POST_TYPE_FOR_ANSWER("답변을 달기에 유효하지 않은 게시글 타입입니다."),
     NOT_FOUND_POST("존재하지 않는 게시물입니다."),
