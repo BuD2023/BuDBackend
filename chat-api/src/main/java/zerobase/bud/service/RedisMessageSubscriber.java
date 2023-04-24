@@ -19,12 +19,12 @@ import zerobase.bud.type.ErrorCode;
 @Slf4j
 public class RedisMessageSubscriber implements MessageListener {
     private final SimpMessagingTemplate messagingTemplate;
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        String messageStr = (String) redisTemplate.getStringSerializer().deserialize(message.getBody());
+        String messageStr = redisTemplate.getStringSerializer().deserialize(message.getBody());
         try {
             ChatDto chat = objectMapper.readValue(messageStr, ChatDto.class);
             messagingTemplate.convertAndSend("/chatrooms/" + chat.getChatroomId(), chat);

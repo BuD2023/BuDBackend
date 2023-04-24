@@ -21,7 +21,11 @@ public class GetNotifications {
     @Builder
     public static class Response {
 
+        private Long senderId;
+
         private String senderNickName;
+
+        private String senderProfileImage;
 
         private String notificationId;
 
@@ -39,13 +43,14 @@ public class GetNotifications {
 
         public static Response fromEntity(Notification notification) {
             return Response.builder()
+                .senderId(notification.getSender().getId())
                 .senderNickName(notification.getSender().getNickname())
+                .senderProfileImage(notification.getSender().getProfileImg())
                 .notificationId(notification.getNotificationId())
                 .notificationType(notification.getNotificationType())
                 .pageType(notification.getPageType())
                 .pageId(notification.getPageId())
-                .notificationDetailType(
-                    notification.getNotificationDetailType())
+                .notificationDetailType(notification.getNotificationDetailType())
                 .notificationStatus(notification.getNotificationStatus())
                 .notifiedAt(notification.getNotifiedAt())
                 .build();

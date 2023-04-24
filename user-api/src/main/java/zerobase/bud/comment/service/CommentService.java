@@ -1,6 +1,12 @@
 package zerobase.bud.comment.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -16,16 +22,13 @@ import zerobase.bud.comment.type.CommentStatus;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.event.AddLikeCommentEvent;
+import zerobase.bud.notification.event.CommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostStatus;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import zerobase.bud.post.type.PostType;
 
 @Service
 @RequiredArgsConstructor
@@ -39,26 +42,32 @@ public class CommentService {
 
     private final PostRepository postRepository;
 
+    private final ApplicationEventPublisher eventPublisher;
+
+    @Transactional
     public Long commentLike(Long commentId, Member member) {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (comment.getMember().equals(member)) {
-            throw new BudException(ErrorCode.CANNOT_LIKE_WRITER_SELF);
-        }
+        Optional<CommentLike> optionalCommentLike = commentLikeRepository.findByCommentAndMember(comment, member);
 
-        Optional<CommentLike> optionalCommentLike =
-                commentLikeRepository.findByCommentAndMember(comment, member);
-
-        if (optionalCommentLike.isEmpty()) {
+        if (optionalCommentLike.isPresent()) {
+            comment.minusLikeCount();
+            commentLikeRepository.delete(optionalCommentLike.get());
+        } else {
+            comment.addLikeCount();
             commentLikeRepository.save(CommentLike.builder()
                     .comment(comment)
                     .member(member)
                     .build());
-        } else {
-            commentLikeRepository.delete(optionalCommentLike.get());
+            PostType postType = comment.getPost().getPostType();
+            Long postId = comment.getPost().getId();
+            eventPublisher.publishEvent(new AddLikeCommentEvent(
+                member, comment , postType, postId
+            ));
         }
 
+        commentRepository.save(comment);
         return commentId;
     }
 
@@ -73,16 +82,16 @@ public class CommentService {
 
         Post post = comment.getPost();
 
-        if (!post.getMember().equals(member)) {
+        if (!Objects.equals(post.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_POST_OWNER);
         }
 
         commentPinRepository.deleteByPost(post);
-
         commentPinRepository.save(CommentPin.builder()
                 .comment(comment)
                 .post(post)
                 .build());
+        eventPublisher.publishEvent(new CommentPinEvent(member, comment));
 
         return commentId;
     }
@@ -93,7 +102,7 @@ public class CommentService {
         Post post = postRepository.findByIdAndPostStatus(postId, PostStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
 
-        if (!post.getMember().equals(member)) {
+        if (!Objects.equals(post.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_POST_OWNER);
         }
 
@@ -108,7 +117,6 @@ public class CommentService {
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
 
         List<CommentDto> commentDtos = new ArrayList<>();
-
         Long pinCommentId = -1L;
 
         if (post.getCommentPin() != null && page == 0) {
@@ -124,7 +132,6 @@ public class CommentService {
         comments.getContent()
                 .forEach(comment -> commentDtos.add(toCommentDto(member, comment, false)));
 
-
         return new SliceImpl<>(commentDtos, comments.getPageable(), comments.hasNext());
     }
 
@@ -136,7 +143,7 @@ public class CommentService {
                 comment.getReComments().stream()
                         .map(reComment ->
                                 CommentDto.of(reComment,
-                                        member.equals(reComment.getMember()),
+                                        Objects.equals(member.getId(), reComment.getMember().getId()),
                                         commentLikeRepository.existsByCommentAndAndMember(reComment, member))
                         ).collect(Collectors.toList())
         );
@@ -147,12 +154,11 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getMember().equals(member)) {
+        if (!Objects.equals(comment.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
         commentRepository.delete(comment);
-
         return commentId;
     }
 }

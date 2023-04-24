@@ -2,7 +2,9 @@ package zerobase.bud.notification.service;
 
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION;
 import static zerobase.bud.common.type.ErrorCode.NOT_RECEIVED_NOTIFICATION_MEMBER;
+import static zerobase.bud.notification.type.NotificationStatus.UNREAD;
 
+import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +25,18 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
+    private final static String UNREAD_COUNT = "unreadCount";
+
 
     public Slice<Response> getNotifications(Member member, Pageable pageable) {
         return notificationRepository
             .findAllByReceiverId(member.getId(), pageable)
             .map(Response::fromEntity);
+    }
+
+    public Map<String, Long> getUnreadNotificationCount(Member member) {
+        return Map.of( UNREAD_COUNT
+            , notificationRepository.countByReceiverIdAndNotificationStatus(member.getId(), UNREAD));
     }
 
 
@@ -39,7 +48,9 @@ public class NotificationService {
                 notificationId)
             .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION));
 
-        validateUpdateNotificationStatus(notification, member);
+        if (!Objects.equals(notification.getReceiver().getId(), member.getId())) {
+            throw new BudException(NOT_RECEIVED_NOTIFICATION_MEMBER);
+        }
 
         notification.updateStatus();
 
@@ -52,22 +63,12 @@ public class NotificationService {
                 notificationId)
             .orElseThrow(() -> new BudException(NOT_FOUND_NOTIFICATION));
 
-        if (!Objects.equals(notification.getReceiver().getId(),
-            member.getId())) {
+        if (!Objects.equals(notification.getReceiver().getId(), member.getId())) {
             throw new BudException(NOT_RECEIVED_NOTIFICATION_MEMBER);
         }
 
-        notificationRepository.delete(notification);
+        notificationRepository.deleteById(notification.getId());
 
         return notificationId;
-    }
-
-    private void validateUpdateNotificationStatus(Notification notification,
-        Member member) {
-
-        if (!Objects.equals(notification.getReceiver().getId(),
-            member.getId())) {
-            throw new BudException(NOT_RECEIVED_NOTIFICATION_MEMBER);
-        }
     }
 }

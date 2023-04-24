@@ -1,30 +1,5 @@
 package zerobase.bud.comment.service;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
-import zerobase.bud.comment.domain.*;
-import zerobase.bud.comment.repository.QnaAnswerCommentLikeRepository;
-import zerobase.bud.comment.repository.QnaAnswerCommentPinRepository;
-import zerobase.bud.comment.repository.QnaAnswerCommentRepository;
-import zerobase.bud.common.exception.BudException;
-import zerobase.bud.common.type.ErrorCode;
-import zerobase.bud.domain.Member;
-import zerobase.bud.post.domain.QnaAnswer;
-import zerobase.bud.post.dto.QnaAnswerCommentDto;
-import zerobase.bud.post.repository.QnaAnswerRepository;
-import zerobase.bud.type.MemberStatus;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,6 +7,38 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static zerobase.bud.post.type.PostStatus.ACTIVE;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import zerobase.bud.comment.domain.QnaAnswerComment;
+import zerobase.bud.comment.domain.QnaAnswerCommentLike;
+import zerobase.bud.comment.domain.QnaAnswerCommentPin;
+import zerobase.bud.comment.repository.QnaAnswerCommentLikeRepository;
+import zerobase.bud.comment.repository.QnaAnswerCommentPinRepository;
+import zerobase.bud.comment.repository.QnaAnswerCommentRepository;
+import zerobase.bud.common.exception.BudException;
+import zerobase.bud.common.type.ErrorCode;
+import zerobase.bud.domain.Member;
+import zerobase.bud.notification.event.AddLikeQnaAnswerCommentEvent;
+import zerobase.bud.notification.event.QnaAnswerCommentPinEvent;
+import zerobase.bud.post.domain.Post;
+import zerobase.bud.post.domain.QnaAnswer;
+import zerobase.bud.post.dto.QnaAnswerCommentDto;
+import zerobase.bud.post.repository.QnaAnswerRepository;
+import zerobase.bud.post.type.PostType;
+import zerobase.bud.type.MemberStatus;
 
 @ExtendWith(MockitoExtension.class)
 class QnaAnswerCommentServiceTest {
@@ -46,6 +53,9 @@ class QnaAnswerCommentServiceTest {
 
     @Mock
     private QnaAnswerRepository qnaAnswerRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private QnaAnswerCommentService qnaAnswerCommentService;
@@ -74,9 +84,24 @@ class QnaAnswerCommentServiceTest {
                 .oAuthAccessToken("tokenvalue")
                 .build();
 
+        Post post = Post.builder()
+            .id(1L)
+            .member(writer)
+            .title("title")
+            .content("content")
+            .postStatus(ACTIVE)
+            .postType(PostType.FEED)
+            .build();
+
+        QnaAnswer qnaAnswer = QnaAnswer.builder()
+            .post(post)
+            .build();
+
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
                 .member(writer)
+                .qnaAnswer(qnaAnswer)
                 .commentCount(1)
+                .likeCount(0)
                 .id(3L)
                 .build();
 
@@ -87,13 +112,17 @@ class QnaAnswerCommentServiceTest {
         given(qnaAnswerCommentLikeRepository.findByQnaAnswerCommentAndMember(any(), any()))
                 .willReturn(Optional.empty());
         //when
-        ArgumentCaptor<QnaAnswerCommentLike> captor = ArgumentCaptor.forClass(QnaAnswerCommentLike.class);
+        ArgumentCaptor<QnaAnswerCommentLike> commentLikeCaptor = ArgumentCaptor.forClass(QnaAnswerCommentLike.class);
+        ArgumentCaptor<QnaAnswerComment> commentCaptor = ArgumentCaptor.forClass(QnaAnswerComment.class);
         Long result = qnaAnswerCommentService.commentLike(123L, member);
         //then
-        verify(qnaAnswerCommentLikeRepository, times(1)).save(captor.capture());
+        verify(qnaAnswerCommentLikeRepository, times(1)).save(commentLikeCaptor.capture());
+        verify(qnaAnswerCommentRepository, times(1)).save(commentCaptor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(AddLikeQnaAnswerCommentEvent.class));
+        assertEquals(1, commentCaptor.getValue().getLikeCount());
         assertEquals(123L, result);
-        assertEquals(1L, captor.getValue().getMember().getId());
-        assertEquals(3L, captor.getValue().getQnaAnswerComment().getId());
+        assertEquals(1L, commentLikeCaptor.getValue().getMember().getId());
+        assertEquals(3L, commentLikeCaptor.getValue().getQnaAnswerComment().getId());
     }
 
     @Test
@@ -113,6 +142,7 @@ class QnaAnswerCommentServiceTest {
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
                 .member(writer)
                 .commentCount(1)
+                .likeCount(1)
                 .id(3L)
                 .build();
 
@@ -129,13 +159,17 @@ class QnaAnswerCommentServiceTest {
                         .build()
                 ));
         //when
-        ArgumentCaptor<QnaAnswerCommentLike> captor = ArgumentCaptor.forClass(QnaAnswerCommentLike.class);
+        ArgumentCaptor<QnaAnswerCommentLike> commentLikeCaptor = ArgumentCaptor.forClass(QnaAnswerCommentLike.class);
+        ArgumentCaptor<QnaAnswerComment> commentCaptor = ArgumentCaptor.forClass(QnaAnswerComment.class);
         Long result = qnaAnswerCommentService.commentLike(123L, member);
         //then
-        verify(qnaAnswerCommentLikeRepository, times(1)).delete(captor.capture());
+        verify(qnaAnswerCommentLikeRepository, times(1)).delete(commentLikeCaptor.capture());
+        verify(qnaAnswerCommentRepository, times(1)).save(commentCaptor.capture());
+        verify(eventPublisher, times(0)).publishEvent(any(AddLikeQnaAnswerCommentEvent.class));
+        assertEquals(0, commentCaptor.getValue().getLikeCount());
         assertEquals(123L, result);
-        assertEquals(1L, captor.getValue().getMember().getId());
-        assertEquals(3L, captor.getValue().getQnaAnswerComment().getId());
+        assertEquals(1L, commentLikeCaptor.getValue().getMember().getId());
+        assertEquals(3L, commentLikeCaptor.getValue().getQnaAnswerComment().getId());
     }
 
     @Test
@@ -149,35 +183,6 @@ class QnaAnswerCommentServiceTest {
                 () -> qnaAnswerCommentService.commentLike(123L, member));
         //then
         assertEquals(ErrorCode.COMMENT_NOT_FOUND, exception.getErrorCode());
-    }
-
-    @Test
-    @DisplayName("좋아요 실패 - 자신의 댓글을 좋아요")
-    void failCommentLikeWhenRequesterIsWriterTest() {
-        //given
-        Member writer = Member.builder()
-                .id(2L)
-                .createdAt(LocalDateTime.now())
-                .status(MemberStatus.VERIFIED)
-                .profileImg("aaaaaa.jpg")
-                .nickname("비가와")
-                .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
-                .build();
-
-        QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
-                .member(writer)
-                .commentCount(1)
-                .id(3L)
-                .build();
-
-        given(qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(anyLong(), any()))
-                .willReturn(Optional.of(qnaAnswerComment));
-        //when
-        BudException exception = assertThrows(BudException.class,
-                () -> qnaAnswerCommentService.commentLike(123L, writer));
-        //then
-        assertEquals(ErrorCode.CANNOT_LIKE_WRITER_SELF, exception.getErrorCode());
     }
 
     @Test
@@ -213,6 +218,7 @@ class QnaAnswerCommentServiceTest {
         //then
         verify(qnaAnswerCommentPinRepository, times(1)).deleteByQnaAnswer(qnaAnswer);
         verify(qnaAnswerCommentPinRepository, times(1)).save(any());
+        verify(eventPublisher, times(1)).publishEvent(any(QnaAnswerCommentPinEvent.class));
         assertEquals(12L, result);
     }
 
@@ -226,6 +232,7 @@ class QnaAnswerCommentServiceTest {
         BudException exception = assertThrows(BudException.class,
                 () -> qnaAnswerCommentService.commentPin(123L, member));
         //then
+        verify(eventPublisher, times(0)).publishEvent(any(QnaAnswerCommentPinEvent.class));
         assertEquals(ErrorCode.COMMENT_NOT_FOUND, exception.getErrorCode());
     }
 

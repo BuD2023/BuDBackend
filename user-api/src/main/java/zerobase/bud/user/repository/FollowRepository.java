@@ -1,5 +1,6 @@
 package zerobase.bud.user.repository;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import zerobase.bud.domain.Member;
@@ -10,15 +11,17 @@ import java.util.stream.Stream;
 
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
-    Optional<Follow> findByTargetAndAndMember(Member target, Member member);
+    Optional<Follow> findByTargetAndMember(Member target, Member member);
 
-    Stream<Follow> findByTarget(Member target);
+    List<Follow> findByTarget(Member target);
 
-    Stream<Follow> findByMember(Member member);
+    List<Follow> findByMember(Member member);
 
     Long countByTarget(Member target);
 
     Long countByMember(Member member);
 
     boolean existsByTargetAndMember(Member target, Member member);
+
+    List<Follow> findAllByTargetId(Long senderId);
 }

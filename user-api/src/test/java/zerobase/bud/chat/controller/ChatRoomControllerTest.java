@@ -25,10 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import zerobase.bud.chat.dto.ChatDto;
-import zerobase.bud.chat.dto.ChatRoomDto;
-import zerobase.bud.chat.dto.ChatRoomStatusDto;
-import zerobase.bud.chat.dto.CreateChatRoom;
+import zerobase.bud.chat.dto.*;
 import zerobase.bud.chat.service.ChatRoomService;
 import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
@@ -449,6 +446,91 @@ class ChatRoomControllerTest {
                         document("{class-name}/{method-name}",
                                 preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
                                 preprocessResponse(prettyPrint()))
+                );
+    }
+
+    @Test
+    @DisplayName("채팅방 호스트 변경 성공")
+    void successModifyHostTest() throws Exception {
+        //given
+        given(chatRoomService.modifyHost(anyLong(), anyLong(), any())).willReturn(1L);
+        //when
+        //then
+        this.mockMvc.perform(post("/chatrooms/{chatroomId}/users/{userId}", 2L, 1L)
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+    }
+
+    @Test
+    @DisplayName("채팅방 참여 유저 불러오기 성공")
+    void successChatUsersTest() throws Exception {
+        //given
+        List<ChatUserDto> dtos = List.of(
+                ChatUserDto.builder()
+                        .nickName("하이")
+                        .isFollowing(true)
+                        .isReader(false)
+                        .id(1L)
+                        .userId("sddff")
+                        .profileUrl("dddffk.jpg")
+                        .description("안녕하세요 어저구")
+                        .build(),
+                ChatUserDto.builder()
+                        .nickName("동동")
+                        .isFollowing(false)
+                        .isReader(false)
+                        .id(2L)
+                        .userId("thdefn")
+                        .profileUrl("uuidrandomuuid.jpg")
+                        .description("안녕하세요 저는")
+                        .build(),
+                ChatUserDto.builder()
+                        .nickName("둥둥")
+                        .isFollowing(false)
+                        .isReader(true)
+                        .id(3L)
+                        .userId("udsff")
+                        .profileUrl("uuidrandomuuid.jpg")
+                        .description("메롱")
+                        .build()
+        );
+        given(chatRoomService.readChatUsers(anyLong(), any())).willReturn(dtos);
+        //when
+        //then
+        this.mockMvc.perform(get("/chatrooms/{chatroomId}/users",1)
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                relaxedResponseFields(
+                                        fieldWithPath("[].userId").type(JsonFieldType.STRING)
+                                                .description("깃허브 유저 아이디"),
+                                        fieldWithPath("[].id").type(JsonFieldType.NUMBER)
+                                                .description("회원 고유값"),
+                                        fieldWithPath("[].description").type(JsonFieldType.STRING)
+                                                .description("한줄 소개"),
+                                        fieldWithPath("[].nickName").type(JsonFieldType.STRING)
+                                                .description("회원의 닉네임"),
+                                        fieldWithPath("[].profileUrl").type(JsonFieldType.STRING)
+                                                .description("회원의 프로필 url"),
+                                        fieldWithPath("[].isFollowing").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 회원이 팔로잉하고 있는 사람인지"),
+                                        fieldWithPath("[].isReader").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 회원인지")
+                                )
+                        )
                 );
     }
 

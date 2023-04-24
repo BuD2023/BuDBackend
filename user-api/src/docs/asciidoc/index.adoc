@@ -100,10 +100,57 @@ include::{snippets}/chat-room-controller-test/success-read-chats-test/response-f
 include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/http-request.adoc[]
 
 .response field
-include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/response-body.adoc[]
+include::{snippets}/chat-room-controller-test/success-chat-rooms-status-test/http-response.adoc[]
 
 
-=== 7. 웹소켓 sub
+
+=== 7. 채팅방 호스트 변경
+.request
+include::{snippets}/chat-room-controller-test/success-modify-host-test/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|chatroomId|Number|Y|path variable
+|userId|Number|Y|path variable 호스트 위임할 유저의 아이디
+|===
+
+.response
+include::{snippets}/chat-room-controller-test/success-modify-host-test/http-response.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|CHATROOM_NOT_FOUND|해당 채팅방 정보가 없습니다.
+|400|NOT_CHATROOM_OWNER|채팅방 호스트가 아닙니다.
+|400|NOT_REGISTERED_MEMBER|등록되지 않은 회원입니다.
+|===
+
+
+=== 8. 채팅 참여 유저 리스트
+.request
+include::{snippets}/chat-room-controller-test/success-chat-users-test/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|chatroomId|Number|Y|path variable
+|===
+
+.response
+include::{snippets}/chat-room-controller-test/success-chat-users-test/http-response.adoc[]
+
+.response field
+include::{snippets}/chat-room-controller-test/success-chat-users-test/response-fields.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|CHATROOM_NOT_FOUND|해당 채팅방 정보가 없습니다.
+|===
+
+
+=== 8. 웹소켓 sub
 .STOMP
 ----
 http://34.64.224.24:8083/ws
@@ -111,7 +158,7 @@ http://34.64.224.24:8083/ws
 Authorization: Bearer accestokenvlaue
 ----
 
-=== 8. 웹소켓 pub - 메세지
+=== 9. 웹소켓 pub - 메세지
 .STOMP
 ----
 http://34.64.224.24:8083/ws
@@ -137,7 +184,7 @@ Authorization: Bearer accestokenvlaue
 }
 ----
 
-=== 9. 웹소켓 pub - 이미지
+=== 10. 웹소켓 pub - 이미지
 .STOMP
 ----
 http://34.64.224.24:8083/ws
@@ -168,7 +215,7 @@ Authorization: Bearer accestokenvlaue
 }
 ----
 
-=== 10. 채팅방에서 유저가 들어왔을 때
+=== 11. 채팅방에서 유저가 들어왔을 때
 .STOMP
 ----
 {
@@ -178,7 +225,7 @@ Authorization: Bearer accestokenvlaue
 }
 ----
 
-=== 11. 채팅방에서 유저가 나갔을 때
+=== 12. 채팅방에서 유저가 나갔을 때
 .STOMP
 ----
 {
@@ -188,7 +235,7 @@ Authorization: Bearer accestokenvlaue
 }
 ----
 
-=== 12. 채팅방이 폭파되었을 때
+=== 13. 채팅방이 폭파되었을 때
 호스트가 나가 채팅방이 폭파된 경우
 
 .STOMP
@@ -300,6 +347,12 @@ include::{snippets}/post-controller-test/success_search-posts/http-request.adoc[
 |order|String|N|정렬기준(ASC or DESC)|DESC
 |page|Number|N|요청 페이지 번호|0
 |size|Number|N|요청 데이터 개수|10
+|postType|String|N|게시글 종류(설명참고)|null
+|===
+
+|===
+|postType 종류|
+|FEED, QNA, ALL
 |===
 
 .response
@@ -458,7 +511,7 @@ include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/http-re
 .request example
 |===
 |url|예시
-|/posts/qna-answer/{qna-answer-id}|/posts/qna-answer/1
+|/posts/qna-answers/{qnaAnswerId}|/posts/qna-answers/1
 |===
 
 .response
@@ -467,10 +520,54 @@ include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/http-re
 .response field
 include::{snippets}/qna-answer-controller-test/success_delete-qna-answer/response-body.adoc[]
 
+=== 14. QNA 답변 좋아요
+.request
+include::{snippets}/qna-answer-controller-test/success_add-qna-answer-like/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/posts/qna-answers/{qnaAnswerId}/like|/posts/qna-answers/1/like
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success_add-qna-answer-like/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_add-qna-answer-like/response-body.adoc[]
+
+=== 15. QNA 답변 좋아요 해제
+.request
+include::{snippets}/qna-answer-controller-test/success_remove-qna-answer-like/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/posts/qna-answers/{qnaAnswerId}/like|/posts/qna-answers/1/like
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|qnaAnswerId|Number|Y|path variable
+|===
 
 
 
-=== 14. 댓글 좋아요 및 좋아요 취소
+.response
+include::{snippets}/qna-answer-controller-test/success_remove-qna-answer-like/http-response.adoc[]
+
+.response field
+include::{snippets}/qna-answer-controller-test/success_remove-qna-answer-like/response-body.adoc[]
+
+
+=== 16. 댓글 좋아요 및 좋아요 취소
 .request
 include::{snippets}/post-controller-test/success-comment-like/http-request.adoc[]
 
@@ -490,7 +587,7 @@ include::{snippets}/post-controller-test/success-comment-like/http-response.adoc
 |400|CANNOT_LIKE_WRITER_SELF|자신의 댓글을 좋아요 할 수 없습니다.
 |===
 
-=== 15. 댓글 핀 및 댓글 핀 변경
+=== 17. 댓글 핀 및 댓글 핀 변경
 .request
 include::{snippets}/post-controller-test/success-comment-pin/http-request.adoc[]
 
@@ -511,7 +608,7 @@ include::{snippets}/post-controller-test/success-comment-pin/http-response.adoc[
 |400|CANNOT_PIN_RECOMMENT|대댓글에는 핀을 할 수 없습니다.
 |===
 
-=== 16. 댓글 핀 취소
+=== 18. 댓글 핀 취소
 .request
 include::{snippets}/post-controller-test/success-cancel-comment-pin/http-request.adoc[]
 
@@ -531,7 +628,7 @@ include::{snippets}/post-controller-test/success-cancel-comment-pin/http-respons
 |400|NOT_POST_OWNER|게시글의 작성자가 아닙니다.
 |===
 
-=== 17. 댓글 조회
+=== 19. 댓글 조회
 .request
 include::{snippets}/post-controller-test/success-comments/http-request.adoc[]
 
@@ -550,7 +647,7 @@ include::{snippets}/post-controller-test/success-comments/http-response.adoc[]
 include::{snippets}/post-controller-test/success-comments/response-fields.adoc[]
 
 
-=== 18. 댓글 삭제
+=== 20. 댓글 삭제
 .request
 include::{snippets}/post-controller-test/success-delete-comment/http-request.adoc[]
 
@@ -571,7 +668,7 @@ include::{snippets}/post-controller-test/success-delete-comment/http-response.ad
 |===
 
 
-=== 15. Q&A 댓글 좋아요 및 좋아요 취소
+=== 21. Q&A 댓글 좋아요 및 좋아요 취소
 .request
 include::{snippets}/qna-answer-controller-test/success-comment-like/http-request.adoc[]
 
@@ -591,7 +688,7 @@ include::{snippets}/qna-answer-controller-test/success-comment-like/http-respons
 |400|CANNOT_LIKE_WRITER_SELF|자신의 댓글을 좋아요 할 수 없습니다.
 |===
 
-=== 16. Q&A 댓글 핀 및 댓글 핀 변경
+=== 22. Q&A 댓글 핀 및 댓글 핀 변경
 .request
 include::{snippets}/qna-answer-controller-test/success-comment-pin/http-request.adoc[]
 
@@ -612,7 +709,7 @@ include::{snippets}/qna-answer-controller-test/success-comment-pin/http-response
 |400|CANNOT_PIN_RECOMMENT|대댓글에는 핀을 할 수 없습니다.
 |===
 
-=== 17. Q&A 댓글 핀 취소
+=== 23. Q&A 댓글 핀 취소
 .request
 include::{snippets}/qna-answer-controller-test/success-cancel-comment-pin/http-request.adoc[]
 
@@ -632,7 +729,7 @@ include::{snippets}/qna-answer-controller-test/success-cancel-comment-pin/http-r
 |400|NOT_QNA_ANSWER_OWNER|게시글의 작성자가 아닙니다.
 |===
 
-=== 18. Q&A 댓글 조회
+=== 24. Q&A 댓글 조회
 .request
 include::{snippets}/qna-answer-controller-test/success-comments/http-request.adoc[]
 
@@ -651,7 +748,7 @@ include::{snippets}/qna-answer-controller-test/success-comments/http-response.ad
 include::{snippets}/qna-answer-controller-test/success-comments/response-fields.adoc[]
 
 
-=== 19. Q&A 댓글 삭제
+=== 25. Q&A 댓글 삭제
 .request
 include::{snippets}/qna-answer-controller-test/success-delete-comment/http-request.adoc[]
 
@@ -671,7 +768,7 @@ include::{snippets}/qna-answer-controller-test/success-delete-comment/http-respo
 |400|NOT_COMMENT_OWNER|댓글의 작성자가 아닙니다.
 |===
 
-=== 20. Q&A 답변 핀 기능
+=== 26. Q&A 답변 핀 기능
 .request
 include::{snippets}/qna-answer-controller-test/success_qna-answer-pin/http-request.adoc[]
 
@@ -690,7 +787,7 @@ include::{snippets}/qna-answer-controller-test/success_qna-answer-pin/http-respo
 |qnaAnswerId|Number|Y|path variable, QnA답글의 Id
 |===
 
-=== 21. Q&A 답변 핀 취소
+=== 27. Q&A 답변 핀 취소
 .request
 include::{snippets}/qna-answer-controller-test/success_cancel-qna-answer-pin/http-request.adoc[]
 
@@ -832,20 +929,12 @@ include::{snippets}/user-controller-test/success-search-scrap/http-request.adoc[
 |필드명|타입|필수여부|설명|기본값
 |size|Number|N|요청 데이터 개수|5
 |page|Number|N|요청 페이지 번호|0
-|sort|String|N|정렬기준|postCreatedAt,desc
+|sort|String|N|정렬기준(설명 참고)|POST_DATE,desc
 |===
-.request field sort example
+
 |===
-|설명
-|1. '정렬기준,desc(혹은 asc, 대소문자 무시)' 같은 형식으로 작성해 주시면 됩니다.
-|2. 정렬기준은 카멜케이스로 적어주셔야 합니다.
-|3. 정렬기준은 변수명 + 변수명 이런식으로 작성해주시면 됩니다.
-|예시 1. 게시글 등록날 기준으로 하시고 싶으면, postCreatedAt으로 작성해주시면 됩니다.
-|예시 2. scrap 등록날 기준으로 하시고 싶으면, createdAt으로 해주시면 됩니다.
-|===
-|===
-|예시1|예시2|예시3|예시4|예시5
-|id,ASC|postId,DESC|postLikeCount,Asc|postHitCount,asc|postCreatedAt,desc
+|sort 종류
+|(SCRAP_DATE,DESC(or ASC)), (POST_HIT,DESC(or ASC)), (POST_LIKE,DESC(or ASC)), (POST_DATE,DESC(or ASC))
 |===
 
 .response
@@ -874,6 +963,69 @@ include::{snippets}/user-controller-test/success-delete-scrap/http-request.adoc[
 
 .response
 include::{snippets}/user-controller-test/success-delete-scrap/http-response.adoc[]
+
+=== 10. 마이페이지 게시글 리스트 조회
+.request
+include::{snippets}/user-controller-test/success-search-my-page-posts/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/users/{myPageUserId}/posts|/users/2/posts
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명|기본값
+|size|Number|N|요청 데이터 개수|5
+|page|Number|N|요청 페이지 번호|0
+|sort|String|N|정렬기준(설명참고)|DATE,DESC
+|postType|String|N|게시글 종류(설명참고)|null
+|===
+
+|===
+|sort 종류
+|((DATE,DESC(ASC)), (HIT,DESC(ASC)), (LIKE,DESC(ASC)))
+|===
+
+|===
+|postType 종류
+|FEED, QNA, ALL
+|===
+
+
+
+.response
+include::{snippets}/user-controller-test/success-search-my-page-posts/http-response.adoc[]
+
+.response
+include::{snippets}/user-controller-test/success-search-my-page-posts/http-response.adoc[]
+
+=== 11. 알림 푸쉬 설정 변경
+.request
+include::{snippets}/user-controller-test/success_change-notification-available/http-request.adoc[]
+
+.request example
+|===
+|url|예시
+|/users/{userId}/notification-info|/users/1/notification-info
+|===
+
+.request field
+|===
+|필드명|타입|필수여부|설명|기본값
+|isPostPushAvailable|Boolean|N|게시물 푸쉬 허용 여부|기존값
+|isFollowPushAvailable|Boolean|N|게시물 푸쉬 허용 여부|기존값
+|===
+
+.response
+include::{snippets}/user-controller-test/success_change-notification-available/http-response.adoc[]
+
+.response field
+|===
+|필드명|설명
+|nickName|유저의 닉네임
+|===
 
 == 알림 API
 === 1. 알림 조회
@@ -905,6 +1057,16 @@ include::{snippets}/notification-controller-test/success_delete-notification/htt
 
 .response field
 include::{snippets}/notification-controller-test/success_delete-notification/response-body.adoc[]
+
+=== 4. 읽지 않은 알림의 수 반환
+.request
+include::{snippets}/notification-controller-test/success_get-unread-notification-count/http-request.adoc[]
+
+.response
+include::{snippets}/notification-controller-test/success_get-unread-notification-count/http-response.adoc[]
+
+.response field
+include::{snippets}/notification-controller-test/success_get-unread-notification-count/response-body.adoc[]
 
 
 == 파이어베이스토큰 API

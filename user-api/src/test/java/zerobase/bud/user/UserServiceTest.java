@@ -7,10 +7,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.event.CreatePostEvent;
+import zerobase.bud.notification.event.FollowEvent;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.type.MemberStatus;
@@ -23,7 +26,6 @@ import zerobase.bud.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,23 +47,25 @@ class UserServiceTest {
     @Mock
     private PostRepository postRepository;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private UserService userService;
 
     Level level = Level.builder()
-        .id(1L)
-        .levelCode("씩씩한사람")
-        .levelStartCommitCount(0)
-        .nextLevelStartCommitCount(17)
-        .build();
+            .id(1L)
+            .levelCode("씩씩한사람")
+            .levelStartCommitCount(0)
+            .nextLevelStartCommitCount(17)
+            .build();
 
     Level level2 = Level.builder()
-        .id(1L)
-        .levelCode("씩씩하지않은새싹")
-        .levelStartCommitCount(0)
-        .nextLevelStartCommitCount(17)
-        .build();
-
+            .id(1L)
+            .levelCode("씩씩하지않은새싹")
+            .levelStartCommitCount(0)
+            .nextLevelStartCommitCount(17)
+            .build();
 
 
     Member member = Member.builder()
@@ -94,7 +98,7 @@ class UserServiceTest {
         given(memberRepository.findById(anyLong()))
                 .willReturn(Optional.of(targetMember));
 
-        given(followRepository.findByTargetAndAndMember(any(), any()))
+        given(followRepository.findByTargetAndMember(any(), any()))
                 .willReturn(Optional.empty());
 
         given(followRepository.save(any()))
@@ -109,13 +113,14 @@ class UserServiceTest {
         Long targetId = userService.follow(123L, member);
         //then
         verify(followRepository, times(1)).save(captor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(FollowEvent.class));
         assertEquals(2L, targetId);
 
     }
 
     @Test
     @DisplayName("팔로우 성공 - 이미 팔로우")
-    void successFollowWhenAlreadyFollowingTest() {
+    void successFollowTest_AlreadyFollowing() {
         //given
         Member targetMember = Member.builder()
                 .id(2L)
@@ -131,7 +136,7 @@ class UserServiceTest {
         given(memberRepository.findById(anyLong()))
                 .willReturn(Optional.of(targetMember));
 
-        given(followRepository.findByTargetAndAndMember(any(), any()))
+        given(followRepository.findByTargetAndMember(any(), any()))
                 .willReturn(Optional.of(Follow.builder()
                         .member(member)
                         .target(targetMember)
@@ -143,13 +148,14 @@ class UserServiceTest {
         Long targetId = userService.follow(123L, member);
         //then
         verify(followRepository, times(1)).delete(captor.capture());
+        verify(eventPublisher, times(0)).publishEvent(any(CreatePostEvent.class));
         assertEquals(2L, targetId);
 
     }
 
     @Test
     @DisplayName("팔로우 실패 - 자기 자신을 팔로우")
-    void failFollowWhenFollowSelfTest() {
+    void failFollowTest_FollowSelf() {
         //given
         Member targetMember = Member.builder()
                 .id(2L)
@@ -196,6 +202,7 @@ class UserServiceTest {
                 .status(MemberStatus.VERIFIED)
                 .introduceMessage("안녕하세요 저는 어쩌구저쩌구")
                 .level(level)
+                .job("시스템프로그래머")
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .build();
@@ -289,7 +296,7 @@ class UserServiceTest {
                         .member(member)
                         .build()
         );
-        given(followRepository.findByMember(any())).willReturn(follows.stream());
+        given(followRepository.findByMember(any())).willReturn(follows);
         //when
         List<FollowDto> followDtos = userService.readMyFollowings(member);
         //then
@@ -338,7 +345,7 @@ class UserServiceTest {
                         .member(member)
                         .build()
         );
-        given(followRepository.findByTarget(any())).willReturn(follows.stream());
+        given(followRepository.findByTarget(any())).willReturn(follows);
         //when
         List<FollowDto> followDtos = userService.readMyFollowers(member);
         //then
@@ -374,7 +381,7 @@ class UserServiceTest {
                 .nickname("하이")
                 .build();
 
-        Stream<Follow> follows = Stream.of(
+        List<Follow> follows = List.of(
                 Follow.builder()
                         .id(1L)
                         .target(member)
@@ -430,7 +437,7 @@ class UserServiceTest {
                 .nickname("하이")
                 .build();
 
-        Stream<Follow> follows = Stream.of(
+        List<Follow> follows = List.of(
                 Follow.builder()
                         .id(1L)
                         .target(profileMember)
@@ -487,7 +494,6 @@ class UserServiceTest {
         //then
         assertEquals(ErrorCode.NOT_REGISTERED_MEMBER, exception.getErrorCode());
     }
-
 
 
 }

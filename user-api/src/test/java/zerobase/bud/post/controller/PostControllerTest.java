@@ -23,16 +23,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.comment.service.CommentService;
 import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
-import zerobase.bud.post.dto.PostDto;
+import zerobase.bud.post.dto.SearchPost;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
-import zerobase.bud.util.TimeUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -158,11 +157,11 @@ class PostControllerTest {
 
         String contents = objectMapper.writeValueAsString(input);
 
-        given(postService.updatePost(any(), any()))
+        given(postService.updatePost(anyLong(), any(), any(), any()))
                 .willReturn("success");
         //when
         //then
-        mockMvc.perform(multipart("/posts/update")
+        mockMvc.perform(multipart("/posts/1")
                         .file(images.get(0))
                         .file(new MockMultipartFile("updatePostRequest", "",
                                 "application/json", contents.getBytes(
@@ -184,10 +183,10 @@ class PostControllerTest {
     @DisplayName("성공 - 전체 게시글 검색")
     void success_searchPosts() throws Exception {
         //given
-        List<PostDto> list = new ArrayList<>();
+        List<SearchPost.Response> list = new ArrayList<>();
 
         for (int i = 1; i <= 3; i++) {
-            list.add(PostDto.builder()
+            list.add(SearchPost.Response.builder()
                     .id(i)
                     .title("제목" + i)
                     .imageUrls(new String[]{"url1", "url2"})
@@ -196,16 +195,18 @@ class PostControllerTest {
                     .likeCount(i)
                     .scrapCount(i)
                     .hitCount(i)
-                    .postStatus(
-                            i % 4 == 0 ? PostStatus.INACTIVE : PostStatus.ACTIVE)
+                    .postStatus(i % 3 == 0 ? PostStatus.INACTIVE : PostStatus.ACTIVE)
                     .postType(PostType.FEED)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
+                    .isLike(true)
+                    .isFollow(false)
+                    .isScrap(true)
                     .build());
         }
 
-        given(postService.searchPosts(anyString(), any(), any(), anyInt(),
-                anyInt()))
+        given(postService.searchPosts(any(), anyString(), any(), any(),
+                anyInt(), anyInt(), any()))
                 .willReturn(new PageImpl<>(list));
 
         //when
@@ -269,6 +270,12 @@ class PostControllerTest {
                                         fieldWithPath("content[].updatedAt").type(
                                                         JsonFieldType.STRING)
                                                 .description("게시물 업데이트일"),
+                                        fieldWithPath("content[].like").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 좋아요 클릭 여부"),
+                                        fieldWithPath("content[].follow").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 작성자 팔로우 여부"),
+                                        fieldWithPath("content[].scrap").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 스크랩 여부"),
                                         fieldWithPath("first").type(JsonFieldType.BOOLEAN)
                                                 .description("첫번째 페이지인지 여부"),
                                         fieldWithPath("last").type(JsonFieldType.BOOLEAN)
@@ -296,7 +303,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 상세 정보 검색")
     void success_searchPost() throws Exception {
         //given
-        PostDto postDto = PostDto.builder()
+        SearchPost.Response response = SearchPost.Response.builder()
                 .id(1)
                 .title("제목")
                 .imageUrls(new String[]{"url1", "url2"})
@@ -309,10 +316,13 @@ class PostControllerTest {
                 .postType(PostType.FEED)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .isLike(true)
+                .isFollow(false)
+                .isScrap(true)
                 .build();
 
-        given(postService.searchPost(anyLong()))
-                .willReturn(postDto);
+        given(postService.searchPost(any(), anyLong()))
+                .willReturn(response);
         //when
         //then
 
@@ -358,7 +368,13 @@ class PostControllerTest {
                                         fieldWithPath("createdAt").type(JsonFieldType.STRING)
                                                 .description("게시물 등록일"),
                                         fieldWithPath("updatedAt").type(JsonFieldType.STRING)
-                                                .description("게시물 업데이트일")
+                                                .description("게시물 업데이트일"),
+                                        fieldWithPath("like").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 좋아요 클릭 여부"),
+                                        fieldWithPath("follow").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 작성자 팔로우 여부"),
+                                        fieldWithPath("scrap").type(JsonFieldType.BOOLEAN)
+                                                .description("게시글 스크랩 여부")
                                 )
                         )
                 );
@@ -369,10 +385,9 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 삭제")
     void success_deletePost() throws Exception {
         //given
-        PostDto postDto = PostDto.builder()
-                .id(1)
+        Post post = Post.builder()
+                .id((long)1)
                 .title("제목")
-                .imageUrls(new String[]{"url1", "url2"})
                 .content("내용")
                 .commentCount(1)
                 .likeCount(1)
@@ -385,7 +400,7 @@ class PostControllerTest {
                 .build();
 
         given(postService.deletePost(anyLong()))
-                .willReturn(postDto.getId());
+                .willReturn(post.getId());
         //when
         //then
 
@@ -410,7 +425,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 좋아요")
     void success_addPostLike() throws Exception {
         //given
-        given(postService.isLike(anyLong(), any()))
+        given(postService.addLike(anyLong(), any()))
                 .willReturn(true);
         //when
         //then
@@ -434,7 +449,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 좋아요 해제")
     void success_removePostLike() throws Exception {
         //given
-        given(postService.isLike(anyLong(), any()))
+        given(postService.addLike(anyLong(), any()))
                 .willReturn(false);
         //when
         //then
@@ -458,7 +473,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 스크랩 추가")
     void success_addPostScrap() throws Exception {
         //given
-        given(scrapService.isScrap(anyLong(), any()))
+        given(scrapService.addScrap(anyLong(), any()))
                 .willReturn(true);
         //when
         //then
@@ -482,7 +497,7 @@ class PostControllerTest {
     @DisplayName("성공 - 게시글 스크랩 추가")
     void success_removePostScrap() throws Exception {
         //given
-        given(scrapService.isScrap(anyLong(), any()))
+        given(scrapService.addScrap(anyLong(), any()))
                 .willReturn(false);
         //when
         //then
