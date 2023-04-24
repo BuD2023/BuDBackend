@@ -213,10 +213,8 @@ public class PostService {
     }
 
     private void deleteImages(Post post) {
-        List<Image> imageList = post.getImages();
-        for (Image image : imageList) {
-            awsS3Api.deleteImage(image.getImagePath());
-        }
+        post.getImages()
+            .forEach(image -> awsS3Api.deleteImage(image.getImagePath()));
 
         imageRepository.deleteAllByPostId(post.getId());
     }
