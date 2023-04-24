@@ -42,12 +42,7 @@ import zerobase.bud.post.dto.CreateQnaAnswer.Request;
 import zerobase.bud.post.dto.QnaAnswerDto;
 import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
-import zerobase.bud.post.repository.PostRepository;
-import zerobase.bud.post.repository.QnaAnswerImageRepository;
-import zerobase.bud.post.repository.QnaAnswerLikeRepository;
-import zerobase.bud.post.repository.QnaAnswerPinRepository;
-import zerobase.bud.post.repository.QnaAnswerRepository;
-import zerobase.bud.post.repository.QnaAnswerRepositoryQuerydslImpl;
+import zerobase.bud.post.repository.*;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
@@ -63,13 +58,15 @@ public class QnaAnswerService {
 
     private final QnaAnswerPinRepository qnaAnswerPinRepository;
 
-    private final QnaAnswerRepositoryQuerydslImpl qnaAnswerRepositoryQuerydsl;
+    private final QnaAnswerQuerydsl qnaAnswerRepositoryQuerydsl;
 
     private final QnaAnswerLikeRepository qnaAnswerLikeRepository;
 
     private final AwsS3Api awsS3Api;
 
     private final QnaAnswerImageRepository qnaAnswerImageRepository;
+
+    private final QnaAnswerImageQuerydsl qnaAnswerImageQuerydsl;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -124,10 +121,8 @@ public class QnaAnswerService {
     }
 
     private void deleteImages(QnaAnswer qnaAnswer) {
-        List<QnaAnswerImage> imageList = qnaAnswer.getQnaAnswerImages();
-        for (QnaAnswerImage image : imageList) {
-            awsS3Api.deleteImage(image.getImagePath());
-        }
+        qnaAnswer.getQnaAnswerImages()
+            .forEach(qnaAnswerImage -> awsS3Api.deleteImage(qnaAnswerImage.getImagePath()));
 
         qnaAnswerImageRepository.deleteAllByQnaAnswerId(qnaAnswer.getId());
     }
@@ -177,7 +172,9 @@ public class QnaAnswerService {
 
         return new PageImpl<>(
                 qnaAnswerDtos.stream()
-                        .map(SearchQnaAnswer.Response::from)
+                        .map(qnaAnswerDto -> SearchQnaAnswer.Response.of(
+                                qnaAnswerDto, qnaAnswerImageQuerydsl
+                                        .findImagePathAllByPostId(qnaAnswerDto.getId())))
                         .collect(Collectors.toList()),
                 qnaAnswerDtos.getPageable(),
                 qnaAnswerDtos.getTotalElements());

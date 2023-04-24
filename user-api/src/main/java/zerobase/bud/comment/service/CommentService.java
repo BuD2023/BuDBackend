@@ -1,17 +1,12 @@
 package zerobase.bud.comment.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.comment.domain.CommentLike;
 import zerobase.bud.comment.domain.CommentPin;
@@ -26,9 +21,16 @@ import zerobase.bud.notification.event.AddLikeCommentEvent;
 import zerobase.bud.notification.event.CommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
+import zerobase.bud.post.dto.RecommentDto;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +47,58 @@ public class CommentService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
+    public CommentDto createComment(Long postId, Member member, String content) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
+
+        Comment comment = Comment.builder()
+                .post(post)
+                .member(member)
+                .content(content)
+                .likeCount(0)
+                .commentCount(0)
+                .parent(null)
+                .build();
+        commentRepository.save(comment);
+
+        return CommentDto.of(comment);
+    }
+
+    public CommentDto modifyComment(Long commentId, Member member, String content) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if(!comment.getMember().equals(member)) {
+            throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
+        }
+
+        comment.setContent(content);
+        commentRepository.save(comment);
+        return CommentDto.of(comment);
+    }
+
+    public RecommentDto createRecomment(Long commentId, Member member, String content) {
+        Comment parentComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
+
+        Comment comment = Comment.builder()
+                .post(parentComment.getPost())
+                .member(member)
+                .content(content)
+                .likeCount(0)
+                .commentCount(0)
+                .parent(parentComment)
+                .build();
+
+        parentComment.getReComments().add(comment);
+        parentComment.setCommentCount(parentComment.getCommentCount() + 1);
+
+        commentRepository.save(parentComment);
+        commentRepository.save(comment);
+
+        return RecommentDto.of(comment);
+    }
+
     public Long commentLike(Long commentId, Member member) {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
@@ -117,6 +171,7 @@ public class CommentService {
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
 
         List<CommentDto> commentDtos = new ArrayList<>();
+
         Long pinCommentId = -1L;
 
         if (post.getCommentPin() != null && page == 0) {
@@ -131,6 +186,7 @@ public class CommentService {
 
         comments.getContent()
                 .forEach(comment -> commentDtos.add(toCommentDto(member, comment, false)));
+
 
         return new SliceImpl<>(commentDtos, comments.getPageable(), comments.hasNext());
     }
@@ -159,6 +215,7 @@ public class CommentService {
         }
 
         commentRepository.delete(comment);
+
         return commentId;
     }
 }

@@ -5,6 +5,7 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.post.type.QnaAnswerStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class SearchQnaAnswer {
 
@@ -17,6 +18,7 @@ public class SearchQnaAnswer {
         private Long id;
         private Member member;
         private String content;
+        private List<String> imageUrls;
         private long commentCount;
         private long likeCount;
         private QnaAnswerStatus qnaAnswerStatus;
@@ -26,11 +28,15 @@ public class SearchQnaAnswer {
         private boolean isLike;
         private boolean isFollow;
 
-        public static Response from(QnaAnswerDto qnaAnswerDto) {
+        public static Response of(
+                QnaAnswerDto qnaAnswerDto,
+                List<String> imageUrls
+        ) {
             return Response.builder()
                     .id(qnaAnswerDto.getId())
                     .member(qnaAnswerDto.getMember())
                     .content(qnaAnswerDto.getContent())
+                    .imageUrls(imageUrls)
                     .commentCount(qnaAnswerDto.getCommentCount())
                     .likeCount(qnaAnswerDto.getLikeCount())
                     .qnaAnswerStatus(qnaAnswerDto.getQnaAnswerStatus())

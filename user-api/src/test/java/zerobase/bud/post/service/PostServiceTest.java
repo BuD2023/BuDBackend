@@ -55,11 +55,7 @@ import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.SearchMyPagePost;
 import zerobase.bud.post.dto.SearchPost;
 import zerobase.bud.post.dto.UpdatePost;
-import zerobase.bud.post.repository.ImageRepository;
-import zerobase.bud.post.repository.PostLikeRepository;
-import zerobase.bud.post.repository.PostRepository;
-import zerobase.bud.post.repository.PostRepositoryQuerydslImpl;
-import zerobase.bud.post.repository.ScrapRepository;
+import zerobase.bud.post.repository.*;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.type.MemberStatus;
@@ -80,13 +76,16 @@ class PostServiceTest {
     private PostLikeRepository postLikeRepository;
 
     @Mock
-    private PostRepositoryQuerydslImpl postRepositoryQuerydsl;
+    private PostQuerydsl postQuerydsl;
 
     @Mock
     private AwsS3Api awsS3Api;
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private PostImageQuerydsl postImageQuerydsl;
 
     @InjectMocks
     private PostService postService;
@@ -315,12 +314,12 @@ class PostServiceTest {
 
         PageRequest pageRequest = PageRequest.of(0, 3);
 
-        given(postRepositoryQuerydsl.findAllByPostStatus(anyLong(),anyString(), any(),
+        given(postQuerydsl.findAllByPostStatus(anyLong(),anyString(), any(),
                 any(), any(), any()))
                 .willReturn(new PageImpl<>(posts, pageRequest, 3));
 
-        given(imageRepository.findAllByPostId(anyLong()))
-                .willReturn(images);
+        given(postImageQuerydsl.findImagePathAllByPostId(anyLong()))
+                .willReturn(getImageUrlList());
 
         //when
         Page<SearchPost.Response> responses = postService.searchPosts(
@@ -331,8 +330,9 @@ class PostServiceTest {
         assertEquals(3, responses.getContent().size());
         assertEquals(1L, responses.getContent().get(0).getId());
         assertEquals("제목1", responses.getContent().get(0).getTitle());
-        assertEquals(Arrays.toString(new String[]{"img0", "img1", "img2"}),
-                Arrays.toString(responses.getContent().get(2).getImageUrls()));
+        assertEquals("img0", responses.getContent().get(2).getImageUrls().get(0));
+        assertEquals("img1", responses.getContent().get(2).getImageUrls().get(1));
+        assertEquals("img2", responses.getContent().get(2).getImageUrls().get(2));
         assertEquals("내용1", responses.getContent().get(0).getContent());
         assertEquals(1, responses.getContent().get(0).getHitCount());
         assertEquals(1, responses.getContent().get(0).getCommentCount());
@@ -352,11 +352,11 @@ class PostServiceTest {
         given(postRepository.findById(anyLong()))
                 .willReturn(Optional.ofNullable(getPost()));
 
-        given(postRepositoryQuerydsl.findByPostId(any(), anyLong()))
+        given(postQuerydsl.findByPostId(any(), anyLong()))
                 .willReturn(getPostDto());
 
-        given(imageRepository.findAllByPostId(anyLong()))
-                .willReturn(getImageList());
+        given(postImageQuerydsl.findImagePathAllByPostId(anyLong()))
+                .willReturn(getImageUrlList());
 
         //when
         SearchPost.Response response = postService.searchPost(Member.builder()
@@ -367,8 +367,9 @@ class PostServiceTest {
         //then
         assertEquals(1L, response.getId());
         assertEquals("title", response.getTitle());
-        assertEquals(Arrays.toString(new String[]{"img0", "img1", "img2"}),
-                Arrays.toString(response.getImageUrls()));
+        assertEquals("img0", response.getImageUrls().get(0));
+        assertEquals("img1", response.getImageUrls().get(1));
+        assertEquals("img2", response.getImageUrls().get(2));
         assertEquals("content", response.getContent());
         assertEquals(ACTIVE, response.getPostStatus());
         assertEquals(FEED, response.getPostType());
@@ -651,12 +652,11 @@ class PostServiceTest {
                     .build());
         }
 
-        List<Image> images = getImageList();
 
-        given(imageRepository.findAllByPostId(anyLong()))
-                .willReturn(images);
+        given(postImageQuerydsl.findImagePathAllByPostId(anyLong()))
+                .willReturn(getImageUrlList());
 
-        given(postRepositoryQuerydsl.findAllByMyPagePost(anyLong(), anyLong(), any(), any()))
+        given(postQuerydsl.findAllByMyPagePost(anyLong(), anyLong(), any(), any()))
                 .willReturn(new PageImpl<>(posts, PageRequest.of(0, 3), 3));
 
         //when
@@ -673,8 +673,9 @@ class PostServiceTest {
         assertEquals(3, searchMyPagePosts.getContent().size());
         assertEquals(1, searchMyPagePosts.getContent().get(0).getPostId());
         assertEquals("제목", searchMyPagePosts.getContent().get(0).getTitle());
-        assertEquals(Arrays.toString(new String[]{"img0", "img1", "img2"}),
-                Arrays.toString(searchMyPagePosts.getContent().get(2).getImageUrls()));
+        assertEquals("img0", searchMyPagePosts.getContent().get(2).getImageUrls().get(0));
+        assertEquals("img1", searchMyPagePosts.getContent().get(2).getImageUrls().get(1));
+        assertEquals("img2", searchMyPagePosts.getContent().get(2).getImageUrls().get(2));
         assertEquals("내용", searchMyPagePosts.getContent().get(0).getContent());
         assertEquals(1, searchMyPagePosts.getContent().get(0).getCommentCount());
         assertEquals(1, searchMyPagePosts.getContent().get(0).getLikeCount());
@@ -769,13 +770,11 @@ class PostServiceTest {
         return images;
     }
 
-    private static String[] getImageUrlList(int size) {
-        String[] images = new String[size];
-
-        for (int i = 0; i < size; i++) {
-            images[i] = "img" + i;
-        }
-
+    private static List<String> getImageUrlList() {
+        List<String> images = new ArrayList<>();
+        images.add("img0");
+        images.add("img1");
+        images.add("img2");
         return images;
     }
 }
