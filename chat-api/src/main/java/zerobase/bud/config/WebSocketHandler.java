@@ -52,7 +52,7 @@ public class WebSocketHandler implements ChannelInterceptor {
             String rawToken = accessor.getFirstNativeHeader("Authorization");
             log.error(rawToken);
 
-            if (tokenProvider.validateRawToken(rawToken)) {
+            if (!tokenProvider.validateRawToken(rawToken)) {
                 throw new MemberException(ErrorCode.INVALID_TOKEN);
             }
 
