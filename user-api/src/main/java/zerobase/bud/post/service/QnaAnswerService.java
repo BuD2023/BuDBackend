@@ -124,10 +124,8 @@ public class QnaAnswerService {
     }
 
     private void deleteImages(QnaAnswer qnaAnswer) {
-        List<QnaAnswerImage> imageList = qnaAnswer.getQnaAnswerImages();
-        for (QnaAnswerImage image : imageList) {
-            awsS3Api.deleteImage(image.getImagePath());
-        }
+        qnaAnswer.getQnaAnswerImages()
+            .forEach(qnaAnswerImage -> awsS3Api.deleteImage(qnaAnswerImage.getImagePath()));
 
         qnaAnswerImageRepository.deleteAllByQnaAnswerId(qnaAnswer.getId());
     }
