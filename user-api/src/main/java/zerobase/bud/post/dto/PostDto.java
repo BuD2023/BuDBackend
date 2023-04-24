@@ -1,27 +1,23 @@
 package zerobase.bud.post.dto;
 
+import com.querydsl.core.annotations.QueryProjection;
 import lombok.*;
 import zerobase.bud.domain.Member;
-import zerobase.bud.post.domain.Image;
-import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@NoArgsConstructor
 public class PostDto {
     private long id;
 
     private Member member;
 
     private String title;
-    private String[] imageUrls;
     private String content;
 
     private long commentCount;
@@ -35,27 +31,30 @@ public class PostDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static PostDto fromEntity(Post post, List<Image> images) {
-        String[] imageUrls = new String[images.size()];
+    private boolean isLike;
+    private boolean isScrap;
+    private boolean isFollow;
 
-        for (int i = 0; i < images.size(); i++) {
-            imageUrls[i] = images.get(i).getImagePath();
-        }
-
-        return PostDto.builder()
-                .id(post.getId())
-                .member(post.getMember())
-                .title(post.getTitle())
-                .imageUrls(imageUrls)
-                .content(post.getContent())
-                .commentCount(post.getCommentCount())
-                .likeCount(post.getLikeCount())
-                .scrapCount(post.getScrapCount())
-                .hitCount(post.getHitCount())
-                .postStatus(post.getPostStatus())
-                .postType(post.getPostType())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .build();
+    @QueryProjection
+    public PostDto(long id, Member member, String title, String content,
+                   long commentCount, long likeCount, long scrapCount,
+                   long hitCount, PostStatus postStatus, PostType postType,
+                   LocalDateTime createdAt, LocalDateTime updatedAt,
+                   boolean isLike, boolean isScrap, boolean isFollow) {
+        this.id = id;
+        this.member = member;
+        this.title = title;
+        this.content = content;
+        this.commentCount = commentCount;
+        this.likeCount = likeCount;
+        this.scrapCount = scrapCount;
+        this.hitCount = hitCount;
+        this.postStatus = postStatus;
+        this.postType = postType;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.isLike = isLike;
+        this.isScrap = isScrap;
+        this.isFollow = isFollow;
     }
 }

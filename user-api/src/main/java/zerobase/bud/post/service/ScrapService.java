@@ -2,16 +2,15 @@ package zerobase.bud.post.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Post;
+import zerobase.bud.post.dto.SearchScrap;
 import zerobase.bud.post.repository.ImageRepository;
 import zerobase.bud.post.repository.PostRepository;
+import zerobase.bud.post.repository.ScrapRepositoryQuerydslImpl;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.domain.Scrap;
 import zerobase.bud.post.dto.ScrapDto;
@@ -29,11 +28,14 @@ import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_SCRAP_ID;
 public class ScrapService {
 
     private final ScrapRepository scrapRepository;
+
     private final PostRepository postRepository;
+
     private final ImageRepository imageRepository;
 
-    @Transactional
-    public boolean isScrap(Long postId, Member member) {
+    private final ScrapRepositoryQuerydslImpl scrapRepositoryQuerydsl;
+
+    public boolean addScrap(Long postId, Member member) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
@@ -48,7 +50,6 @@ public class ScrapService {
         return isAdd.get();
     }
 
-    @Transactional
     public Long removeScrap(Long scrapId) {
         Scrap scrap = scrapRepository.findById(scrapId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_SCRAP_ID));
@@ -58,19 +59,22 @@ public class ScrapService {
         return scrapId;
     }
 
-    @Transactional(readOnly = true)
-    public Slice<ScrapDto> searchScrap(Pageable pageable, Member member) {
+    public Page<SearchScrap.Response> searchScrap(Member member, Pageable pageable) {
 
-        Slice<Scrap> scraps = scrapRepository.findAllByMemberIdAndPostPostStatus(pageable,
-                member.getId(), PostStatus.ACTIVE);
+        Page<ScrapDto> scrapDtos =
+                scrapRepositoryQuerydsl.findAllByMemberIdAndPostStatus(
+                        member.getId(),
+                        pageable
+                );
 
-        return new SliceImpl<>(
-                scraps.stream()
-                        .map(scrap -> ScrapDto.fromScrapWithImages(scrap,
-                                imageRepository.findAllByPostId(scrap.getPost().getId())))
+        return new PageImpl<>(
+                scrapDtos.stream()
+                        .map(scrapDto -> SearchScrap.Response.of(scrapDto,
+                                imageRepository.findAllByPostId(
+                                        scrapDto.getPost().getId())))
                         .collect(Collectors.toList()),
-                scraps.getPageable(),
-                scraps.hasNext()
+                scrapDtos.getPageable(),
+                scrapDtos.getTotalElements()
         );
     }
 

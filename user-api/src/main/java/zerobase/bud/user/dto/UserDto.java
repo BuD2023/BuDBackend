@@ -17,6 +17,7 @@ public class UserDto {
     private Long numberOfFollowers;
     private Long numberOfFollows;
     private Long numberOfPosts;
+    private String job;
     private String profileUrl;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isReader;
@@ -37,6 +38,7 @@ public class UserDto {
                 .numberOfPosts(numberOfPosts)
                 .isReader(isReader)
                 .isFollowing(isFollowing)
+                .job(member.getJob())
                 .build();
     }
 
@@ -51,6 +53,7 @@ public class UserDto {
                 .profileUrl(member.getProfileImg())
                 .numberOfFollowers(numberOfFollowrs)
                 .numberOfFollows(numberOfFollows)
+                .job(member.getJob())
                 .numberOfPosts(numberOfPosts)
                 .build();
     }

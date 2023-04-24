@@ -6,5 +6,5 @@ import zerobase.bud.post.dto.QnaAnswerDto;
 
 public interface QnaAnswerRepositoryQuerydsl {
     Page<QnaAnswerDto> findAllByPostIdAndQnaAnswerStatusNotLike(
-            Long postId, Pageable pageable);
+            Long memberId, Long postId, Pageable pageable);
 }

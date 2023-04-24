@@ -1,5 +1,17 @@
 package zerobase.bud.comment.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static zerobase.bud.post.type.PostStatus.ACTIVE;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,6 +19,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import zerobase.bud.comment.domain.Comment;
@@ -18,22 +31,13 @@ import zerobase.bud.comment.repository.CommentRepository;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.event.AddLikeCommentEvent;
+import zerobase.bud.notification.event.CommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.repository.PostRepository;
+import zerobase.bud.post.type.PostType;
 import zerobase.bud.type.MemberStatus;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -48,6 +52,9 @@ class CommentServiceTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private CommentService commentService;
@@ -76,9 +83,19 @@ class CommentServiceTest {
                 .oAuthAccessToken("tokenvalue")
                 .build();
 
+        Post post = Post.builder()
+            .member(writer)
+            .title("title")
+            .content("content")
+            .postStatus(ACTIVE)
+            .postType(PostType.FEED)
+            .build();
+
         Comment comment = Comment.builder()
                 .member(writer)
+                .post(post)
                 .commentCount(1)
+                .likeCount(0)
                 .id(3L)
                 .build();
 
@@ -89,13 +106,17 @@ class CommentServiceTest {
         given(commentLikeRepository.findByCommentAndMember(any(), any()))
                 .willReturn(Optional.empty());
         //when
-        ArgumentCaptor<CommentLike> captor = ArgumentCaptor.forClass(CommentLike.class);
+        ArgumentCaptor<CommentLike> commentLikeCaptor = ArgumentCaptor.forClass(CommentLike.class);
+        ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
         Long result = commentService.commentLike(123L, member);
         //then
-        verify(commentLikeRepository, times(1)).save(captor.capture());
+        verify(commentLikeRepository, times(1)).save(commentLikeCaptor.capture());
+        verify(commentRepository, times(1)).save(commentCaptor.capture());
+        verify(eventPublisher, times(1)).publishEvent(any(AddLikeCommentEvent.class));
+        assertEquals(1, commentCaptor.getValue().getLikeCount());
         assertEquals(123L, result);
-        assertEquals(1L, captor.getValue().getMember().getId());
-        assertEquals(3L, captor.getValue().getComment().getId());
+        assertEquals(1L, commentLikeCaptor.getValue().getMember().getId());
+        assertEquals(3L, commentLikeCaptor.getValue().getComment().getId());
     }
 
     @Test
@@ -115,6 +136,7 @@ class CommentServiceTest {
         Comment comment = Comment.builder()
                 .member(writer)
                 .commentCount(1)
+                .likeCount(1)
                 .id(3L)
                 .build();
 
@@ -131,13 +153,16 @@ class CommentServiceTest {
                         .build()
                 ));
         //when
-        ArgumentCaptor<CommentLike> captor = ArgumentCaptor.forClass(CommentLike.class);
+        ArgumentCaptor<CommentLike> commentLikeCaptor = ArgumentCaptor.forClass(CommentLike.class);
+        ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
         Long result = commentService.commentLike(123L, member);
         //then
-        verify(commentLikeRepository, times(1)).delete(captor.capture());
+        verify(commentLikeRepository, times(1)).delete(commentLikeCaptor.capture());
+        verify(commentRepository, times(1)).save(commentCaptor.capture());
+        assertEquals(0, commentCaptor.getValue().getLikeCount());
         assertEquals(123L, result);
-        assertEquals(1L, captor.getValue().getMember().getId());
-        assertEquals(3L, captor.getValue().getComment().getId());
+        assertEquals(1L, commentLikeCaptor.getValue().getMember().getId());
+        assertEquals(3L, commentLikeCaptor.getValue().getComment().getId());
     }
 
     @Test
@@ -150,37 +175,10 @@ class CommentServiceTest {
         BudException exception = assertThrows(BudException.class,
                 () -> commentService.commentLike(123L, member));
         //then
+        verify(eventPublisher, times(0)).publishEvent(any(AddLikeCommentEvent.class));
         assertEquals(ErrorCode.COMMENT_NOT_FOUND, exception.getErrorCode());
     }
 
-    @Test
-    @DisplayName("좋아요 실패 - 자신의 댓글을 좋아요")
-    void failCommentLikeWhenRequesterIsWriterTest() {
-        //given
-        Member writer = Member.builder()
-                .id(2L)
-                .createdAt(LocalDateTime.now())
-                .status(MemberStatus.VERIFIED)
-                .profileImg("aaaaaa.jpg")
-                .nickname("비가와")
-                .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
-                .build();
-
-        Comment comment = Comment.builder()
-                .member(writer)
-                .commentCount(1)
-                .id(3L)
-                .build();
-
-        given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
-                .willReturn(Optional.of(comment));
-        //when
-        BudException exception = assertThrows(BudException.class,
-                () -> commentService.commentLike(123L, writer));
-        //then
-        assertEquals(ErrorCode.CANNOT_LIKE_WRITER_SELF, exception.getErrorCode());
-    }
 
     @Test
     @DisplayName("댓글 핀 성공")
@@ -215,6 +213,7 @@ class CommentServiceTest {
         //then
         verify(commentPinRepository, times(1)).deleteByPost(post);
         verify(commentPinRepository, times(1)).save(any());
+        verify(eventPublisher, times(1)).publishEvent(any(CommentPinEvent.class));
         assertEquals(12L, result);
     }
 

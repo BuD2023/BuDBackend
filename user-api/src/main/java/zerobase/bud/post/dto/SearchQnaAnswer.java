@@ -23,6 +23,8 @@ public class SearchQnaAnswer {
         private boolean isQnaAnswerPin;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private boolean isLike;
+        private boolean isFollow;
 
         public static Response from(QnaAnswerDto qnaAnswerDto) {
             return Response.builder()
@@ -35,6 +37,8 @@ public class SearchQnaAnswer {
                     .isQnaAnswerPin(qnaAnswerDto.getPinId() != null)
                     .createdAt(qnaAnswerDto.getCreatedAt())
                     .updatedAt(qnaAnswerDto.getUpdatedAt())
+                    .isLike(qnaAnswerDto.isLike())
+                    .isFollow(qnaAnswerDto.isFollow())
                     .build();
         }
     }

@@ -2,6 +2,8 @@ package zerobase.bud.notification.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static zerobase.bud.common.type.ErrorCode.NOT_FOUND_NOTIFICATION;
@@ -11,6 +13,7 @@ import static zerobase.bud.util.Constants.REPLACE_EXPRESSION;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -71,6 +74,18 @@ class NotificationServiceTest {
             notificationResponse.getNotificationDetailType());
         assertEquals(NotificationStatus.UNREAD,
             notificationResponse.getNotificationStatus());
+    }
+
+    @Test
+    void success_UnreadNotificationCount() {
+        //given 어떤 데이터가 주어졌을 때
+        given(notificationRepository.countByReceiverIdAndNotificationStatus(anyLong(), any()))
+            .willReturn(3L);
+        //when 어떤 경우에
+        Map<String,Long> resultMap = notificationService.getUnreadNotificationCount(
+            getReceiver());
+        //then 이런 결과가 나온다.
+        assertEquals(3, resultMap.get("unreadCount"));
     }
 
     @Test

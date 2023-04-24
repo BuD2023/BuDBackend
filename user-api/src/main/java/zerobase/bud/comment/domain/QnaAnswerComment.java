@@ -43,4 +43,12 @@ public class QnaAnswerComment extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private QnaAnswerCommentStatus qnaAnswerCommentStatus;
+
+    public void addLikeCount() {
+        this.likeCount++;
+    }
+
+    public void minusLikeCount() {
+        this.likeCount--;
+    }
 }

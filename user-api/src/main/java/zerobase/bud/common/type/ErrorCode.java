@@ -7,6 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    ADD_IMPOSSIBLE_PINNED_ANSWER("이미 채택된 답변이 있어 답변을 달 수 없습니다."),
+    CANNOT_ANSWER_YOURSELF("자신의 QnA 게시글에 답변할 수 없습니다."),
     NOT_FOUND_QNA_ANSWER_PIN("존재하지 않는 QnA 답변 핀입니다."),
     NOT_RECEIVED_NOTIFICATION_MEMBER("알림을 수신한 회원이 아닙니다."),
     NOT_FOUND_NOTIFICATION("존재하지 않는 알림입니다."),
@@ -25,6 +27,7 @@ public enum ErrorCode {
     NOT_FOUND_POST("존재하지 않는 게시물입니다."),
 
     CANNOT_LIKE_WRITER_SELF("자신의 댓글을 좋아요 할 수 없습니다."),
+    NOT_CHATROOM_OWNER("채팅방 호스트가 아닙니다."),
     NOT_COMMENT_OWNER("댓글 작성자가 아닙니다."),
     NOT_QNA_ANSWER_OWNER("게시글의 작성자가 아닙니다."),
     NOT_POST_OWNER("게시글의 작성자가 아닙니다."),
@@ -40,6 +43,8 @@ public enum ErrorCode {
     FAILED_GET_COMMIT_INFO("커밋 정보를 가져오는 데 실패했습니다."),
     FAILED_CONNECT_GITHUB("깃헙과 연결에 실패했습니다."),
     NOT_REGISTERED_MEMBER("등록되지 않은 회원입니다."),
+
+    MEMBER_NOT_FOUND_IN_CHATROOM("현재 채팅방에 참여중인 멤버가 아닙니다"),
 
     REDIS_BROKER_ERROR("레디스 메세지 브로커 과정에서 실패했습니다."),
     INVALID_TOKEN("토큰이 유효하지 않습니다."),

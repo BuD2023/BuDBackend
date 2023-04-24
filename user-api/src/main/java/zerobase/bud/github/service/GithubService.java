@@ -80,17 +80,15 @@ public class GithubService {
         LocalDate firstDayOfWeek = LocalDate.now().with(DayOfWeek.MONDAY);
 
         thisWeekCommitCount = commitHistories.stream()
-            .filter(commitHistory -> !commitHistory.getCommitDate()
-                .isBefore(firstDayOfWeek))
-            .mapToLong(CommitHistory::getCommitCount).sum();
+            .filter(commitHistory -> !commitHistory.getCommitDate().isBefore(firstDayOfWeek))
+                                                    .mapToLong(CommitHistory::getCommitCount).sum();
 
         List<CommitCountByDate> commits = commitHistories.stream()
             .map(CommitCountByDate::from)
             .collect(Collectors.toList());
 
         totalCommitCount = commits.stream()
-            .filter(x -> !x.getCommitDate()
-                .isBefore(member.getCreatedAt().toLocalDate()))
+            .filter(x -> !x.getCommitDate().isBefore(member.getCreatedAt().toLocalDate()))
             .map(CommitCountByDate::getCommitCount)
             .reduce(0L, Long::sum);
 

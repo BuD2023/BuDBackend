@@ -1,5 +1,6 @@
 package zerobase.bud.notification.domain;
 
+import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,6 +13,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import zerobase.bud.domain.BaseEntity;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.dto.NotificationInfoDto;
 import zerobase.bud.notification.dto.SaveNotificationInfo;
 
 @Getter
@@ -46,4 +48,13 @@ public class NotificationInfo extends BaseEntity {
     }
 
 
+    public void updateAvailable(NotificationInfoDto notificationInfoDto) {
+        if (Objects.nonNull(notificationInfoDto.getIsFollowPushAvailable())) {
+            isFollowPushAvailable = notificationInfoDto.getIsFollowPushAvailable();
+        }
+
+        if (Objects.nonNull(notificationInfoDto.getIsPostPushAvailable())) {
+            isPostPushAvailable = notificationInfoDto.getIsPostPushAvailable();
+        }
+    }
 }

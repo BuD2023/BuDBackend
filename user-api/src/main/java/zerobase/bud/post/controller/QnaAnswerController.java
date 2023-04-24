@@ -1,23 +1,35 @@
 package zerobase.bud.post.controller;
 
+import static zerobase.bud.post.util.Constants.CREATE_QNA_ANSWER_REQUEST;
+import static zerobase.bud.post.util.Constants.IMAGES;
+import static zerobase.bud.post.util.Constants.UPDATE_QNA_ANSWER_REQUEST;
+
+import java.util.List;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.comment.service.QnaAnswerCommentService;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.dto.CreateQnaAnswer;
-import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.QnaAnswerCommentDto;
+import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
 import zerobase.bud.post.service.QnaAnswerService;
-
-import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,37 +40,45 @@ public class QnaAnswerController {
 
     private final QnaAnswerCommentService qnaAnswerCommentService;
 
+
     @PostMapping
     public ResponseEntity<String> createQnaAnswer(
-        @RequestBody @Valid CreateQnaAnswer.Request request,
+        @RequestPart(value = IMAGES, required = false) List<MultipartFile> images,
+        @RequestPart(value = CREATE_QNA_ANSWER_REQUEST) @Valid CreateQnaAnswer.Request request,
         @AuthenticationPrincipal Member member
     ) {
         return ResponseEntity.ok(qnaAnswerService.createQnaAnswer(
-                member
-                , request
+                images, request, member
             )
         );
     }
 
-    @PutMapping
+    @PostMapping("/{qnaAnswerId}")
     public ResponseEntity<Long> updateQnaAnswer(
-        @RequestBody @Valid UpdateQnaAnswer.Request request
+        @PathVariable Long qnaAnswerId,
+        @RequestPart(value = IMAGES, required = false) List<MultipartFile> images,
+        @RequestPart(value = UPDATE_QNA_ANSWER_REQUEST) @Valid UpdateQnaAnswer.Request request,
+        @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(qnaAnswerService.updateQnaAnswer(request));
+        return ResponseEntity.ok(qnaAnswerService.updateQnaAnswer(
+                qnaAnswerId, images, request, member
+        ));
     }
 
     @GetMapping
     public ResponseEntity<Page<SearchQnaAnswer.Response>> searchQnaAnswers(
             @RequestParam @Valid Long postId,
             @PageableDefault(size = 5, sort = "DATE" ,
-                    direction = Sort.Direction.DESC) Pageable pageable
+                    direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(qnaAnswerService.searchQnaAnswers(postId, pageable));
+        return ResponseEntity.ok(qnaAnswerService.searchQnaAnswers(member,
+                postId, pageable));
     }
 
-    @DeleteMapping("/{qna-answer-id}")
+    @DeleteMapping("/{qnaAnswerId}")
     public void deleteQnaAnswer(
-            @PathVariable("qna-answer-id") Long qnaAnswerId
+            @PathVariable Long qnaAnswerId
     ) {
         qnaAnswerService.deleteQnaAnswer(qnaAnswerId);
     }
@@ -110,6 +130,15 @@ public class QnaAnswerController {
         @AuthenticationPrincipal Member member
     ) {
         return ResponseEntity.ok(qnaAnswerService.cancelQnaAnswerPin(qnaAnswerPinId, member));
+    }
+
+    @PostMapping("/{qnaAnswerId}/like")
+    public ResponseEntity<String> setLike(
+            @PathVariable Long qnaAnswerId,
+            @AuthenticationPrincipal Member member
+    ) {
+        return ResponseEntity.ok(
+                qnaAnswerService.setLike(qnaAnswerId, member) ? "좋아요" : "좋아요 해제");
     }
 }
 

@@ -18,7 +18,6 @@ import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
-import zerobase.bud.post.dto.RecommentDto;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostStatus;
 
@@ -40,6 +39,9 @@ public class CommentService {
 
     private final PostRepository postRepository;
 
+    private final ApplicationEventPublisher eventPublisher;
+
+    @Transactional
     public CommentDto createComment(Long postId, Member member, String content) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
@@ -96,22 +98,25 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (comment.getMember().equals(member)) {
-            throw new BudException(ErrorCode.CANNOT_LIKE_WRITER_SELF);
-        }
+        Optional<CommentLike> optionalCommentLike = commentLikeRepository.findByCommentAndMember(comment, member);
 
-        Optional<CommentLike> optionalCommentLike =
-                commentLikeRepository.findByCommentAndMember(comment, member);
-
-        if (optionalCommentLike.isEmpty()) {
+        if (optionalCommentLike.isPresent()) {
+            comment.minusLikeCount();
+            commentLikeRepository.delete(optionalCommentLike.get());
+        } else {
+            comment.addLikeCount();
             commentLikeRepository.save(CommentLike.builder()
                     .comment(comment)
                     .member(member)
                     .build());
-        } else {
-            commentLikeRepository.delete(optionalCommentLike.get());
+            PostType postType = comment.getPost().getPostType();
+            Long postId = comment.getPost().getId();
+            eventPublisher.publishEvent(new AddLikeCommentEvent(
+                member, comment , postType, postId
+            ));
         }
 
+        commentRepository.save(comment);
         return commentId;
     }
 
@@ -126,16 +131,16 @@ public class CommentService {
 
         Post post = comment.getPost();
 
-        if (!post.getMember().equals(member)) {
+        if (!Objects.equals(post.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_POST_OWNER);
         }
 
         commentPinRepository.deleteByPost(post);
-
         commentPinRepository.save(CommentPin.builder()
                 .comment(comment)
                 .post(post)
                 .build());
+        eventPublisher.publishEvent(new CommentPinEvent(member, comment));
 
         return commentId;
     }
@@ -146,7 +151,7 @@ public class CommentService {
         Post post = postRepository.findByIdAndPostStatus(postId, PostStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
 
-        if (!post.getMember().equals(member)) {
+        if (!Objects.equals(post.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_POST_OWNER);
         }
 
@@ -189,7 +194,7 @@ public class CommentService {
                 comment.getReComments().stream()
                         .map(reComment ->
                                 CommentDto.of(reComment,
-                                        member.equals(reComment.getMember()),
+                                        Objects.equals(member.getId(), reComment.getMember().getId()),
                                         commentLikeRepository.existsByCommentAndAndMember(reComment, member))
                         ).collect(Collectors.toList())
         );
@@ -200,7 +205,7 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getMember().equals(member)) {
+        if (!Objects.equals(comment.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
