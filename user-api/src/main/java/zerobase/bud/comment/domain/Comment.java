@@ -43,4 +43,5 @@ public class Comment extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private CommentStatus commentStatus;
+
 }

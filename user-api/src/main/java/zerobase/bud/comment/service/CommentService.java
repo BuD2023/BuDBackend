@@ -18,6 +18,7 @@ import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
+import zerobase.bud.post.dto.RecommentDto;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostStatus;
 
@@ -38,6 +39,58 @@ public class CommentService {
     private final CommentPinRepository commentPinRepository;
 
     private final PostRepository postRepository;
+
+    public CommentDto createComment(Long postId, Member member, String content) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
+
+        Comment comment = Comment.builder()
+                .post(post)
+                .member(member)
+                .content(content)
+                .likeCount(0)
+                .commentCount(0)
+                .parent(null)
+                .build();
+        commentRepository.save(comment);
+
+        return CommentDto.of(comment);
+    }
+
+    public CommentDto modifyComment(Long commentId, Member member, String content) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if(!comment.getMember().equals(member)) {
+            throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
+        }
+
+        comment.setContent(content);
+        commentRepository.save(comment);
+        return CommentDto.of(comment);
+    }
+
+    public RecommentDto createRecomment(Long commentId, Member member, String content) {
+        Comment parentComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
+
+        Comment comment = Comment.builder()
+                .post(parentComment.getPost())
+                .member(member)
+                .content(content)
+                .likeCount(0)
+                .commentCount(0)
+                .parent(parentComment)
+                .build();
+
+        parentComment.getReComments().add(comment);
+        parentComment.setCommentCount(parentComment.getCommentCount() + 1);
+
+        commentRepository.save(parentComment);
+        commentRepository.save(comment);
+
+        return RecommentDto.of(comment);
+    }
 
     public Long commentLike(Long commentId, Member member) {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)

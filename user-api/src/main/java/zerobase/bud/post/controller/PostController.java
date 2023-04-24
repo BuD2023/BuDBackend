@@ -10,10 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.comment.service.CommentService;
 import zerobase.bud.domain.Member;
-import zerobase.bud.post.dto.CommentDto;
-import zerobase.bud.post.dto.CreatePost;
-import zerobase.bud.post.dto.PostDto;
-import zerobase.bud.post.dto.UpdatePost;
+import zerobase.bud.post.dto.*;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostSortType;
@@ -97,6 +94,27 @@ public class PostController {
     ) {
         return ResponseEntity.ok(scrapService.isScrap(postId, member)
                 ? "스크랩 추가" : "스크랩 해제");
+    }
+
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<CommentDto> createComment(@PathVariable Long postId,
+                                                @AuthenticationPrincipal Member member,
+                                                @RequestBody String content) {
+        return ResponseEntity.ok(commentService.createComment(postId, member, content));
+    }
+
+    @PutMapping("/comments/{commentId}/modify")
+    public ResponseEntity<CommentDto> modifyComment(@PathVariable Long commentId,
+                                                @AuthenticationPrincipal Member member,
+                                                @RequestBody String content) {
+        return ResponseEntity.ok(commentService.modifyComment(commentId, member, content));
+    }
+
+    @PostMapping("/comments/{commentId}")
+    public ResponseEntity<RecommentDto> createRecomment(@PathVariable Long commentId,
+                                                        @AuthenticationPrincipal Member member,
+                                                        @RequestBody String content) {
+        return ResponseEntity.ok(commentService.createRecomment(commentId, member, content));
     }
 
     @PostMapping("/comments/{commentId}/like")
