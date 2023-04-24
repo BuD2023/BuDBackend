@@ -40,7 +40,9 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private final TokenProvider tokenProvider;
 
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, ?> redisTemplate;
+
+    private final RedisTemplate<String, String> stringRedisTemplate;
 
     private final ChannelTopic channelTopic;
 
@@ -77,7 +79,7 @@ public class WebSocketHandler implements ChannelInterceptor {
                 ChatRoom chatRoom = getChatRoom(session.getChatroomId());
 
                 removeUser(chatRoom.getId(), session.getUserId());
-                listOperations = redisTemplate.opsForList();
+                listOperations = stringRedisTemplate.opsForList();
                 notifyChatroomStatus(chatRoom.getId(), ChatType.EXIT);
 
                 if (chatRoom.getMember().getUserId().equals(session.getUserId())) {
@@ -110,12 +112,12 @@ public class WebSocketHandler implements ChannelInterceptor {
     }
 
     private void addUser(Long chatroomId, String userId) {
-        listOperations = redisTemplate.opsForList();
+        listOperations = stringRedisTemplate.opsForList();
         listOperations.rightPush(CHATROOM + chatroomId, userId);
     }
 
     private void removeUser(Long chatroomId, String userId) {
-        listOperations = redisTemplate.opsForList();
+        listOperations = stringRedisTemplate.opsForList();
         listOperations.remove(CHATROOM + chatroomId, 0, userId);
     }
 
