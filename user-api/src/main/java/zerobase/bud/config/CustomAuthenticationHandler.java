@@ -25,10 +25,11 @@ public class CustomAuthenticationHandler implements AuthenticationSuccessHandler
     private final MemberRepository memberRepository;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        Optional<Member> optionalMember = memberRepository.findByUserId(authentication.getName());
+        Optional<Member> optionalMember = memberRepository.findByUserCode(authentication.getName());
         if(optionalMember.isPresent()) {
             Member member = optionalMember.get();
-            JwtDto token = tokenProvider.generateToken(authentication.getName());
+            JwtDto token = tokenProvider.generateToken(member.getUserId());
+            System.out.println(token.getAccessToken());
             response.setHeader(HttpHeaders.AUTHORIZATION, token.getGrantType() + token.getAccessToken());
             response.setHeader("X-Refresh-Token", token.getGrantType() + token.getRefreshToken());
             if(member.isAddInfoYn()) {

@@ -12,5 +12,7 @@ import java.util.stream.Stream;
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByUserId(String userId);
 
+    Optional<Member> findByUserCode(String userCode);
+
     List<Member> findAllByUserIdIn(List<String> userIds);
 }
