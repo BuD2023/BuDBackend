@@ -141,7 +141,7 @@ class NotificationControllerTest {
 
         //when 어떤 경우에
         //then 이런 결과가 나온다.
-        mockMvc.perform(put("/notifications/"+notificationId+"/read")
+        mockMvc.perform(put("/notifications/"+notificationId)
                 .header(HttpHeaders.AUTHORIZATION, TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -149,6 +149,31 @@ class NotificationControllerTest {
             .andExpect(status().isOk())
             .andExpect(
                 jsonPath("$").value(notificationId))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()))
+            );
+
+    }
+
+    @Test
+    @WithMockUser
+    void success_updateAllNotificationStatusRead() throws Exception {
+        //given
+        given(notificationService.updateAllNotificationStatusRead(any()))
+            .willReturn(61);
+
+        //when 어떤 경우에
+        //then 이런 결과가 나온다.
+        mockMvc.perform(put("/notifications/")
+                .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(
+                jsonPath("$").value(61))
             .andDo(
                 document("{class-name}/{method-name}",
                     preprocessRequest(prettyPrint()),
@@ -175,6 +200,31 @@ class NotificationControllerTest {
             .andExpect(status().isOk())
             .andExpect(
                 jsonPath("$").value(notificationId))
+            .andDo(
+                document("{class-name}/{method-name}",
+                    preprocessRequest(prettyPrint()),
+                    preprocessResponse(prettyPrint()))
+            );
+
+    }
+
+    @Test
+    @WithMockUser
+    void success_deleteAllReadNotifications() throws Exception {
+        //given
+        given(notificationService.deleteAllReadNotifications(any()))
+            .willReturn(4);
+
+        //when 어떤 경우에
+        //then 이런 결과가 나온다.
+        mockMvc.perform(delete("/notifications")
+                .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(
+                jsonPath("$").value(4))
             .andDo(
                 document("{class-name}/{method-name}",
                     preprocessRequest(prettyPrint()),
