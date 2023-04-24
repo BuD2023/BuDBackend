@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -34,7 +35,7 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private static HashOperations<String, String, ChatRoomSession> hashOperations;
 
-    private static ListOperations<String, String> listOperations;
+    private static SetOperations<String, String> setOperations;
 
     private final ChatRoomRepository chatRoomRepository;
 
@@ -50,49 +51,63 @@ public class WebSocketHandler implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            String rawToken = accessor.getFirstNativeHeader("Authorization");
-            log.error(rawToken);
+        String rawToken = accessor.getFirstNativeHeader("Authorization");
 
-            if (!tokenProvider.validateRawToken(rawToken)) {
-                throw new MemberException(ErrorCode.INVALID_TOKEN);
-            }
+//        if (!tokenProvider.validateRawToken(rawToken)) {
+//            throw new MemberException(ErrorCode.INVALID_TOKEN);
+//        }
 
-            String userId = tokenProvider.getUserIdInRawToken(rawToken);
-            log.error(userId);
-            Long chatroomId = getChatroomIdFromDestination(accessor.getDestination());
-            String sessionId = accessor.getSessionId();
-            ChatRoom chatRoom = getChatRoom(chatroomId);
+        String userId = tokenProvider.getUserIdInRawToken(rawToken);
+        log.error(userId);
+        Long chatroomId = 20L;
+        String sessionId = accessor.getSessionId();
+        ChatRoom chatRoom = getChatRoom(chatroomId);
 
-            addUser(chatroomId, userId);
-            saveSession(chatRoom, userId, sessionId);
-            notifyChatroomStatus(chatRoom.getId(), ChatType.ENTER);
+        addUser(chatroomId, userId);
+        saveSession(chatRoom, userId, sessionId);
+        notifyChatroomStatus(chatRoom.getId(), ChatType.ENTER);
 
-        } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
-            String sessionId = accessor.getSessionId();
-            hashOperations = redisTemplate.opsForHash();
-            assert sessionId != null;
-            ChatRoomSession session = hashOperations.get(SESSION, sessionId);
-
-            try {
-                assert session != null;
-                ChatRoom chatRoom = getChatRoom(session.getChatroomId());
-
-                removeUser(chatRoom.getId(), session.getUserId());
-                listOperations = stringRedisTemplate.opsForList();
-                notifyChatroomStatus(chatRoom.getId(), ChatType.EXIT);
-
-                if (chatRoom.getMember().getUserId().equals(session.getUserId())) {
-                    deleteChatroom(chatRoom);
-                    notifyChatroomStatus(chatRoom.getId(), ChatType.EXPIRE);
-                }
-
-            } catch (ChatRoomException | NullPointerException | NumberFormatException e) {
-                log.error("{}", e.getMessage());
-            } finally {
-                hashOperations.delete(SESSION, sessionId);
-            }
-        }
+//        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+//            String rawToken = accessor.getFirstNativeHeader("Authorization");
+//
+//            if (!tokenProvider.validateRawToken(rawToken)) {
+//                throw new MemberException(ErrorCode.INVALID_TOKEN);
+//            }
+//
+//            String userId = tokenProvider.getUserIdInRawToken(rawToken);
+//            Long chatroomId = getChatroomIdFromDestination(accessor.getDestination());
+//            String sessionId = accessor.getSessionId();
+//            ChatRoom chatRoom = getChatRoom(chatroomId);
+//
+//            addUser(chatroomId, userId);
+//            saveSession(chatRoom, userId, sessionId);
+//            notifyChatroomStatus(chatRoom.getId(), ChatType.ENTER);
+//
+//        } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+//            String sessionId = accessor.getSessionId();
+//            hashOperations = redisTemplate.opsForHash();
+//            assert sessionId != null;
+//            ChatRoomSession session = hashOperations.get(SESSION, sessionId);
+//
+//            try {
+//                assert session != null;
+//                ChatRoom chatRoom = getChatRoom(session.getChatroomId());
+//
+//                removeUser(chatRoom.getId(), session.getUserId());
+//                setOperations = stringRedisTemplate.opsForSet();
+//                notifyChatroomStatus(chatRoom.getId(), ChatType.EXIT);
+//
+//                if (chatRoom.getMember().getUserId().equals(session.getUserId())) {
+//                    deleteChatroom(chatRoom);
+//                    notifyChatroomStatus(chatRoom.getId(), ChatType.EXPIRE);
+//                }
+//
+//            } catch (ChatRoomException | NullPointerException | NumberFormatException e) {
+//                log.error("{}", e.getMessage());
+//            } finally {
+//                hashOperations.delete(SESSION, sessionId);
+//            }
+//        }
 
         return message;
     }
@@ -112,13 +127,13 @@ public class WebSocketHandler implements ChannelInterceptor {
     }
 
     private void addUser(Long chatroomId, String userId) {
-        listOperations = stringRedisTemplate.opsForList();
-        listOperations.rightPush(CHATROOM + chatroomId, userId);
+        setOperations = stringRedisTemplate.opsForSet();
+        setOperations.add(CHATROOM + chatroomId, userId);
     }
 
     private void removeUser(Long chatroomId, String userId) {
-        listOperations = stringRedisTemplate.opsForList();
-        listOperations.remove(CHATROOM + chatroomId, 0, userId);
+        setOperations = stringRedisTemplate.opsForSet();
+        setOperations.remove(CHATROOM + chatroomId, 0, userId);
     }
 
     private Long getChatroomIdFromDestination(String destination) {
@@ -129,7 +144,7 @@ public class WebSocketHandler implements ChannelInterceptor {
     }
 
     private ChatRoom getChatRoom(Long chatroomId) {
-        return chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
+        return chatRoomRepository.findById(chatroomId)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
     }
 
@@ -139,7 +154,7 @@ public class WebSocketHandler implements ChannelInterceptor {
     }
 
     private Long getNumberOfMembers(Long chatroomId) {
-        return listOperations.size(CHATROOM + chatroomId);
+        return setOperations.size(CHATROOM + chatroomId);
     }
 
 }

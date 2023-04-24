@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.chat.dto.ChatDto;
@@ -26,6 +26,7 @@ import zerobase.bud.user.repository.FollowRepository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static zerobase.bud.common.type.ErrorCode.*;
@@ -49,10 +50,9 @@ public class ChatRoomService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    private static ListOperations<String, String> listOperations;
+    private static SetOperations<String, String> setOperations;
 
     public Long createChatRoom(String title, String description, List<String> hashTag, Member member) {
-
         String hashStr = "";
         if (!hashTag.isEmpty()) {
             hashStr = "#" + String.join("#", hashTag) + "#";
@@ -69,8 +69,7 @@ public class ChatRoomService {
     }
 
     public Slice<ChatRoomDto> searchChatRooms(String keyword, int page, int size) {
-
-        listOperations = redisTemplate.opsForList();
+        setOperations = redisTemplate.opsForSet();
 
         return chatRoomRepository
                 .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatusOrderByCreatedAtDesc(
@@ -81,8 +80,7 @@ public class ChatRoomService {
     }
 
     public Slice<ChatRoomDto> readChatRooms(int page, int size) {
-
-        listOperations = redisTemplate.opsForList();
+        setOperations = redisTemplate.opsForSet();
 
         return chatRoomRepository.findAllByStatusOrderByCreatedAtDesc(ACTIVE,
                         PageRequest.of(page, size))
@@ -92,8 +90,7 @@ public class ChatRoomService {
     }
 
     public ChatRoomDto readChatRoom(Long chatroomId) {
-
-        listOperations = redisTemplate.opsForList();
+        setOperations = redisTemplate.opsForSet();
 
         return ChatRoomDto.of(
                 chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
@@ -103,7 +100,7 @@ public class ChatRoomService {
     }
 
     private Long getNumberOfMembers(Long chatroomId) {
-        return listOperations.size(CHATROOM + chatroomId);
+        return setOperations.size(CHATROOM + chatroomId);
     }
 
     public Slice<ChatDto> readChats(Long chatroomId, Member member, int page, int size) {
@@ -157,8 +154,8 @@ public class ChatRoomService {
                 .collect(Collectors.toList());
     }
 
-    private List<String> getUserList(Long chatroomId) {
-        listOperations = redisTemplate.opsForList();
-        return listOperations.range(CHATROOM + chatroomId, 0, -1);
+    private Set<String> getUserList(Long chatroomId) {
+        setOperations = redisTemplate.opsForSet();
+        return setOperations.members(CHATROOM + chatroomId);
     }
 }

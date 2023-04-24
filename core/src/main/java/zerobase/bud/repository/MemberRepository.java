@@ -6,11 +6,11 @@ import zerobase.bud.domain.Member;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.Set;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByUserId(String userId);
 
-    List<Member> findAllByUserIdIn(List<String> userIds);
+    List<Member> findAllByUserIdIn(Set<String> userIds);
 }
