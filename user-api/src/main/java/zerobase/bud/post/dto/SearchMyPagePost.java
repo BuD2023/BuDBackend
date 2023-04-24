@@ -22,7 +22,7 @@ public class SearchMyPagePost {
 
         private long postRegisterMemberId;
 
-        private String[] imageUrls;
+        private List<String> imageUrls;
 
         private String content;
 
@@ -42,13 +42,7 @@ public class SearchMyPagePost {
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
-        public static Response of(PostDto post, List<Image> images) {
-            String[] imageUrls = new String[images.size()];
-
-            for (int i = 0; i < images.size(); i++) {
-                imageUrls[i] = images.get(i).getImagePath();
-            }
-
+        public static Response of(PostDto post, List<String> imageUrls) {
             return Response.builder()
                     .postId(post.getId())
                     .title(post.getTitle())

@@ -53,12 +53,8 @@ public class SearchScrap {
 
         private LocalDateTime scrapCreatedAt;
 
-        public static Response of(ScrapDto scrapDto, List<Image> images) {
+        public static Response of(ScrapDto scrapDto, List<String> imageUrls) {
             Post post = scrapDto.getPost();
-
-            List<String> imagePaths = images.stream()
-                    .map(Image::getImagePath)
-                    .collect(Collectors.toList());
 
             return Response.builder()
                     .scrapId(scrapDto.getScrapId())
@@ -69,7 +65,7 @@ public class SearchScrap {
                             .getProfileImg())
                     .title(post.getTitle())
                     .content(post.getContent())
-                    .imageUrls(imagePaths)
+                    .imageUrls(imageUrls)
                     .commentCount(post.getCommentCount())
                     .likeCount(post.getLikeCount())
                     .scrapCount(post.getScrapCount())
