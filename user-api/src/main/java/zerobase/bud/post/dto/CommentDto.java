@@ -29,6 +29,18 @@ public class CommentDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<CommentDto> reComments;
 
+    public static CommentDto of(Comment comment) {
+        return CommentDto.builder()
+                .commentId(comment.getId())
+                .content(comment.getContent())
+                .numberOfLikes(comment.getLikeCount())
+                .memberId(comment.getMember().getId())
+                .memberName(comment.getMember().getNickname())
+                .memberProfileUrl(comment.getMember().getProfileImg())
+                .createdAt(TimeUtil.caculateTerm((comment.getCreatedAt())))
+                .build();
+    }
+
     public static CommentDto of(Comment comment, boolean isReader, boolean isReaderLiked){
         return CommentDto.builder()
                 .commentId(comment.getId())
@@ -58,4 +70,5 @@ public class CommentDto {
                 .reComments(reComments)
                 .build();
     }
+
 }

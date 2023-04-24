@@ -102,6 +102,27 @@ public class PostController {
                 ? "스크랩 추가" : "스크랩 해제");
     }
 
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<CommentDto> createComment(@PathVariable Long postId,
+                                                @AuthenticationPrincipal Member member,
+                                                @RequestBody String content) {
+        return ResponseEntity.ok(commentService.createComment(postId, member, content));
+    }
+
+    @PutMapping("/comments/{commentId}/modify")
+    public ResponseEntity<CommentDto> modifyComment(@PathVariable Long commentId,
+                                                @AuthenticationPrincipal Member member,
+                                                @RequestBody String content) {
+        return ResponseEntity.ok(commentService.modifyComment(commentId, member, content));
+    }
+
+    @PostMapping("/comments/{commentId}")
+    public ResponseEntity<RecommentDto> createRecomment(@PathVariable Long commentId,
+                                                        @AuthenticationPrincipal Member member,
+                                                        @RequestBody String content) {
+        return ResponseEntity.ok(commentService.createRecomment(commentId, member, content));
+    }
+
     @PostMapping("/comments/{commentId}/like")
     public ResponseEntity<Long> commentLike(@PathVariable Long commentId,
                                             @AuthenticationPrincipal Member member) {

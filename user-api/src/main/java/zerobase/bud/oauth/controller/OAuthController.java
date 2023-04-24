@@ -30,7 +30,7 @@ public class OAuthController {
 
     @PostMapping("/addInfo")
     public ResponseEntity<?> addInfo(@RequestHeader("Authorization") String token,
-                                     @RequestBody MemberDto.addInfo parameter) {
+                                     @RequestBody MemberDto.Info parameter) {
         boolean result = authService.addAdditionalInfo(token, parameter);
         return result ? ResponseEntity.ok("정상적으로 정보가 추가되었습니다.") :
                         ResponseEntity.ok("정보 추가에 실패하였습니다.");
