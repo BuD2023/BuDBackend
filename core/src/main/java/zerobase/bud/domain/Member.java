@@ -38,6 +38,10 @@ public class Member extends BaseEntity implements UserDetails {
     @OneToOne
     private Level level;
 
+    @Column(unique = true)
+    private String userCode;
+
+    @Column(unique = true)
     private String nickname;
 
     private String profileImg;
@@ -51,8 +55,9 @@ public class Member extends BaseEntity implements UserDetails {
     private String oAuthAccessToken;
     private boolean addInfoYn;
 
-    public Member update(String oAuthAccessToken) {
+    public Member update(String oAuthAccessToken, String userCode) {
         this.oAuthAccessToken = oAuthAccessToken;
+        this.userCode = userCode;
 
         return this;
     }

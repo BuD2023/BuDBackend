@@ -37,7 +37,7 @@ public class AuthService {
         return tokenProvider.generateToken(authentication.getName());
     }
 
-    public boolean addAdditionalInfo(String token, MemberDto.addInfo parameter) {
+    public boolean addAdditionalInfo(String token, MemberDto.Info parameter) {
         String userId = tokenProvider.getUserIdInRawToken(token);
         if(ObjectUtils.isEmpty(userId)) {
             return false;

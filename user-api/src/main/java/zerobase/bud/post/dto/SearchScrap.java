@@ -23,6 +23,10 @@ public class SearchScrap {
 
         private Long postId;
 
+        private Long postRegisterMemberId;
+        private String postRegisterMemberNickname;
+        private String postRegisterMemberProfileImg;
+
         private String title;
 
         private String content;
@@ -41,7 +45,6 @@ public class SearchScrap {
 
         private PostType postType;
 
-
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -50,23 +53,25 @@ public class SearchScrap {
 
         private LocalDateTime scrapCreatedAt;
 
-        public static Response of(ScrapDto scrapDto, List<Image> images) {
+        public static Response of(ScrapDto scrapDto, List<String> imageUrls) {
             Post post = scrapDto.getPost();
-
-            List<String> imagePaths = images.stream()
-                    .map(Image::getImagePath)
-                    .collect(Collectors.toList());
 
             return Response.builder()
                     .scrapId(scrapDto.getScrapId())
                     .postId(post.getId())
+                    .postRegisterMemberId(post.getMember().getId())
+                    .postRegisterMemberNickname(post.getMember().getNickname())
+                    .postRegisterMemberProfileImg(post.getMember()
+                            .getProfileImg())
                     .title(post.getTitle())
                     .content(post.getContent())
-                    .imageUrls(imagePaths)
+                    .imageUrls(imageUrls)
                     .commentCount(post.getCommentCount())
                     .likeCount(post.getLikeCount())
                     .scrapCount(post.getScrapCount())
                     .hitCount(post.getHitCount())
+                    .postStatus(post.getPostStatus())
+                    .postType(post.getPostType())
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
                     .isLike(scrapDto.isPostLike())

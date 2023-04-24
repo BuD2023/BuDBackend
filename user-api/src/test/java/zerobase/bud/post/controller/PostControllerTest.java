@@ -189,7 +189,7 @@ class PostControllerTest {
             list.add(SearchPost.Response.builder()
                     .id(i)
                     .title("제목" + i)
-                    .imageUrls(new String[]{"url1", "url2"})
+                    .imageUrls(getImageUrlList())
                     .content("내용" + i)
                     .commentCount(i)
                     .likeCount(i)
@@ -306,7 +306,7 @@ class PostControllerTest {
         SearchPost.Response response = SearchPost.Response.builder()
                 .id(1)
                 .title("제목")
-                .imageUrls(new String[]{"url1", "url2"})
+                .imageUrls(getImageUrlList())
                 .content("내용")
                 .commentCount(1)
                 .likeCount(1)
@@ -738,5 +738,13 @@ class PostControllerTest {
                                 preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
                                 preprocessResponse(prettyPrint()))
                 );
+    }
+
+
+    private List<String> getImageUrlList() {
+        List<String> list = new ArrayList<>();
+        list.add("url1");
+        list.add("url2");
+        return list;
     }
 }

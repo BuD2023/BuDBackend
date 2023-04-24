@@ -61,12 +61,7 @@ import zerobase.bud.post.dto.CreateQnaAnswer.Request;
 import zerobase.bud.post.dto.QnaAnswerDto;
 import zerobase.bud.post.dto.SearchQnaAnswer;
 import zerobase.bud.post.dto.UpdateQnaAnswer;
-import zerobase.bud.post.repository.PostRepository;
-import zerobase.bud.post.repository.QnaAnswerImageRepository;
-import zerobase.bud.post.repository.QnaAnswerLikeRepository;
-import zerobase.bud.post.repository.QnaAnswerPinRepository;
-import zerobase.bud.post.repository.QnaAnswerRepository;
-import zerobase.bud.post.repository.QnaAnswerRepositoryQuerydslImpl;
+import zerobase.bud.post.repository.*;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.post.type.QnaAnswerStatus;
 import zerobase.bud.repository.MemberRepository;
@@ -87,7 +82,10 @@ class QnaAnswerServiceTest {
     private QnaAnswerPinRepository qnaAnswerPinRepository;
 
     @Mock
-    private QnaAnswerRepositoryQuerydslImpl qnaAnswerRepositoryQuerydsl;
+    private QnaAnswerQuerydsl qnaAnswerRepositoryQuerydsl;
+
+    @Mock
+    private QnaAnswerImageQuerydsl qnaAnswerImageQuerydsl;
 
     @Mock
     private MemberRepository memberRepository;
@@ -625,6 +623,9 @@ class QnaAnswerServiceTest {
         PageRequest pageable = PageRequest.of(0, 3);
         pageable.withSort(Sort.Direction.DESC, "likeCount");
 
+        given(qnaAnswerImageQuerydsl.findImagePathAllByPostId(anyLong()))
+                .willReturn(getImageUrlList());
+
         given(qnaAnswerRepositoryQuerydsl.findAllByPostIdAndQnaAnswerStatusNotLike(anyLong(), anyLong(), any()))
                 .willReturn(new PageImpl<>(list, pageable, 10));
 
@@ -638,7 +639,9 @@ class QnaAnswerServiceTest {
         assertEquals(QnaAnswerStatus.ACTIVE, qnaAnswersPages.getContent().get(0).getQnaAnswerStatus());
         assertEquals(1, qnaAnswersPages.getContent().get(0).getCommentCount());
         assertEquals(3, qnaAnswersPages.getContent().get(2).getLikeCount());
-
+        assertEquals("img0", qnaAnswersPages.getContent().get(2).getImageUrls().get(0));
+        assertEquals("img1", qnaAnswersPages.getContent().get(2).getImageUrls().get(1));
+        assertEquals("img2", qnaAnswersPages.getContent().get(2).getImageUrls().get(2));
         assertTrue(qnaAnswersPages.getContent().get(0).isQnaAnswerPin());
         assertFalse(qnaAnswersPages.getContent().get(1).isQnaAnswerPin());
         assertFalse(qnaAnswersPages.getContent().get(2).isQnaAnswerPin());
@@ -864,6 +867,14 @@ class QnaAnswerServiceTest {
             "health.jpg",
             "image/jpg",
             "<<jpeg data>>".getBytes()));
+        return images;
+    }
+
+    private static List<String> getImageUrlList() {
+        List<String> images = new ArrayList<>();
+        images.add("img0");
+        images.add("img1");
+        images.add("img2");
         return images;
     }
 

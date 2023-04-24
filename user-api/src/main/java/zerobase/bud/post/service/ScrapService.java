@@ -8,13 +8,9 @@ import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.SearchScrap;
-import zerobase.bud.post.repository.ImageRepository;
-import zerobase.bud.post.repository.PostRepository;
-import zerobase.bud.post.repository.ScrapRepositoryQuerydslImpl;
-import zerobase.bud.post.type.PostStatus;
+import zerobase.bud.post.repository.*;
 import zerobase.bud.post.domain.Scrap;
 import zerobase.bud.post.dto.ScrapDto;
-import zerobase.bud.post.repository.ScrapRepository;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -31,9 +27,9 @@ public class ScrapService {
 
     private final PostRepository postRepository;
 
-    private final ImageRepository imageRepository;
+    private final PostImageQuerydsl postImageQuerydsl;
 
-    private final ScrapRepositoryQuerydslImpl scrapRepositoryQuerydsl;
+    private final ScrapQuerydsl scrapRepositoryQuerydsl;
 
     public boolean addScrap(Long postId, Member member) {
         Post post = postRepository.findById(postId)
@@ -70,7 +66,7 @@ public class ScrapService {
         return new PageImpl<>(
                 scrapDtos.stream()
                         .map(scrapDto -> SearchScrap.Response.of(scrapDto,
-                                imageRepository.findAllByPostId(
+                                postImageQuerydsl.findImagePathAllByPostId(
                                         scrapDto.getPost().getId())))
                         .collect(Collectors.toList()),
                 scrapDtos.getPageable(),
