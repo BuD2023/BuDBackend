@@ -1,5 +1,6 @@
 package zerobase.bud.notification.controller;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -32,6 +33,13 @@ public class NotificationController {
         @PageableDefault(sort = SORTING_CRITERIA , direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(notificationService.getNotifications(member, pageable));
+    }
+
+    @GetMapping("/unread-count")
+    public ResponseEntity<Map<String, Long>> getUnreadNotificationCount(
+        @AuthenticationPrincipal Member member
+    ) {
+        return ResponseEntity.ok(notificationService.getUnreadNotificationCount(member));
     }
 
     @PutMapping("/{notificationId}/read")
