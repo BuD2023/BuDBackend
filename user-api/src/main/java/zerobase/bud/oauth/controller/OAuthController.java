@@ -32,7 +32,7 @@ public class OAuthController {
     @PostMapping("/addInfo")
     public ResponseEntity<Boolean> addInfo(@AuthenticationPrincipal Member member,
                                      @RequestPart(required = false) MultipartFile file,
-                                     @RequestPart(required = false) String nickname,
+                                     @RequestPart String nickname,
                                      @RequestPart String job) {
         return ResponseEntity.ok(authService.addAdditionalInfo(member, file, nickname, job));
     }
