@@ -50,12 +50,14 @@ public class WebSocketHandler implements ChannelInterceptor {
 
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             String rawToken = accessor.getFirstNativeHeader("Authorization");
+            log.error(rawToken);
 
             if (tokenProvider.validateRawToken(rawToken)) {
                 throw new MemberException(ErrorCode.INVALID_TOKEN);
             }
 
             String userId = tokenProvider.getUserIdInRawToken(rawToken);
+            log.error(userId);
             Long chatroomId = getChatroomIdFromDestination(accessor.getDestination());
             String sessionId = accessor.getSessionId();
             ChatRoom chatRoom = getChatRoom(chatroomId);
