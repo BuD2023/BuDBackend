@@ -3,7 +3,6 @@ package zerobase.bud.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -23,7 +22,8 @@ import zerobase.bud.type.ChatType;
 import zerobase.bud.type.ErrorCode;
 import zerobase.bud.util.TokenProvider;
 
-import static zerobase.bud.type.ChatRoomStatus.ACTIVE;
+import java.util.Objects;
+
 import static zerobase.bud.type.ErrorCode.CHATROOM_NOT_FOUND;
 import static zerobase.bud.util.Constants.CHATROOM;
 import static zerobase.bud.util.Constants.SESSION;
@@ -51,63 +51,46 @@ public class WebSocketHandler implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-        String rawToken = accessor.getFirstNativeHeader("Authorization");
+        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+            String rawToken = accessor.getFirstNativeHeader("Authorization");
 
-//        if (!tokenProvider.validateRawToken(rawToken)) {
-//            throw new MemberException(ErrorCode.INVALID_TOKEN);
-//        }
+            if (!tokenProvider.validateRawToken(rawToken)) {
+                throw new MemberException(ErrorCode.INVALID_TOKEN);
+            }
 
-        String userId = tokenProvider.getUserIdInRawToken(rawToken);
-        log.error(userId);
-        Long chatroomId = 20L;
-        String sessionId = accessor.getSessionId();
-        ChatRoom chatRoom = getChatRoom(chatroomId);
+            String userId = tokenProvider.getUserIdInRawToken(rawToken);
+            Long chatroomId = getChatroomIdFromDestination(accessor.getDestination());
+            String sessionId = accessor.getSessionId();
+            ChatRoom chatRoom = getChatRoom(chatroomId);
 
-        addUser(chatroomId, userId);
-        saveSession(chatRoom, userId, sessionId);
-        notifyChatroomStatus(chatRoom.getId(), ChatType.ENTER);
+            addUser(chatroomId, userId);
+            saveSession(chatRoom, userId, sessionId);
+            notifyChatroomStatus(chatRoom.getId(), ChatType.ENTER);
 
-//        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-//            String rawToken = accessor.getFirstNativeHeader("Authorization");
-//
-//            if (!tokenProvider.validateRawToken(rawToken)) {
-//                throw new MemberException(ErrorCode.INVALID_TOKEN);
-//            }
-//
-//            String userId = tokenProvider.getUserIdInRawToken(rawToken);
-//            Long chatroomId = getChatroomIdFromDestination(accessor.getDestination());
-//            String sessionId = accessor.getSessionId();
-//            ChatRoom chatRoom = getChatRoom(chatroomId);
-//
-//            addUser(chatroomId, userId);
-//            saveSession(chatRoom, userId, sessionId);
-//            notifyChatroomStatus(chatRoom.getId(), ChatType.ENTER);
-//
-//        } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
-//            String sessionId = accessor.getSessionId();
-//            hashOperations = redisTemplate.opsForHash();
-//            assert sessionId != null;
-//            ChatRoomSession session = hashOperations.get(SESSION, sessionId);
-//
-//            try {
-//                assert session != null;
-//                ChatRoom chatRoom = getChatRoom(session.getChatroomId());
-//
-//                removeUser(chatRoom.getId(), session.getUserId());
-//                setOperations = stringRedisTemplate.opsForSet();
-//                notifyChatroomStatus(chatRoom.getId(), ChatType.EXIT);
-//
-//                if (chatRoom.getMember().getUserId().equals(session.getUserId())) {
-//                    deleteChatroom(chatRoom);
-//                    notifyChatroomStatus(chatRoom.getId(), ChatType.EXPIRE);
-//                }
-//
-//            } catch (ChatRoomException | NullPointerException | NumberFormatException e) {
-//                log.error("{}", e.getMessage());
-//            } finally {
-//                hashOperations.delete(SESSION, sessionId);
-//            }
-//        }
+        } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+            String sessionId = accessor.getSessionId();
+            hashOperations = redisTemplate.opsForHash();
+            assert sessionId != null;
+            ChatRoomSession session = hashOperations.get(SESSION, sessionId);
+
+            try {
+                assert session != null;
+                ChatRoom chatRoom = getChatRoom(session.getChatroomId());
+
+                removeUser(chatRoom.getId(), session.getUserId());
+                notifyChatroomStatus(chatRoom.getId(), ChatType.EXIT);
+
+                if (Objects.equals(chatRoom.getMember().getUserId(), session.getUserId())) {
+                    deleteChatroom(chatRoom);
+                    notifyChatroomStatus(chatRoom.getId(), ChatType.EXPIRE);
+                }
+
+            } catch (Exception e) {
+                log.error("{}", e.getMessage());
+            } finally {
+                hashOperations.delete(SESSION, sessionId);
+            }
+        }
 
         return message;
     }
@@ -133,7 +116,7 @@ public class WebSocketHandler implements ChannelInterceptor {
 
     private void removeUser(Long chatroomId, String userId) {
         setOperations = stringRedisTemplate.opsForSet();
-        setOperations.remove(CHATROOM + chatroomId, 0, userId);
+        setOperations.remove(CHATROOM + chatroomId, userId);
     }
 
     private Long getChatroomIdFromDestination(String destination) {
