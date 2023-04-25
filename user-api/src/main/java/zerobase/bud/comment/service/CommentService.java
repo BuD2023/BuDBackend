@@ -109,6 +109,7 @@ public class CommentService {
         return RecommentDto.of(comment);
     }
 
+    @Transactional
     public Long commentLike(Long commentId, Member member) {
         Comment comment = commentRepository.findByIdAndCommentStatus(commentId, CommentStatus.ACTIVE)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
