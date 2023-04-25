@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .and()
 
                 .oauth2Login()
-                .successHandler(customAuthenticationHandler)
+                // .successHandler(customAuthenticationHandler)
                 .userInfoEndpoint()
                 .userService(customOAuth2UserService);
 
