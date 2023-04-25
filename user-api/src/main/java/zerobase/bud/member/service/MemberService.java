@@ -17,6 +17,8 @@ import zerobase.bud.repository.MemberRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+import static zerobase.bud.util.Constants.PROFILES;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -38,7 +40,7 @@ public class MemberService implements UserDetailsService {
         if(!ObjectUtils.isEmpty(nickname))
             member.setNickname(nickname);
         if(!ObjectUtils.isEmpty(file))
-            member.setProfileImg(awsS3Api.getImageUrl(awsS3Api.uploadImage(file, file.getName())));
+            member.setProfileImg(awsS3Api.getImageUrl(awsS3Api.uploadImage(file, PROFILES)));
         if(!ObjectUtils.isEmpty(introduceMessage))
             member.setIntroduceMessage(introduceMessage);
         if(!ObjectUtils.isEmpty(job))

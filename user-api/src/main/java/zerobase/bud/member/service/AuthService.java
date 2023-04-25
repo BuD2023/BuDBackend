@@ -17,6 +17,8 @@ import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.repository.LevelRepository;
 import zerobase.bud.repository.MemberRepository;
 
+import static zerobase.bud.util.Constants.PROFILES;
+
 
 @Slf4j
 @Service
@@ -46,9 +48,8 @@ public class AuthService {
         if(memberRepository.findByNickname(nickname).isPresent()) {
             throw new BudException(ErrorCode.ALREADY_USING_NICKNAME);
         }
-
         if(!ObjectUtils.isEmpty(file))
-            member.setProfileImg(awsS3Api.getImageUrl(awsS3Api.uploadImage(file, file.getName())));
+            member.setProfileImg(awsS3Api.getImageUrl(awsS3Api.uploadImage(file, PROFILES)));
         
         member.setNickname(nickname);
         member.setJob(job);
@@ -56,5 +57,9 @@ public class AuthService {
         member.setAddInfoYn(true);
         memberRepository.save(member);
         return true;
+    }
+
+    public boolean checkNickname(String nickname) {
+        return memberRepository.findByNickname(nickname).isEmpty();
     }
 }

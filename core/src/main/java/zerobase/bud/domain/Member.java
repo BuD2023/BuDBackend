@@ -52,11 +52,9 @@ public class Member extends BaseEntity implements UserDetails {
     private MemberStatus status;
     private String introduceMessage;
 
-    private String oAuthAccessToken;
     private boolean addInfoYn;
 
-    public Member update(String oAuthAccessToken, String userCode) {
-        this.oAuthAccessToken = oAuthAccessToken;
+    public Member update(String userCode) {
         this.userCode = userCode;
 
         return this;

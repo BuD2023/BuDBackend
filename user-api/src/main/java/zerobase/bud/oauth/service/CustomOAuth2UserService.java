@@ -62,25 +62,22 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             member = attributes.toEntity(imageUrl);
             githubInfo = GithubInfo.builder()
                     .userId(attributes.getUserId())
-                    .username(attributes.getNickname())
                     .accessToken(attributes.getOAuthAccessToken())
                     .build();
         }
         else if(optionalGithubInfo.isEmpty()) {
             member = optionalMember.get();
-            member.update(attributes.getNickname(), attributes.getUserCode());
+            member.update(attributes.getUserCode());
             githubInfo = GithubInfo.builder()
                     .userId(attributes.getUserId())
-                    .username(attributes.getNickname())
                     .accessToken(attributes.getOAuthAccessToken())
                     .build();
         }
         else {
             member = optionalMember.get();
-            member.update(attributes.getNickname(), attributes.getUserCode());
+            member.update(attributes.getUserCode());
             githubInfo = optionalGithubInfo.get();
 
-            githubInfo.setUsername(attributes.getNickname());
             githubInfo.setAccessToken(attributes.getOAuthAccessToken());
         }
         memberRepository.save(member);

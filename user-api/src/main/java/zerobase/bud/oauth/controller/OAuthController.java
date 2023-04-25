@@ -35,6 +35,10 @@ public class OAuthController {
                                      @RequestPart String nickname,
                                      @RequestPart String job) {
         return ResponseEntity.ok(authService.addAdditionalInfo(member, file, nickname, job));
+    }
 
+    @GetMapping("/checkNickname")
+    public ResponseEntity<Boolean> checkNickname(@RequestBody String nickname) {
+        return ResponseEntity.ok(authService.checkNickname(nickname));
     }
 }
