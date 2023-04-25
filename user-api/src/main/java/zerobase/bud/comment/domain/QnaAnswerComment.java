@@ -41,12 +41,6 @@ public class QnaAnswerComment extends BaseEntity {
     @OneToMany(mappedBy = "parent", orphanRemoval = true)
     private List<QnaAnswerComment> reComments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "qnaAnswerComment", cascade = CascadeType.ALL)
-    private List<QnaAnswerComment> commentLikes;
-
-    @OneToOne(mappedBy = "qnaAnswerComment", cascade = CascadeType.ALL)
-    private QnaAnswerCommentPin commentPin;
-
     @Enumerated(EnumType.STRING)
     private QnaAnswerCommentStatus qnaAnswerCommentStatus;
 
