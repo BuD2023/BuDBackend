@@ -49,7 +49,7 @@ public class AuthService {
             throw new BudException(ErrorCode.ALREADY_USING_NICKNAME);
         }
         if(!ObjectUtils.isEmpty(file))
-            member.setProfileImg(awsS3Api.getImageUrl(awsS3Api.uploadImage(file, PROFILES)));
+            member.setProfileImg(awsS3Api.uploadImage(file, PROFILES));
         
         member.setNickname(nickname);
         member.setJob(job);

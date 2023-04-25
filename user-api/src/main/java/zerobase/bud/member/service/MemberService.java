@@ -40,7 +40,7 @@ public class MemberService implements UserDetailsService {
         if(!ObjectUtils.isEmpty(nickname))
             member.setNickname(nickname);
         if(!ObjectUtils.isEmpty(file))
-            member.setProfileImg(awsS3Api.getImageUrl(awsS3Api.uploadImage(file, PROFILES)));
+            member.setProfileImg(awsS3Api.uploadImage(file, PROFILES));
         if(!ObjectUtils.isEmpty(introduceMessage))
             member.setIntroduceMessage(introduceMessage);
         if(!ObjectUtils.isEmpty(job))
