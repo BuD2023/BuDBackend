@@ -13,22 +13,18 @@ import zerobase.bud.jwt.dto.JwtDto;
 import zerobase.bud.jwt.dto.RefreshDto;
 import zerobase.bud.member.service.AuthService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
 @RestController
 @RequiredArgsConstructor
 public class OAuthController {
     private final AuthService authService;
     @GetMapping("/login/oauth2")
-    public void callback(@AuthenticationPrincipal OAuth2User oAuth2User, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private ResponseEntity<?> callback(@AuthenticationPrincipal OAuth2User oAuth2User) {
         JwtDto token = authService.login(oAuth2User);
 
-        response.setHeader(HttpHeaders.AUTHORIZATION, token.getGrantType() + token.getAccessToken());
-        response.setHeader("X-Refresh-Token", token.getGrantType() + token.getRefreshToken());
-
-        response.sendRedirect("http://127.0.0.1:5173/");
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, token.getGrantType() + token.getAccessToken())
+                .header("X-Refresh-Token", token.getGrantType() + token.getRefreshToken())
+                .body("success");
     }
 
     @PostMapping("/refresh")
