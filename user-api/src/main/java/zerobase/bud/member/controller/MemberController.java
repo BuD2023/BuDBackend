@@ -31,4 +31,9 @@ public class MemberController {
     public ResponseEntity<List<String>> getLevelImage(@AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(memberService.getLevelImage(member));
     }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<?> withdrawMember(@AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok(memberService.withdrawMember(member));
+    }
 }

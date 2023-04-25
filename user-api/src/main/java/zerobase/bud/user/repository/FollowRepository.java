@@ -7,7 +7,6 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.user.domain.Follow;
 
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
@@ -24,4 +23,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     boolean existsByTargetAndMember(Member target, Member member);
 
     List<Follow> findAllByTargetId(Long senderId);
+
+    void deleteAllByMember(Member member);
+    void deleteAllByTarget(Member target);
 }

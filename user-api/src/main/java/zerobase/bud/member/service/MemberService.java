@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.awsS3.AwsS3Api;
@@ -13,10 +14,13 @@ import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
 import zerobase.bud.repository.MemberRepository;
+import zerobase.bud.user.repository.FollowRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import static zerobase.bud.type.MemberStatus.WITHDREW;
 import static zerobase.bud.util.Constants.PROFILES;
 
 @Slf4j
@@ -24,6 +28,7 @@ import static zerobase.bud.util.Constants.PROFILES;
 @RequiredArgsConstructor
 public class MemberService implements UserDetailsService {
     private final MemberRepository memberRepository;
+    private final FollowRepository followRepository;
 
     private final AwsS3Api awsS3Api;
 
@@ -62,5 +67,27 @@ public class MemberService implements UserDetailsService {
             }
         }
         return levelArray;
+    }
+
+    @Transactional
+    public long withdrawMember(Member member) {
+        String uuid;
+        String withdrawMemberPrefix = "Deleted User ";
+
+        followRepository.deleteAllByTarget(member);
+        followRepository.deleteAllByMember(member);
+
+        do {
+            uuid = UUID.randomUUID().toString().substring(0, 8);
+        } while (memberRepository.findByUserCode(uuid).isPresent());
+
+        member.setNickname(withdrawMemberPrefix + uuid);
+        member.setUserId(uuid);
+        member.setUserCode(uuid);
+        member.setStatus(WITHDREW);
+
+        memberRepository.save(member);
+
+        return member.getId();
     }
 }
