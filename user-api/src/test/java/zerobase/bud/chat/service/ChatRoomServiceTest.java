@@ -10,8 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import zerobase.bud.chat.dto.ChatDto;
 import zerobase.bud.chat.dto.ChatRoomDto;
 import zerobase.bud.chat.dto.ChatRoomStatusDto;
@@ -31,11 +31,7 @@ import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.repository.FollowRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -62,7 +58,7 @@ class ChatRoomServiceTest {
     private RedisTemplate<String, ?> redisTemplate;
 
     @Mock
-    private ListOperations listOperations;
+    private SetOperations setOperations;
 
     @Mock
     private HashOperations hashOperations;
@@ -171,10 +167,10 @@ class ChatRoomServiceTest {
                 .findByTitleContainsIgnoreCaseOrHashTagContainsIgnoreCaseAndStatusOrderByCreatedAtDesc(anyString(), anyString(), any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
 
-        given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.size("CHATROOM1")).willReturn(2L);
-        given(listOperations.size("CHATROOM2")).willReturn(3L);
-        given(listOperations.size("CHATROOM3")).willReturn(3L);
+        given(redisTemplate.opsForSet()).willReturn(setOperations);
+        given(setOperations.size("CHATROOM1")).willReturn(2L);
+        given(setOperations.size("CHATROOM2")).willReturn(3L);
+        given(setOperations.size("CHATROOM3")).willReturn(3L);
         //when
         Slice<ChatRoomDto> chatRoomDtos = chatRoomService.searchChatRooms("키워드", 0, 3);
         //then
@@ -225,10 +221,10 @@ class ChatRoomServiceTest {
                 .findAllByStatusOrderByCreatedAtDesc(any(), any()))
                 .willReturn(new SliceImpl<>(chatRooms));
 
-        given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.size("CHATROOM1")).willReturn(2L);
-        given(listOperations.size("CHATROOM2")).willReturn(3L);
-        given(listOperations.size("CHATROOM3")).willReturn(3L);
+        given(redisTemplate.opsForSet()).willReturn(setOperations);
+        given(setOperations.size("CHATROOM1")).willReturn(2L);
+        given(setOperations.size("CHATROOM2")).willReturn(3L);
+        given(setOperations.size("CHATROOM3")).willReturn(3L);
 
         //when
         Slice<ChatRoomDto> chatRoomDtos = chatRoomService.readChatRooms(0, 5);
@@ -259,8 +255,8 @@ class ChatRoomServiceTest {
                                 .build())
                 );
 
-        given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.size("CHATROOM123")).willReturn(2L);
+        given(redisTemplate.opsForSet()).willReturn(setOperations);
+        given(setOperations.size("CHATROOM123")).willReturn(2L);
         //when
         ChatRoomDto dto = chatRoomService.readChatRoom(123L);
         //then
@@ -375,8 +371,8 @@ class ChatRoomServiceTest {
 
         given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(newHost));
-        given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.range("CHATROOM1", 0, -1)).willReturn(List.of("trowds", "thefn"));
+        given(redisTemplate.opsForSet()).willReturn(setOperations);
+        given(setOperations.members("CHATROOM1")).willReturn(Set.of("trowds", "thefn"));
         //when
         ArgumentCaptor<ChatRoom> captor = ArgumentCaptor.forClass(ChatRoom.class);
         Long result = chatRoomService.modifyHost(1L, 2L, member);
@@ -473,8 +469,8 @@ class ChatRoomServiceTest {
 
         given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(newHost));
-        given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of("trowds", "thefn"));
+        given(redisTemplate.opsForSet()).willReturn(setOperations);
+        given(setOperations.members("CHATROOM12")).willReturn(Set.of("trowds", "thefn"));
         //when
         ChatRoomException exception = assertThrows(ChatRoomException.class,
                 () -> chatRoomService.modifyHost(12L, 1L, member));
@@ -517,9 +513,9 @@ class ChatRoomServiceTest {
                 .build();
 
         given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
-        given(redisTemplate.opsForList()).willReturn(listOperations);
-        given(listOperations.range("CHATROOM12", 0, -1)).willReturn(List.of("trowds", "thefn"));
-        given(memberRepository.findAllByUserIdIn(anyList()))
+        given(redisTemplate.opsForSet()).willReturn(setOperations);
+        given(setOperations.members("CHATROOM12")).willReturn(Set.of("trowds", "thefn"));
+        given(memberRepository.findAllByUserIdIn(anySet()))
                 .willReturn(List.of(member, chatUser1, chatUser2));
         given(followRepository.existsByTargetAndMember(member, member)).willReturn(false);
         given(followRepository.existsByTargetAndMember(chatUser1, member)).willReturn(true);

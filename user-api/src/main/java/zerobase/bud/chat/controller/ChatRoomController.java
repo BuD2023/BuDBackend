@@ -17,11 +17,12 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/chatrooms")
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
 
-    @PostMapping("/chatrooms")
+    @PostMapping
     private ResponseEntity<URI> createChatRoom(
             @RequestBody @Valid CreateChatRoom.Request request,
             @AuthenticationPrincipal Member member) {
@@ -30,14 +31,14 @@ public class ChatRoomController {
         return ResponseEntity.created(URI.create("/chatrooms/" + id)).build();
     }
 
-    @PostMapping("/chatrooms/{chatroomId}/users/{userId}")
+    @PostMapping("/{chatroomId}/users/{userId}")
     private ResponseEntity<Long> modifyHost(@PathVariable Long chatroomId,
                                             @PathVariable Long userId,
                                             @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(chatRoomService.modifyHost(chatroomId, userId, member));
     }
 
-    @GetMapping("/chatrooms/search")
+    @GetMapping("/search")
     private ResponseEntity<Slice<ChatRoomDto>> searchChatRoom(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
@@ -45,19 +46,19 @@ public class ChatRoomController {
         return ResponseEntity.ok(chatRoomService.searchChatRooms(keyword, page, size));
     }
 
-    @GetMapping("/chatrooms")
+    @GetMapping
     private ResponseEntity<Slice<ChatRoomDto>> readChatRooms(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         return ResponseEntity.ok(chatRoomService.readChatRooms(page, size));
     }
 
-    @GetMapping("/chatrooms/{chatroomId}")
+    @GetMapping("/{chatroomId}")
     private ResponseEntity<ChatRoomDto> readChatRoom(@PathVariable Long chatroomId) {
         return ResponseEntity.ok(chatRoomService.readChatRoom(chatroomId));
     }
 
-    @GetMapping("/chatrooms/{chatroomId}/chats")
+    @GetMapping("/{chatroomId}/chats")
     private ResponseEntity<Slice<ChatDto>> readChats(@PathVariable Long chatroomId,
                                                      @RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "10") int size,
@@ -65,13 +66,13 @@ public class ChatRoomController {
         return ResponseEntity.ok(chatRoomService.readChats(chatroomId, member, page, size));
     }
 
-    @GetMapping("/chatrooms/{chatroomId}/users")
+    @GetMapping("/{chatroomId}/users")
     private ResponseEntity<List<ChatUserDto>> chatUsers(@PathVariable Long chatroomId,
                                                         @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(chatRoomService.readChatUsers(chatroomId, member));
     }
 
-    @GetMapping("/chatrooms/status")
+    @GetMapping("/status")
     private ResponseEntity<ChatRoomStatusDto> chatRoomsStatus() {
         return ResponseEntity.ok(chatRoomService.chatRoomsStatus());
     }
