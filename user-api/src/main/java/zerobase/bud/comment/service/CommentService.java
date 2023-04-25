@@ -69,6 +69,7 @@ public class CommentService {
         return CommentDto.of(comment);
     }
 
+    @Transactional
     public CommentDto modifyComment(Long commentId, Member member, String content) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
@@ -82,6 +83,7 @@ public class CommentService {
         return CommentDto.of(comment);
     }
 
+    @Transactional
     public RecommentDto createRecomment(Long commentId, Member member, String content) {
         Comment parentComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
