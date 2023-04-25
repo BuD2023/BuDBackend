@@ -1,6 +1,7 @@
 package zerobase.bud.oauth.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -17,8 +18,13 @@ import zerobase.bud.member.service.AuthService;
 public class OAuthController {
     private final AuthService authService;
     @GetMapping("/login/oauth2")
-    private ResponseEntity<JwtDto> login(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        return ResponseEntity.ok(authService.login(oAuth2User));
+    private ResponseEntity<?> callback(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        JwtDto token = authService.login(oAuth2User);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, token.getGrantType() + token.getAccessToken())
+                .header("X-Refresh-Token", token.getGrantType() + token.getRefreshToken())
+                .body("success");
     }
 
     @PostMapping("/refresh")
