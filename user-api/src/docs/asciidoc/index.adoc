@@ -1068,6 +1068,31 @@ include::{snippets}/notification-controller-test/success_get-unread-notification
 .response field
 include::{snippets}/notification-controller-test/success_get-unread-notification-count/response-body.adoc[]
 
+=== 5. 읽지 않은 모든 알림 읽음으로 상태 변경
+.request
+include::{snippets}/notification-controller-test/success_update-all-notification-status-read/http-request.adoc[]
+
+.response
+include::{snippets}/notification-controller-test/success_update-all-notification-status-read/http-response.adoc[]
+
+.response field
+|===
+|필드명|설명
+|updateCount|업데이트 된 알림의 수
+|===
+
+=== 6. 읽은 모든 알림을 삭제
+.request
+include::{snippets}/notification-controller-test/success_delete-all-read-notifications/http-request.adoc[]
+
+.response
+include::{snippets}/notification-controller-test/success_delete-all-read-notifications/http-response.adoc[]
+
+.response field
+|===
+|필드명|설명
+|deleteCount|삭제 된 알림의 수
+|===
 
 == 파이어베이스토큰 API
 === 1. 파이어베이스토큰 저장

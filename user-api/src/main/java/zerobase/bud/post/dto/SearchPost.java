@@ -24,7 +24,7 @@ public class SearchPost {
         private Member member;
 
         private String title;
-        private String[] imageUrls;
+        private List<String> imageUrls;
         private String content;
 
         private long commentCount;
@@ -42,13 +42,7 @@ public class SearchPost {
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
-        public static Response of(PostDto post, List<Image> images) {
-            String[] imageUrls = new String[images.size()];
-
-            for (int i = 0; i < images.size(); i++) {
-                imageUrls[i] = images.get(i).getImagePath();
-            }
-
+        public static Response of(PostDto post, List<String> imageUrls) {
             return Response.builder()
                     .id(post.getId())
                     .member(post.getMember())

@@ -35,5 +35,6 @@ public class OAuthController {
                                      @RequestPart String nickname,
                                      @RequestPart String job) {
         return ResponseEntity.ok(authService.addAdditionalInfo(member, file, nickname, job));
+
     }
 }

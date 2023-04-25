@@ -29,11 +29,10 @@ import static zerobase.bud.user.domain.QFollow.follow;
 
 @Repository
 @RequiredArgsConstructor
-public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
+public class PostQuerydsl {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    @Override
     public Page<PostDto> findAllByPostStatus(
             Long memberId,
             String keyword,
@@ -49,7 +48,6 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
         );
     }
 
-    @Override
     public Page<PostDto> findAllByMyPagePost(
             Long memberId,
             Long myPageUserId,
@@ -63,7 +61,6 @@ public class PostRepositoryQuerydslImpl implements PostRepositoryQuerydsl {
         );
     }
 
-    @Override
     public PostDto findByPostId(
             Long memberId,
             Long postId

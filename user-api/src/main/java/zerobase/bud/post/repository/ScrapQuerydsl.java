@@ -24,11 +24,10 @@ import static zerobase.bud.user.domain.QFollow.follow;
 
 @Repository
 @RequiredArgsConstructor
-public class ScrapRepositoryQuerydslImpl implements ScrapRepositoryQuerydsl {
+public class ScrapQuerydsl {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    @Override
     public Page<ScrapDto> findAllByMemberIdAndPostStatus(
             Long memberId,
             Pageable pageable
