@@ -21,7 +21,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OAuthController {
     private final AuthService authService;
-    @GetMapping("/login/oauth2")
+    @GetMapping("/login/oauth2/code/github")
     public void callback(@AuthenticationPrincipal OAuth2User oAuth2User, HttpServletRequest request, HttpServletResponse response) throws IOException {
         JwtDto token = authService.login(oAuth2User);
 
