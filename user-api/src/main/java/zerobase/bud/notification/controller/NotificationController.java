@@ -42,13 +42,21 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getUnreadNotificationCount(member));
     }
 
-    @PutMapping("/{notificationId}/read")
+    @PutMapping("/{notificationId}")
     public ResponseEntity<String> updateNotificationStatusRead(
         @PathVariable String notificationId,
         @AuthenticationPrincipal Member member
     ){
         return ResponseEntity
             .ok(notificationService.updateNotificationStatusRead(notificationId, member));
+    }
+
+    @PutMapping
+    public ResponseEntity<Integer> updateAllNotificationStatusRead(
+        @AuthenticationPrincipal Member member
+    ){
+        return ResponseEntity
+            .ok(notificationService.updateAllNotificationStatusRead(member));
     }
 
     @DeleteMapping("/{notificationId}")
@@ -58,6 +66,13 @@ public class NotificationController {
     ){
         return ResponseEntity
             .ok(notificationService.deleteNotification(notificationId, member));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Integer> deleteAllReadNotification(
+        @AuthenticationPrincipal Member member
+    ){
+        return ResponseEntity.ok(notificationService.deleteAllReadNotifications(member));
     }
 
 }

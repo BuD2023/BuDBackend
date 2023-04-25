@@ -103,6 +103,18 @@ class NotificationServiceTest {
     }
 
     @Test
+    void success_updateAllNotificationStatusRead() {
+        //given 어떤 데이터가 주어졌을 때
+        given(notificationRepository.updateAllNotificationStatusReadByReceiverId(any()))
+            .willReturn(5);
+        //when 어떤 경우에
+        Integer updateCnt = notificationService.updateAllNotificationStatusRead(
+            getReceiver());
+        //then 이런 결과가 나온다.
+        assertEquals(5, updateCnt);
+    }
+
+    @Test
     @DisplayName("NOT_FOUND_NOTIFICATION_updateNotificationStatusRead")
     void NOT_FOUND_NOTIFICATION_updateNotificationStatusRead() {
         //given 어떤 데이터가 주어졌을 때
@@ -189,6 +201,17 @@ class NotificationServiceTest {
         //then 이런 결과가 나온다.
         assertEquals(NOT_RECEIVED_NOTIFICATION_MEMBER,
             budException.getErrorCode());
+    }
+
+    @Test
+    void success_deleteAllReadNotifications() {
+        //given 어떤 데이터가 주어졌을 때
+        given(notificationRepository.deleteAllReadNotificationsByReceiverId(anyLong()))
+            .willReturn(4);
+        //when 어떤 경우에
+        int deleteCount = notificationService.deleteAllReadNotifications(getReceiver());
+        //then 이런 결과가 나온다.
+        assertEquals(4, deleteCount);
     }
 
     private static String makeNotificationId() {
