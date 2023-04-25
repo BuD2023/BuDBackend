@@ -335,25 +335,27 @@ class UserServiceTest {
         List<Follow> follows = List.of(
                 Follow.builder()
                         .id(1L)
-                        .target(targetMember)
-                        .member(member)
+                        .target(member)
+                        .member(targetMember)
                         .build(),
 
                 Follow.builder()
                         .id(1L)
-                        .target(targetMember2)
-                        .member(member)
+                        .target(member)
+                        .member(targetMember2)
                         .build()
         );
         given(followRepository.findByTarget(any())).willReturn(follows);
+        given(followRepository.existsByTargetAndMember(targetMember, member)).willReturn(true);
+        given(followRepository.existsByTargetAndMember(targetMember2, member)).willReturn(false);
         //when
         List<FollowDto> followDtos = userService.readMyFollowers(member);
         //then
         assertEquals(true, followDtos.get(0).getIsFollowing());
-        assertEquals("안녕나는나는", followDtos.get(0).getDescription());
-        assertEquals("abcde.jpg", followDtos.get(0).getProfileUrl());
-        assertEquals(1L, followDtos.get(0).getId());
-        assertEquals("안뇽", followDtos.get(0).getNickName());
+        assertEquals("안녕하세요 저는 어쩌구저쩌구", followDtos.get(0).getDescription());
+        assertEquals("ddddd.jpg", followDtos.get(0).getProfileUrl());
+        assertEquals(2L, followDtos.get(0).getId());
+        assertEquals("하이", followDtos.get(0).getNickName());
 
     }
 

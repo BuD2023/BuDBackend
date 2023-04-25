@@ -34,13 +34,13 @@ public class FollowDto {
                 .build();
     }
 
-    public static FollowDto of(Member member){
+    public static FollowDto of(Member member, boolean isFollowing){
         return FollowDto.builder()
                 .id(member.getId())
                 .userId(member.getUserId())
                 .nickName(member.getNickname())
                 .description(member.getIntroduceMessage())
-                .isFollowing(true)
+                .isFollowing(isFollowing)
                 .profileUrl(member.getProfileImg())
                 .build();
     }
