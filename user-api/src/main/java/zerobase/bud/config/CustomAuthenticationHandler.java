@@ -28,10 +28,6 @@ public class CustomAuthenticationHandler implements AuthenticationSuccessHandler
         Optional<Member> optionalMember = memberRepository.findByUserCode(authentication.getName());
         if(optionalMember.isPresent()) {
             Member member = optionalMember.get();
-            JwtDto token = tokenProvider.generateToken(member.getUserId());
-            System.out.println(token.getAccessToken());
-            response.setHeader(HttpHeaders.AUTHORIZATION, token.getGrantType() + token.getAccessToken());
-            response.setHeader("X-Refresh-Token", token.getGrantType() + token.getRefreshToken());
             if(member.isAddInfoYn()) {
                 response.sendRedirect("http://127.0.0.1:5173/");
             }
