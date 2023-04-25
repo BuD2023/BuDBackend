@@ -80,14 +80,15 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowings(Member member) {
         return followRepository.findByMember(member).stream()
-                .map(follow -> FollowDto.of(follow.getTarget()))
+                .map(follow -> FollowDto.of(follow.getTarget(), true))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowers(Member member) {
         return followRepository.findByTarget(member).stream()
-                .map(follow -> FollowDto.of(follow.getMember()))
+                .map(follow -> FollowDto.of(follow.getMember(),
+                        followRepository.existsByTargetAndMember(follow.getMember(), member)))
                 .collect(Collectors.toList());
     }
 
