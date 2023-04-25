@@ -6,9 +6,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.dto.JwtDto;
 import zerobase.bud.jwt.dto.RefreshDto;
-import zerobase.bud.member.dto.MemberDto;
 import zerobase.bud.member.service.AuthService;
 
 @RestController
@@ -29,10 +30,11 @@ public class OAuthController {
     }
 
     @PostMapping("/addInfo")
-    public ResponseEntity<?> addInfo(@RequestHeader("Authorization") String token,
-                                     @RequestBody MemberDto.Info parameter) {
-        boolean result = authService.addAdditionalInfo(token, parameter);
-        return result ? ResponseEntity.ok("정상적으로 정보가 추가되었습니다.") :
-                        ResponseEntity.ok("정보 추가에 실패하였습니다.");
+    public ResponseEntity<Boolean> addInfo(@AuthenticationPrincipal Member member,
+                                     @RequestPart(required = false) MultipartFile file,
+                                     @RequestPart String nickname,
+                                     @RequestPart String job) {
+        return ResponseEntity.ok(authService.addAdditionalInfo(member, file, nickname, job));
+
     }
 }

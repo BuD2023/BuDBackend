@@ -10,4 +10,13 @@ public class MemberDto {
         private String profileImg;
         private String job;
     }
+
+    @Data
+    public static class Mypage {
+        private String nickname;
+        private String profileImg;
+        private String job;
+        private String introduceMessage;
+    }
+
 }

@@ -15,4 +15,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findAllByUserIdIn(Set<String> userIds);
     
     Optional<Member> findByUserCode(String userCode);
+
+    Optional<Member> findByNickname(String nickname);
+
+    List<Member> findAllByUserIdIn(List<String> userIds);
 }
