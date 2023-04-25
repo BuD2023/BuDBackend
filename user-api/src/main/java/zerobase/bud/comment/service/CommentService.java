@@ -58,8 +58,13 @@ public class CommentService {
                 .likeCount(0)
                 .commentCount(0)
                 .parent(null)
+                .commentStatus(CommentStatus.ACTIVE)
                 .build();
+
+        post.setCommentCount(post.getCommentCount() + 1);
+
         commentRepository.save(comment);
+        postRepository.save(post);
 
         return CommentDto.of(comment);
     }
@@ -81,13 +86,17 @@ public class CommentService {
         Comment parentComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
+        Post post = parentComment.getPost();
+        post.setCommentCount(post.getCommentCount() + 1);
+
         Comment comment = Comment.builder()
-                .post(parentComment.getPost())
+                .post(post)
                 .member(member)
                 .content(content)
                 .likeCount(0)
                 .commentCount(0)
                 .parent(parentComment)
+                .commentStatus(CommentStatus.ACTIVE)
                 .build();
 
         parentComment.getReComments().add(comment);
@@ -95,6 +104,7 @@ public class CommentService {
 
         commentRepository.save(parentComment);
         commentRepository.save(comment);
+        postRepository.save(post);
 
         return RecommentDto.of(comment);
     }

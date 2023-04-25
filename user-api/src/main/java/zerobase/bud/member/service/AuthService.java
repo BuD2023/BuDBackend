@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
