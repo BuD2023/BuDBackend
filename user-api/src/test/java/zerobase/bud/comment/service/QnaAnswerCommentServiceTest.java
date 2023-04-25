@@ -67,7 +67,6 @@ class QnaAnswerCommentServiceTest {
             .profileImg("abcde.jpg")
             .nickname("안뇽")
             .job("시스템프로그래머")
-            .oAuthAccessToken("tokenvalue")
             .build();
 
     @Test
@@ -81,7 +80,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         Post post = Post.builder()
@@ -136,7 +134,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
@@ -196,7 +193,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         QnaAnswer qnaAnswer = QnaAnswer.builder()
@@ -247,7 +243,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         QnaAnswer qnaAnswer = QnaAnswer.builder()
@@ -282,7 +277,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         QnaAnswer qnaAnswer = QnaAnswer.builder()
@@ -326,7 +320,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         QnaAnswer qnaAnswer = QnaAnswer.builder()
@@ -367,7 +360,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         QnaAnswer qnaAnswer = QnaAnswer.builder()
@@ -395,7 +387,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         Member commentWriter = Member.builder()
@@ -405,7 +396,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("bbbbbbb.jpg")
                 .nickname("디비왕")
                 .job("데이터베이스관리자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         QnaAnswer qnaAnswer = QnaAnswer.builder()
@@ -489,7 +479,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         Member commentWriter = Member.builder()
@@ -499,7 +488,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("bbbbbbb.jpg")
                 .nickname("디비왕")
                 .job("데이터베이스관리자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         QnaAnswer qnaAnswer = QnaAnswer.builder()
@@ -627,7 +615,6 @@ class QnaAnswerCommentServiceTest {
                 .profileImg("aaaaaa.jpg")
                 .nickname("비가와")
                 .job("풀스택개발자")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         QnaAnswerComment comment = QnaAnswerComment.builder()

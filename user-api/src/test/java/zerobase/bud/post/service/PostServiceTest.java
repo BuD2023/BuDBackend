@@ -449,7 +449,6 @@ class PostServiceTest {
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
                 .job("백")
-                .oAuthAccessToken("token")
                 .build();
 
         PostLike postLike = PostLike.builder()
@@ -492,7 +491,6 @@ class PostServiceTest {
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
                 .job("백")
-                .oAuthAccessToken("token")
                 .build();
 
         PostLike postLike = PostLike.builder()
@@ -548,7 +546,6 @@ class PostServiceTest {
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
                 .job("백")
-                .oAuthAccessToken("token")
                 .build();
 
         given(postRepository.findById(anyLong()))
@@ -584,7 +581,6 @@ class PostServiceTest {
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
                 .job("백")
-                .oAuthAccessToken("token")
                 .build();
 
         Scrap scrap = Scrap.builder()

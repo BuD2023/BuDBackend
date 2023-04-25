@@ -95,7 +95,6 @@ public class NewsServiceTest {
                 .profileImg("abcde.jpg")
                 .nickname("엄탱")
                 .job("백")
-                .oAuthAccessToken("token")
                 .build();
 
         this.objectMapper.setVisibility(PropertyAccessor.FIELD,

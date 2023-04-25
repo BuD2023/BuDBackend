@@ -77,7 +77,6 @@ class UserServiceTest {
             .profileImg("abcde.jpg")
             .nickname("안뇽")
             .job("시스템프로그래머")
-            .oAuthAccessToken("tokenvalue")
             .build();
 
     @Test
@@ -91,7 +90,6 @@ class UserServiceTest {
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .job("머머머")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
 
@@ -129,7 +127,6 @@ class UserServiceTest {
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .job("머머머")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
 
@@ -164,7 +161,6 @@ class UserServiceTest {
                 .profileImg("ddddd.jpg")
                 .nickname("하이")
                 .job("머머머")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
 

@@ -94,7 +94,6 @@ class ChatRoomControllerTest {
                 .profileImg("abcde.jpg")
                 .nickname("안뇽")
                 .job("시스템프로그래머")
-                .oAuthAccessToken("tokenvalue")
                 .build();
 
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);

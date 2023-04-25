@@ -73,7 +73,6 @@ class ChatRoomServiceTest {
             .profileImg("abcde.jpg")
             .nickname("안뇽")
             .job("시스템프로그래머")
-            .oAuthAccessToken("tokenvalue")
             .build();
 
     @Test
