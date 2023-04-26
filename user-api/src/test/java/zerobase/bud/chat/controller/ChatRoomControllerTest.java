@@ -123,7 +123,7 @@ class ChatRoomControllerTest {
                                         .build()
                         ))
                 )
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
 
                 .andDo(
                         document("{class-name}/{method-name}",
