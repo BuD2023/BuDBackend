@@ -29,6 +29,18 @@ public class QnaAnswerCommentDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<QnaAnswerCommentDto> reComments;
 
+    public static QnaAnswerCommentDto from(QnaAnswerComment comment) {
+        return QnaAnswerCommentDto.builder()
+                .commentId(comment.getId())
+                .content(comment.getContent())
+                .numberOfLikes(comment.getLikeCount())
+                .memberId(comment.getMember().getId())
+                .memberName(comment.getMember().getNickname())
+                .memberProfileUrl(comment.getMember().getProfileImg())
+                .createdAt(TimeUtil.caculateTerm((comment.getCreatedAt())))
+                .build();
+    }
+
     public static QnaAnswerCommentDto of(QnaAnswerComment comment, boolean isReader, boolean isReaderLiked) {
         return QnaAnswerCommentDto.builder()
                 .commentId(comment.getId())
