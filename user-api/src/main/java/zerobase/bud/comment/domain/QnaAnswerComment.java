@@ -31,7 +31,6 @@ public class QnaAnswerComment extends BaseEntity {
     private String content;
 
     private int likeCount;
-    private int commentCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
@@ -40,12 +39,6 @@ public class QnaAnswerComment extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "parent", orphanRemoval = true)
     private List<QnaAnswerComment> reComments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "qnaAnswerComment", orphanRemoval = true)
-    private List<QnaAnswerCommentLike> commentLikes;
-
-    @OneToOne(mappedBy = "qnaAnswerComment", orphanRemoval = true)
-    private QnaAnswerCommentPin qnaAnswerCommentPin;
 
     @Enumerated(EnumType.STRING)
     private QnaAnswerCommentStatus qnaAnswerCommentStatus;

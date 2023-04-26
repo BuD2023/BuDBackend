@@ -22,6 +22,8 @@ public class CommentDto {
     private String memberProfileUrl;
     private Long memberId;
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer numberOfComments;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isPinned;
     private Boolean isReader;
     private Boolean isReaderLiked;
@@ -58,6 +60,7 @@ public class CommentDto {
     public static CommentDto of(Comment comment, boolean isReader, boolean isReaderLiked, boolean isPinned, List<CommentDto> reComments){
         return CommentDto.builder()
                 .commentId(comment.getId())
+                .numberOfComments(reComments.size())
                 .content(comment.getContent())
                 .numberOfLikes(comment.getLikeCount())
                 .memberName(comment.getMember().getNickname())
@@ -70,5 +73,4 @@ public class CommentDto {
                 .reComments(reComments)
                 .build();
     }
-
 }
