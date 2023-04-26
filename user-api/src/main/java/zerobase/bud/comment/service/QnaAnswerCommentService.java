@@ -1,10 +1,5 @@
 package zerobase.bud.comment.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -27,8 +22,15 @@ import zerobase.bud.notification.event.QnaAnswerCommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.dto.QnaAnswerCommentDto;
+import zerobase.bud.post.dto.QnaAnswerRecommentDto;
 import zerobase.bud.post.repository.QnaAnswerRepository;
 import zerobase.bud.post.type.QnaAnswerStatus;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -160,5 +162,73 @@ public class QnaAnswerCommentService {
 
         qnaAnswerCommentRepository.delete(qnaAnswerComment);
         return commentId;
+    }
+
+
+    @Transactional
+    public QnaAnswerCommentDto createComment(Long qnaAnswerId, Member member, String content) {
+        QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
+                .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_QNA_ANSWER));
+
+        QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
+                .qnaAnswer(qnaAnswer)
+                .member(member)
+                .content(content)
+                .likeCount(0)
+                .commentCount(0)
+                .parent(null)
+                .qnaAnswerCommentStatus(QnaAnswerCommentStatus.ACTIVE)
+                .build();
+
+        qnaAnswer.setCommentCount(qnaAnswer.getCommentCount() + 1);
+
+        qnaAnswerCommentRepository.save(qnaAnswerComment);
+        qnaAnswerRepository.save(qnaAnswer);
+
+        return QnaAnswerCommentDto.from(qnaAnswerComment);
+    }
+
+    @Transactional
+    public QnaAnswerCommentDto modifyComment(Long commentId, Member member, String content) {
+        QnaAnswerComment qnaAnswerComment = qnaAnswerCommentRepository.findById(commentId)
+                .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if(!Objects.equals(qnaAnswerComment.getMember()
+                .getId(), member.getId())) {
+            throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
+        }
+
+        qnaAnswerComment.setContent(content);
+        qnaAnswerCommentRepository.save(qnaAnswerComment);
+        return QnaAnswerCommentDto.from(qnaAnswerComment);
+    }
+
+    @Transactional
+    public QnaAnswerRecommentDto createRecomment(Long commentId, Member member, String content) {
+        QnaAnswerComment parentComment = qnaAnswerCommentRepository.findById(commentId)
+                .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
+
+        QnaAnswer qnaAnswer = parentComment.getQnaAnswer();
+        qnaAnswer.setCommentCount(qnaAnswer.getCommentCount() + 1);
+
+        QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
+                .qnaAnswer(qnaAnswer)
+                .member(member)
+                .content(content)
+                .likeCount(0)
+                .commentCount(0)
+                .parent(parentComment)
+                .qnaAnswerCommentStatus(QnaAnswerCommentStatus.ACTIVE)
+                .build();
+
+        parentComment.getReComments().add(qnaAnswerComment);
+        parentComment.setCommentCount(parentComment.getCommentCount() + 1);
+
+
+        qnaAnswerCommentRepository.save(parentComment);
+        qnaAnswerCommentRepository.save(qnaAnswerComment);
+        qnaAnswerRepository.save(qnaAnswer);
+
+        return QnaAnswerRecommentDto.of(qnaAnswerComment);
     }
 }
