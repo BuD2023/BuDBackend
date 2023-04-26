@@ -23,12 +23,12 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     @PostMapping
-    private ResponseEntity<URI> createChatRoom(
+    private ResponseEntity<Long> createChatRoom(
             @RequestBody @Valid CreateChatRoom.Request request,
             @AuthenticationPrincipal Member member) {
         Long id = chatRoomService
                 .createChatRoom(request.getTitle(), request.getDescription(), request.getHashTag(), member);
-        return ResponseEntity.created(URI.create("/chatrooms/" + id)).build();
+        return ResponseEntity.ok(id);
     }
 
     @PostMapping("/{chatroomId}/users/{userId}")
