@@ -38,7 +38,7 @@ public class OAuthController {
     }
 
     @GetMapping("/checkNickname")
-    public ResponseEntity<Boolean> checkNickname(@RequestBody String nickname) {
+    public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname) {
         return ResponseEntity.ok(authService.checkNickname(nickname));
     }
 }
