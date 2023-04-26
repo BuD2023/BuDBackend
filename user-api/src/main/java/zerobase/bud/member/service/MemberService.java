@@ -39,9 +39,6 @@ public class MemberService implements UserDetailsService {
     }
 
     public boolean modifyInfo(Member member, MultipartFile file, String nickname, String introduceMessage, String job) {
-        if(memberRepository.findByNickname(nickname).isPresent()) {
-            throw new BudException(ErrorCode.ALREADY_USING_NICKNAME);
-        }
         if(!ObjectUtils.isEmpty(nickname))
             member.setNickname(nickname);
         if(!ObjectUtils.isEmpty(file))
