@@ -29,9 +29,13 @@ public class CustomAuthenticationHandler implements AuthenticationSuccessHandler
         if(optionalMember.isPresent()) {
             Member member = optionalMember.get();
             JwtDto token = tokenProvider.generateToken(member.getUserId());
+
             System.out.println(token.getAccessToken());
+
+            response.setHeader("Location", "http://127.0.0.1:5173/");
             response.setHeader(HttpHeaders.AUTHORIZATION, token.getGrantType() + token.getAccessToken());
             response.setHeader("X-Refresh-Token", token.getGrantType() + token.getRefreshToken());
+            request.getRequestDispatcher("http://127.0.0.1:5173/").forward(request, response);
             if(member.isAddInfoYn()) {
                 response.sendRedirect("http://127.0.0.1:5173/");
             }
