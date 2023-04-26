@@ -32,7 +32,6 @@ public class CustomAuthenticationHandler implements AuthenticationSuccessHandler
 
             System.out.println(token.getAccessToken());
 
-            response.setHeader("Location", "http://127.0.0.1:5173/");
             response.setHeader(HttpHeaders.AUTHORIZATION, token.getGrantType() + token.getAccessToken());
             response.setHeader("X-Refresh-Token", token.getGrantType() + token.getRefreshToken());
             if(member.isAddInfoYn()) {
