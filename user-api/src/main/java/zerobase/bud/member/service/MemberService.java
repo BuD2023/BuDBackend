@@ -1,5 +1,6 @@
 package zerobase.bud.member.service;
 
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -66,6 +67,12 @@ public class MemberService implements UserDetailsService {
         return levelArray;
     }
 
+    public String getRandomProfileImage(Member member) {
+        Random rd = new Random();
+        int randomNumber = rd.nextInt(32) + 1;
+        return "profiles/basic/" + randomNumber + ".png";
+    }
+
     @Transactional
     public long withdrawMember(Member member) {
         String uuid;
@@ -87,4 +94,5 @@ public class MemberService implements UserDetailsService {
 
         return member.getId();
     }
+
 }
