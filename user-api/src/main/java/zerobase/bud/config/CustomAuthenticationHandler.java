@@ -34,7 +34,7 @@ public class CustomAuthenticationHandler implements AuthenticationSuccessHandler
 
             System.out.println(token.getAccessToken());
 
-            Cookie jwtTokenCookie = new Cookie(token.getGrantType(), token.getAccessToken());
+            Cookie jwtTokenCookie = new Cookie("Bearer", token.getAccessToken());
             jwtTokenCookie.setMaxAge(1000 * 60 * 60);
             jwtTokenCookie.setPath("/");
             jwtTokenCookie.setSecure(true);
