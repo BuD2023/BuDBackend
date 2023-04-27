@@ -21,7 +21,6 @@ import static zerobase.bud.post.type.PostType.FEED;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -42,8 +41,8 @@ import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.event.AddLikePostEvent;
-import zerobase.bud.notification.event.CreatePostEvent;
+import zerobase.bud.notification.event.like.AddLikePostEvent;
+import zerobase.bud.notification.event.create.CreatePostEvent;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;

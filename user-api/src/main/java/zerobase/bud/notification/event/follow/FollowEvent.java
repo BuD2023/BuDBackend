@@ -1,13 +1,12 @@
-package zerobase.bud.notification.event;
+package zerobase.bud.notification.event.follow;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import zerobase.bud.domain.Member;
-import zerobase.bud.post.domain.Post;
 
 @Getter
 @RequiredArgsConstructor
-public class CreatePostEvent {
+public class FollowEvent {
     private final Member member;
-    private final Post post;
+    private final Member targetMember;
 }

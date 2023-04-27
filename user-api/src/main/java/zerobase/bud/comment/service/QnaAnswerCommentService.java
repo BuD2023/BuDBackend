@@ -17,8 +17,10 @@ import zerobase.bud.comment.type.QnaAnswerCommentStatus;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.event.AddLikeQnaAnswerCommentEvent;
-import zerobase.bud.notification.event.QnaAnswerCommentPinEvent;
+import zerobase.bud.notification.event.create.CreateAnswerCommentEvent;
+import zerobase.bud.notification.event.create.CreateAnswerRecommentEvent;
+import zerobase.bud.notification.event.like.AddLikeQnaAnswerCommentEvent;
+import zerobase.bud.notification.event.pin.QnaAnswerCommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.dto.QnaAnswerCommentDto;
@@ -66,7 +68,7 @@ public class QnaAnswerCommentService {
 
             Post post = qnaAnswerComment.getQnaAnswer().getPost();
             eventPublisher.publishEvent(new AddLikeQnaAnswerCommentEvent(
-                member, qnaAnswerComment, post.getPostType(), post.getId()
+                member, qnaAnswerComment, post.getId()
             ));
         }
         qnaAnswerCommentRepository.save(qnaAnswerComment);
@@ -184,6 +186,8 @@ public class QnaAnswerCommentService {
         qnaAnswerCommentRepository.save(qnaAnswerComment);
         qnaAnswerRepository.save(qnaAnswer);
 
+        eventPublisher.publishEvent(new CreateAnswerCommentEvent(member, qnaAnswer));
+
         return QnaAnswerCommentDto.from(qnaAnswerComment);
     }
 
@@ -225,6 +229,8 @@ public class QnaAnswerCommentService {
         qnaAnswerCommentRepository.save(parentComment);
         qnaAnswerCommentRepository.save(qnaAnswerComment);
         qnaAnswerRepository.save(qnaAnswer);
+
+        eventPublisher.publishEvent(new CreateAnswerRecommentEvent(member, parentComment));
 
         return QnaAnswerRecommentDto.of(qnaAnswerComment);
     }
