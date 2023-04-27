@@ -1,4 +1,4 @@
-package zerobase.bud.notification.event;
+package zerobase.bud.notification.event.create;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +7,7 @@ import zerobase.bud.domain.Member;
 
 @Getter
 @RequiredArgsConstructor
-public class QnaAnswerCommentPinEvent {
+public class CreateAnswerRecommentEvent {
     private final Member member;
-    private final QnaAnswerComment qnaAnswerComment;
+    private final QnaAnswerComment parentAnswerComment;
 }

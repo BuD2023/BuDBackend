@@ -1,4 +1,4 @@
-package zerobase.bud.notification.event;
+package zerobase.bud.notification.event.create;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +7,7 @@ import zerobase.bud.post.domain.Post;
 
 @Getter
 @RequiredArgsConstructor
-public class AddLikePostEvent {
+public class CreatePostEvent {
     private final Member member;
     private final Post post;
 }

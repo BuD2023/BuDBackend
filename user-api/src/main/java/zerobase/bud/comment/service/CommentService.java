@@ -1,12 +1,17 @@
 package zerobase.bud.comment.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.context.ApplicationEventPublisher;
 import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.comment.domain.CommentLike;
 import zerobase.bud.comment.domain.CommentPin;
@@ -17,20 +22,16 @@ import zerobase.bud.comment.type.CommentStatus;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.event.AddLikeCommentEvent;
-import zerobase.bud.notification.event.CommentPinEvent;
+import zerobase.bud.notification.event.create.CreateCommentEvent;
+import zerobase.bud.notification.event.create.CreateRecommentEvent;
+import zerobase.bud.notification.event.like.AddLikeCommentEvent;
+import zerobase.bud.notification.event.pin.CommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.dto.RecommentDto;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +66,8 @@ public class CommentService {
 
         commentRepository.save(comment);
         postRepository.save(post);
+
+        eventPublisher.publishEvent(new CreateCommentEvent(member, post));
 
         return CommentDto.of(comment);
     }
@@ -107,6 +110,8 @@ public class CommentService {
         commentRepository.save(parentComment);
         commentRepository.save(comment);
         postRepository.save(post);
+
+        eventPublisher.publishEvent(new CreateRecommentEvent(member, parentComment));
 
         return RecommentDto.of(comment);
     }

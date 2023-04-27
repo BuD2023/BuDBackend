@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.bud.common.exception.MemberException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.event.FollowEvent;
+import zerobase.bud.notification.event.follow.FollowEvent;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.user.domain.Follow;
