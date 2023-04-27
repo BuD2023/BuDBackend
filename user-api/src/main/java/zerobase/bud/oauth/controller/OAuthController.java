@@ -2,6 +2,7 @@ package zerobase.bud.oauth.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.util.ObjectUtils;
@@ -19,6 +20,13 @@ public class OAuthController {
     @GetMapping("/login/oauth2")
     private ResponseEntity<JwtDto> login(@AuthenticationPrincipal OAuth2User oAuth2User) {
         return ResponseEntity.ok(authService.login(oAuth2User));
+    }
+
+    @GetMapping("/login/oauth2/code/github")
+    public String callback(@RequestParam("code") String code,
+                           @RequestParam("state") String state,
+                           Authentication authentication) {
+        return "redirect:/http://127.0.0.1:5173/";
     }
 
     @PostMapping("/refresh")
