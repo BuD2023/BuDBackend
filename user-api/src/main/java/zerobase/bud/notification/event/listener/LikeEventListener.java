@@ -139,7 +139,7 @@ public class LikeEventListener {
                         , receiver
                         , sender
                         , NotificationType.POST
-                        , PageType.valueOf(addLikeQnaAnswerCommentEvent.getPostType().name())
+                        , PageType.QNA
                         , addLikeQnaAnswerCommentEvent.getPostId()
                         , NotificationDetailType.ADD_LIKE_ANSWER_COMMENT
                     )

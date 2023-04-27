@@ -80,7 +80,7 @@ public class PinEventListener {
                         , receiver
                         , sender
                         , NotificationType.POST
-                        , PageType.valueOf(post.getPostType().name())
+                        , PageType.QNA
                         , post.getId()
                         , NotificationDetailType.ANSWER_COMMENT_PIN
                     )

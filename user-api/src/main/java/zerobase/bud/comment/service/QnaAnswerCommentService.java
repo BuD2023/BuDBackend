@@ -68,7 +68,7 @@ public class QnaAnswerCommentService {
 
             Post post = qnaAnswerComment.getQnaAnswer().getPost();
             eventPublisher.publishEvent(new AddLikeQnaAnswerCommentEvent(
-                member, qnaAnswerComment, post.getPostType(), post.getId()
+                member, qnaAnswerComment, post.getId()
             ));
         }
         qnaAnswerCommentRepository.save(qnaAnswerComment);
