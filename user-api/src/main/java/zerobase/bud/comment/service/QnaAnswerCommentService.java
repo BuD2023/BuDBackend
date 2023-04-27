@@ -175,7 +175,6 @@ public class QnaAnswerCommentService {
                 .member(member)
                 .content(content)
                 .likeCount(0)
-                .commentCount(0)
                 .parent(null)
                 .qnaAnswerCommentStatus(QnaAnswerCommentStatus.ACTIVE)
                 .build();
@@ -216,13 +215,11 @@ public class QnaAnswerCommentService {
                 .member(member)
                 .content(content)
                 .likeCount(0)
-                .commentCount(0)
                 .parent(parentComment)
                 .qnaAnswerCommentStatus(QnaAnswerCommentStatus.ACTIVE)
                 .build();
 
         parentComment.getReComments().add(qnaAnswerComment);
-        parentComment.setCommentCount(parentComment.getCommentCount() + 1);
 
 
         qnaAnswerCommentRepository.save(parentComment);
