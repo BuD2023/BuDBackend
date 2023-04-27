@@ -2,7 +2,6 @@ package zerobase.bud.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -12,6 +11,7 @@ import zerobase.bud.jwt.dto.JwtDto;
 import zerobase.bud.repository.MemberRepository;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -34,8 +34,18 @@ public class CustomAuthenticationHandler implements AuthenticationSuccessHandler
 
             System.out.println(token.getAccessToken());
 
-            response.setHeader(HttpHeaders.AUTHORIZATION, token.getGrantType() + token.getAccessToken());
-            response.setHeader("X-Refresh-Token", token.getGrantType() + token.getRefreshToken());
+            Cookie jwtTokenCookie = new Cookie(token.getGrantType(), token.getAccessToken());
+            jwtTokenCookie.setMaxAge(1000 * 60 * 60);
+            jwtTokenCookie.setPath("/");
+            jwtTokenCookie.setSecure(true);
+            jwtTokenCookie.setHttpOnly(true);
+            response.addCookie(jwtTokenCookie);
+            if(member.isAddInfoYn()) {
+                response.sendRedirect("http://127.0.0.1:5173/");
+            }
+            else {
+                response.sendRedirect("http://127.0.0.1:5173/signUp");
+            }
         }
         else {
             log.info("유효하지 않은 아이디입니다.");
