@@ -291,6 +291,7 @@ class QnaAnswerControllerTest {
                         .content("지금터미널임좀기달")
                         .numberOfLikes(0)
                         .memberName("갈팡질팡")
+                        .numberOfComments(recomments.size())
                         .memberProfileUrl("profiles/images.jpg")
                         .memberId(2L)
                         .createdAt("0 초전")
@@ -308,11 +309,13 @@ class QnaAnswerControllerTest {
                         .memberId(4L)
                         .createdAt("0 초전")
                         .isReader(true)
+                        .numberOfComments(0)
                         .isReaderLiked(false)
                         .isPinned(false)
                         .build(),
                 QnaAnswerCommentDto.builder()
                         .commentId(2L)
+                        .numberOfComments(0)
                         .content("어떤건보풀하나도없더라공,,ㅋ")
                         .numberOfLikes(3)
                         .memberName("쓰레기")
@@ -348,6 +351,8 @@ class QnaAnswerControllerTest {
                                                 .description("댓글의 id"),
                                         fieldWithPath("content[].content").type(JsonFieldType.STRING)
                                                 .description("댓글 내용"),
+                                        fieldWithPath("content[].numberOfComments").type(JsonFieldType.NUMBER)
+                                                .description("댓글 수"),
                                         fieldWithPath("content[].numberOfLikes").type(JsonFieldType.NUMBER)
                                                 .description("좋아요 수"),
                                         fieldWithPath("content[].memberName").type(JsonFieldType.STRING)

@@ -92,7 +92,6 @@ class CommentServiceTest {
         Comment comment = Comment.builder()
                 .member(writer)
                 .post(post)
-                .commentCount(1)
                 .likeCount(0)
                 .id(3L)
                 .build();
@@ -132,7 +131,6 @@ class CommentServiceTest {
 
         Comment comment = Comment.builder()
                 .member(writer)
-                .commentCount(1)
                 .likeCount(1)
                 .id(3L)
                 .build();
@@ -198,7 +196,6 @@ class CommentServiceTest {
         Comment comment = Comment.builder()
                 .member(member)
                 .post(post)
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -247,7 +244,6 @@ class CommentServiceTest {
         Comment comment = Comment.builder()
                 .member(member)
                 .post(post)
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -281,7 +277,6 @@ class CommentServiceTest {
         Comment parentComment = Comment.builder()
                 .member(writer)
                 .post(post)
-                .commentCount(3)
                 .id(2L)
                 .build();
 
@@ -289,7 +284,6 @@ class CommentServiceTest {
                 .member(member)
                 .parent(parentComment)
                 .post(post)
-                .commentCount(0)
                 .id(3L)
                 .build();
 
@@ -399,7 +393,6 @@ class CommentServiceTest {
                 .member(commentWriter)
                 .post(post)
                 .createdAt(LocalDateTime.now())
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -419,7 +412,6 @@ class CommentServiceTest {
                         .id(1L)
                         .member(member)
                         .createdAt(LocalDateTime.now())
-                        .commentCount(0)
                         .likeCount(3)
                         .content("댓글을 답니다")
                         .build(),
@@ -427,7 +419,6 @@ class CommentServiceTest {
                         .id(2L)
                         .createdAt(LocalDateTime.now())
                         .member(commentWriter)
-                        .commentCount(0)
                         .likeCount(3)
                         .content("댓글을 답니다2")
                         .build(),
@@ -435,7 +426,6 @@ class CommentServiceTest {
                         .id(4L)
                         .member(postWriter)
                         .createdAt(LocalDateTime.now())
-                        .commentCount(0)
                         .likeCount(5)
                         .content("여기댓글이요")
                         .build()
@@ -491,7 +481,6 @@ class CommentServiceTest {
                 .member(commentWriter)
                 .post(post)
                 .createdAt(LocalDateTime.now())
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -511,7 +500,6 @@ class CommentServiceTest {
                         .id(1L)
                         .member(member)
                         .createdAt(LocalDateTime.now())
-                        .commentCount(0)
                         .likeCount(3)
                         .content("댓글을 답니다")
                         .build(),
@@ -519,7 +507,6 @@ class CommentServiceTest {
                         .id(2L)
                         .createdAt(LocalDateTime.now())
                         .member(commentWriter)
-                        .commentCount(0)
                         .likeCount(3)
                         .content("댓글을 답니다2")
                         .build(),
@@ -527,7 +514,6 @@ class CommentServiceTest {
                         .id(4L)
                         .member(postWriter)
                         .createdAt(LocalDateTime.now())
-                        .commentCount(0)
                         .likeCount(5)
                         .content("여기댓글이요")
                         .build()
@@ -571,7 +557,6 @@ class CommentServiceTest {
         Comment comment = Comment.builder()
                 .member(member)
                 .createdAt(LocalDateTime.now())
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -612,7 +597,6 @@ class CommentServiceTest {
 
         Comment comment = Comment.builder()
                 .member(commentWriter)
-                .commentCount(1)
                 .id(3L)
                 .build();
 

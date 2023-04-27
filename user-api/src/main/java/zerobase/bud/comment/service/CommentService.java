@@ -1,12 +1,12 @@
 package zerobase.bud.comment.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.context.ApplicationEventPublisher;
 import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.comment.domain.CommentLike;
 import zerobase.bud.comment.domain.CommentPin;
@@ -56,7 +56,6 @@ public class CommentService {
                 .member(member)
                 .content(content)
                 .likeCount(0)
-                .commentCount(0)
                 .parent(null)
                 .commentStatus(CommentStatus.ACTIVE)
                 .build();
@@ -74,7 +73,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if(!comment.getMember().equals(member)) {
+        if (!comment.getMember().equals(member)) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
@@ -96,13 +95,11 @@ public class CommentService {
                 .member(member)
                 .content(content)
                 .likeCount(0)
-                .commentCount(0)
                 .parent(parentComment)
                 .commentStatus(CommentStatus.ACTIVE)
                 .build();
 
         parentComment.getReComments().add(comment);
-        parentComment.setCommentCount(parentComment.getCommentCount() + 1);
 
         commentRepository.save(parentComment);
         commentRepository.save(comment);
@@ -130,7 +127,7 @@ public class CommentService {
             PostType postType = comment.getPost().getPostType();
             Long postId = comment.getPost().getId();
             eventPublisher.publishEvent(new AddLikeCommentEvent(
-                member, comment , postType, postId
+                    member, comment, postType, postId
             ));
         }
 

@@ -629,6 +629,7 @@ class PostControllerTest {
                         .commentId(1L)
                         .content("지금터미널임좀기달")
                         .numberOfLikes(0)
+                        .numberOfComments(recomments.size())
                         .memberName("갈팡질팡")
                         .memberProfileUrl("profiles/images.jpg")
                         .memberId(2L)
@@ -645,6 +646,7 @@ class PostControllerTest {
                         .memberName("멀라")
                         .memberProfileUrl("profiles/images.jpg")
                         .memberId(4L)
+                        .numberOfComments(0)
                         .createdAt("0 초전")
                         .isReader(true)
                         .isReaderLiked(false)
@@ -655,6 +657,7 @@ class PostControllerTest {
                         .content("어떤건보풀하나도없더라공,,ㅋ")
                         .numberOfLikes(3)
                         .memberName("쓰레기")
+                        .numberOfComments(0)
                         .memberProfileUrl("profiles/images.jpg")
                         .memberId(4L)
                         .createdAt("0 초전")
@@ -687,6 +690,8 @@ class PostControllerTest {
                                                 .description("댓글의 id"),
                                         fieldWithPath("content[].content").type(JsonFieldType.STRING)
                                                 .description("댓글 내용"),
+                                        fieldWithPath("content[].numberOfComments").type(JsonFieldType.NUMBER)
+                                                .description("댓글 수"),
                                         fieldWithPath("content[].numberOfLikes").type(JsonFieldType.NUMBER)
                                                 .description("좋아요 수"),
                                         fieldWithPath("content[].memberName").type(JsonFieldType.STRING)
