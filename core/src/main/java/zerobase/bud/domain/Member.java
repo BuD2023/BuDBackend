@@ -48,14 +48,17 @@ public class Member extends BaseEntity implements UserDetails {
 
     private String job;
 
+    private String oauthToken;
+
     @Enumerated(EnumType.STRING)
     private MemberStatus status;
     private String introduceMessage;
 
     private boolean addInfoYn;
 
-    public Member update(String userCode) {
+    public Member update(String userCode, String oauthToken) {
         this.userCode = userCode;
+        this.oauthToken = oauthToken;
 
         return this;
     }
