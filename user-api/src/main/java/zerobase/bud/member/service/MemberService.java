@@ -67,7 +67,7 @@ public class MemberService implements UserDetailsService {
         return levelArray;
     }
 
-    public String getRandomProfileImage(Member member) {
+    public String getRandomProfileImage() {
         Random rd = new Random();
         int randomNumber = rd.nextInt(32) + 1;
         return "profiles/basic/" + randomNumber + ".png";
