@@ -26,7 +26,7 @@ public class OAuthController {
     public String callback(@RequestParam("code") String code,
                            @RequestParam("state") String state,
                            Authentication authentication) {
-        return "redirect:/http://127.0.0.1:5173/";
+        return "redirect:http://127.0.0.1:5173/";
     }
 
     @PostMapping("/refresh")
