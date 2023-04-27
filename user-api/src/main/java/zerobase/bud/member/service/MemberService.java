@@ -75,7 +75,7 @@ public class MemberService implements UserDetailsService {
 
         String imagePath = PROFILE_BASIC_IMAGE_PREFIX + randomNumber + FILE_EXTENSION_PNG;
 
-        member.setProfileImg(imagePath);
+        member.updateProfileImage(imagePath);
         memberRepository.save(member);
 
         return imagePath;
