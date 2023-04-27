@@ -388,15 +388,12 @@ class PostServiceTest {
         given(postRepository.findById(anyLong()))
                 .willReturn(Optional.of(post));
 
-        ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
-
         //when
         Long id = postService.deletePost((long) 1);
 
         //then
-        verify(postRepository, times(1)).save(postCaptor.capture());
-        assertEquals(id, post.getId());
-        assertEquals(postCaptor.getValue().getPostStatus(), INACTIVE);
+        verify(postRepository, times(1)).deleteAllByPostId(any());
+        assertEquals(id, 1L);
     }
 
     @Test
