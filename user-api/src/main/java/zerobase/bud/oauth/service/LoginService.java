@@ -13,6 +13,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
+import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.repository.MemberRepository;
 
@@ -40,7 +41,10 @@ public class LoginService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
         ResponseEntity<String> response = restTemplate.postForEntity("https://github.com/login/oauth/access_token", request, String.class);
 
-        if(ObjectUtils.isEmpty(response.getBody())) return "";
-        return "Bearer " + tokenProvider.generateToken(memberRepository.findByOauthToken(response.getBody().replace("access_token=", "").replace("&scope=&token_type=bearer", "")).orElseThrow(() -> new BudException(ErrorCode.INVALID_TOKEN)).getUserId());
+        if(ObjectUtils.isEmpty(response.getBody()) || !response.getBody().contains("access_token") || response.getBody().contains("error")) return "";
+        String OAuthAccessToken = response.getBody().replace("access_token=", "").replace("&scope=&token_type=bearer", "");
+
+        Member member = memberRepository.findByOauthToken(OAuthAccessToken).orElseThrow(() -> new BudException(ErrorCode.INVALID_TOKEN));
+        return "Bearer " + tokenProvider.generateToken(member.getUserId()).getAccessToken();
     }
 }
