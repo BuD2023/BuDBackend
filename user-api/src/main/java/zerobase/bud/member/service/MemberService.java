@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static zerobase.bud.member.util.MemberConstants.FILE_EXTENSION_PNG;
+import static zerobase.bud.member.util.MemberConstants.PROFILE_BASIC_IMAGE_PREFIX;
 import static zerobase.bud.type.MemberStatus.WITHDREW;
 import static zerobase.bud.util.Constants.PROFILES;
 
@@ -67,10 +69,16 @@ public class MemberService implements UserDetailsService {
         return levelArray;
     }
 
-    public String getRandomProfileImage() {
+    public String updateProfileRandomImage(Member member) {
         Random rd = new Random();
         int randomNumber = rd.nextInt(32) + 1;
-        return "profiles/basic/" + randomNumber + ".png";
+
+        String imagePath = PROFILE_BASIC_IMAGE_PREFIX + randomNumber + FILE_EXTENSION_PNG;
+
+        member.setProfileImg(imagePath);
+        memberRepository.save(member);
+
+        return imagePath;
     }
 
     @Transactional

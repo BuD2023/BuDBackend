@@ -64,6 +64,12 @@ public class Member extends BaseEntity implements UserDetails {
         this.level = level;
     }
 
+    public void updateProfileImage(String imagePath) {
+        System.out.println(imagePath);
+        System.out.println(this.profileImg);
+        this.profileImg = imagePath;
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
