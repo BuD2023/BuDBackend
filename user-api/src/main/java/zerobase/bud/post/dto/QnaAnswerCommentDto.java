@@ -22,6 +22,8 @@ public class QnaAnswerCommentDto {
     private String memberProfileUrl;
     private Long memberId;
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer numberOfComments;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isPinned;
     private Boolean isReader;
     private Boolean isReaderLiked;
@@ -59,6 +61,7 @@ public class QnaAnswerCommentDto {
         return QnaAnswerCommentDto.builder()
                 .commentId(comment.getId())
                 .content(comment.getContent())
+                .numberOfComments(reComments.size())
                 .numberOfLikes(comment.getLikeCount())
                 .memberName(comment.getMember().getNickname())
                 .memberProfileUrl(comment.getMember().getProfileImg())

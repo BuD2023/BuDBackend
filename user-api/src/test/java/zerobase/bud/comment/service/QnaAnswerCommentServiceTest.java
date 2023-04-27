@@ -31,8 +31,8 @@ import zerobase.bud.comment.repository.QnaAnswerCommentRepository;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
-import zerobase.bud.notification.event.AddLikeQnaAnswerCommentEvent;
-import zerobase.bud.notification.event.QnaAnswerCommentPinEvent;
+import zerobase.bud.notification.event.like.AddLikeQnaAnswerCommentEvent;
+import zerobase.bud.notification.event.pin.QnaAnswerCommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.dto.QnaAnswerCommentDto;
@@ -98,7 +98,6 @@ class QnaAnswerCommentServiceTest {
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
                 .member(writer)
                 .qnaAnswer(qnaAnswer)
-                .commentCount(1)
                 .likeCount(0)
                 .id(3L)
                 .build();
@@ -138,7 +137,6 @@ class QnaAnswerCommentServiceTest {
 
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
                 .member(writer)
-                .commentCount(1)
                 .likeCount(1)
                 .id(3L)
                 .build();
@@ -203,7 +201,6 @@ class QnaAnswerCommentServiceTest {
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
                 .member(member)
                 .qnaAnswer(qnaAnswer)
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -253,7 +250,6 @@ class QnaAnswerCommentServiceTest {
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
                 .member(member)
                 .qnaAnswer(qnaAnswer)
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -287,7 +283,6 @@ class QnaAnswerCommentServiceTest {
         QnaAnswerComment parentComment = QnaAnswerComment.builder()
                 .member(member)
                 .qnaAnswer(qnaAnswer)
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -296,7 +291,6 @@ class QnaAnswerCommentServiceTest {
                 .member(member)
                 .parent(parentComment)
                 .qnaAnswer(qnaAnswer)
-                .commentCount(0)
                 .id(3L)
                 .build();
 
@@ -406,7 +400,6 @@ class QnaAnswerCommentServiceTest {
                 .member(commentWriter)
                 .qnaAnswer(qnaAnswer)
                 .createdAt(LocalDateTime.now())
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -426,7 +419,6 @@ class QnaAnswerCommentServiceTest {
                         .id(1L)
                         .member(member)
                         .createdAt(LocalDateTime.now())
-                        .commentCount(0)
                         .likeCount(3)
                         .content("댓글을 답니다")
                         .build(),
@@ -434,7 +426,6 @@ class QnaAnswerCommentServiceTest {
                         .id(2L)
                         .createdAt(LocalDateTime.now())
                         .member(commentWriter)
-                        .commentCount(0)
                         .likeCount(3)
                         .content("댓글을 답니다2")
                         .build(),
@@ -442,7 +433,6 @@ class QnaAnswerCommentServiceTest {
                         .id(4L)
                         .member(qnaWriter)
                         .createdAt(LocalDateTime.now())
-                        .commentCount(0)
                         .likeCount(5)
                         .content("여기댓글이요")
                         .build()
@@ -498,7 +488,6 @@ class QnaAnswerCommentServiceTest {
                 .member(commentWriter)
                 .qnaAnswer(qnaAnswer)
                 .createdAt(LocalDateTime.now())
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -518,7 +507,6 @@ class QnaAnswerCommentServiceTest {
                         .id(1L)
                         .member(member)
                         .createdAt(LocalDateTime.now())
-                        .commentCount(0)
                         .likeCount(3)
                         .content("댓글을 답니다")
                         .build(),
@@ -526,7 +514,6 @@ class QnaAnswerCommentServiceTest {
                         .id(2L)
                         .createdAt(LocalDateTime.now())
                         .member(commentWriter)
-                        .commentCount(0)
                         .likeCount(3)
                         .content("댓글을 답니다2")
                         .build(),
@@ -534,7 +521,6 @@ class QnaAnswerCommentServiceTest {
                         .id(4L)
                         .member(qnaWriter)
                         .createdAt(LocalDateTime.now())
-                        .commentCount(0)
                         .likeCount(5)
                         .content("여기댓글이요")
                         .build()
@@ -578,7 +564,6 @@ class QnaAnswerCommentServiceTest {
         QnaAnswerComment comment = QnaAnswerComment.builder()
                 .member(member)
                 .createdAt(LocalDateTime.now())
-                .commentCount(1)
                 .id(3L)
                 .build();
 
@@ -620,7 +605,6 @@ class QnaAnswerCommentServiceTest {
         QnaAnswerComment comment = QnaAnswerComment.builder()
                 .member(commentWriter)
                 .createdAt(LocalDateTime.now())
-                .commentCount(1)
                 .id(3L)
                 .build();
 

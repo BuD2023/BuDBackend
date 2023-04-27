@@ -1,4 +1,4 @@
-package zerobase.bud.notification.event;
+package zerobase.bud.notification.event.pin;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

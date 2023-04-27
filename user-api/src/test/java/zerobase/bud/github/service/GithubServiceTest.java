@@ -28,6 +28,7 @@ import zerobase.bud.github.dto.CommitHistoryInfo;
 import zerobase.bud.repository.CommitHistoryRepository;
 import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.repository.LevelRepository;
+import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.service.GithubApi;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +39,9 @@ class GithubServiceTest {
 
     @Mock
     private CommitHistoryRepository commitHistoryRepository;
+
+    @Mock
+    private MemberRepository memberRepository;
 
     @Mock
     private LevelRepository levelRepository;

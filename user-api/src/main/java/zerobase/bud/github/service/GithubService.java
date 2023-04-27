@@ -23,6 +23,7 @@ import zerobase.bud.github.dto.CommitHistoryInfo;
 import zerobase.bud.repository.CommitHistoryRepository;
 import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.repository.LevelRepository;
+import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.service.GithubApi;
 
 @Slf4j
@@ -35,6 +36,8 @@ public class GithubService {
     private final GithubInfoRepository githubInfoRepository;
 
     private final CommitHistoryRepository commitHistoryRepository;
+
+    private final MemberRepository memberRepository;
 
     private final GithubApi githubApi;
 
@@ -93,7 +96,9 @@ public class GithubService {
             .reduce(0L, Long::sum);
 
         Level level = getLevel(member, totalCommitCount);
+
         member.updateLevel(level);
+        memberRepository.save(member);
 
         remainCommitCountNextLevel =
             level.getNextLevelStartCommitCount() - totalCommitCount;
