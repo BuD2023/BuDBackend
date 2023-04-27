@@ -26,6 +26,7 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Image;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.PostLike;
+import zerobase.bud.post.domain.QnaAnswer;
 import zerobase.bud.post.dto.CreatePost.Request;
 import zerobase.bud.post.dto.PostDto;
 import zerobase.bud.post.dto.SearchMyPagePost;
@@ -44,6 +45,8 @@ import zerobase.bud.post.type.PostType;
 public class PostService {
 
     private final PostRepository postRepository;
+
+    private final QnaAnswerRepository qnaAnswerRepository;
 
     private final PostLikeRepository postLikeRepository;
 
@@ -159,16 +162,25 @@ public class PostService {
                 postImageQuerydsl.findImagePathAllByPostId(postId));
     }
 
+    @Transactional
     public Long deletePost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_POST));
 
-        post.setPostStatus(PostStatus.INACTIVE);
-        postRepository.save(post);
+        deleteFeedImagesFromS3(post);
+
+        if (Objects.equals(post.getPostType(), PostType.QNA)) {
+            List<QnaAnswer> qnaAnswers = qnaAnswerRepository.findAllByPostId(postId);
+
+            qnaAnswers.forEach(this::deleteQnaAnswerImagesFromS3);
+        }
+
+        postRepository.deleteAllByPostId(post.getId());
 
         return post.getId();
     }
 
+    @Transactional
     public boolean addLike(Long postId, Member member) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_POST));
@@ -213,10 +225,19 @@ public class PostService {
     }
 
     private void deleteImages(Post post) {
-        post.getImages()
-            .forEach(image -> awsS3Api.deleteImage(image.getImagePath()));
+        deleteFeedImagesFromS3(post);
 
         imageRepository.deleteAllByPostId(post.getId());
+    }
+
+    private void deleteFeedImagesFromS3(Post post) {
+        post.getImages()
+                .forEach(image -> awsS3Api.deleteImage(image.getImagePath()));
+    }
+
+    private void deleteQnaAnswerImagesFromS3(QnaAnswer qnaAnswer) {
+        qnaAnswer.getQnaAnswerImages()
+                .forEach(image -> awsS3Api.deleteImage(image.getImagePath()));
     }
 }
 
