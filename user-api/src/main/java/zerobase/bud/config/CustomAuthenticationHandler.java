@@ -24,7 +24,9 @@ public class CustomAuthenticationHandler implements AuthenticationSuccessHandler
     private final TokenProvider tokenProvider;
     private final MemberRepository memberRepository;
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        Authentication authentication) throws IOException, ServletException {
         Optional<Member> optionalMember = memberRepository.findByUserCode(authentication.getName());
         if(optionalMember.isPresent()) {
             Member member = optionalMember.get();
@@ -34,12 +36,6 @@ public class CustomAuthenticationHandler implements AuthenticationSuccessHandler
 
             response.setHeader(HttpHeaders.AUTHORIZATION, token.getGrantType() + token.getAccessToken());
             response.setHeader("X-Refresh-Token", token.getGrantType() + token.getRefreshToken());
-            if(member.isAddInfoYn()) {
-                response.sendRedirect("http://127.0.0.1:5173/");
-            }
-            else {
-                response.sendRedirect("http://127.0.0.1:5173/signUp");
-            }
         }
         else {
             log.info("유효하지 않은 아이디입니다.");
