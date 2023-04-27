@@ -22,13 +22,6 @@ public class OAuthController {
         return ResponseEntity.ok(authService.login(oAuth2User));
     }
 
-    @GetMapping("/login/oauth2/code/github")
-    public String callback(@RequestParam("code") String code,
-                           @RequestParam("state") String state,
-                           Authentication authentication) {
-        return "redirect:http://127.0.0.1:5173/";
-    }
-
     @PostMapping("/refresh")
     public ResponseEntity<?> tokenRefreshRequest(@RequestBody RefreshDto refreshDto) {
         JwtDto result = authService.refresh(refreshDto);
