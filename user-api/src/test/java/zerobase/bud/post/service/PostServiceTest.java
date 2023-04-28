@@ -392,7 +392,7 @@ class PostServiceTest {
         Long id = postService.deletePost((long) 1);
 
         //then
-        verify(postRepository, times(1)).deleteAllByPostId(any());
+        verify(postRepository, times(1)).deleteByPostId(any());
         assertEquals(id, 1L);
     }
 

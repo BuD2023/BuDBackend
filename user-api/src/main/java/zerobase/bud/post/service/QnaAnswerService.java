@@ -121,10 +121,14 @@ public class QnaAnswerService {
     }
 
     private void deleteImages(QnaAnswer qnaAnswer) {
-        qnaAnswer.getQnaAnswerImages()
-            .forEach(qnaAnswerImage -> awsS3Api.deleteImage(qnaAnswerImage.getImagePath()));
+        deleteImagesFromS3(qnaAnswer);
 
         qnaAnswerImageRepository.deleteAllByQnaAnswerId(qnaAnswer.getId());
+    }
+
+    private void deleteImagesFromS3(QnaAnswer qnaAnswer) {
+        qnaAnswer.getQnaAnswerImages()
+                .forEach(qnaAnswerImage -> awsS3Api.deleteImage(qnaAnswerImage.getImagePath()));
     }
 
     private void validateUpdateQnaAnswer(
@@ -180,14 +184,16 @@ public class QnaAnswerService {
                 qnaAnswerDtos.getTotalElements());
     }
 
+    @Transactional
     public void deleteQnaAnswer(Long qnaAnswerId) {
         QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
 
         validateDeleteQnaAnswer(qnaAnswer);
 
-        qnaAnswer.setQnaAnswerStatus(QnaAnswerStatus.INACTIVE);
-        qnaAnswerRepository.save(qnaAnswer);
+        deleteImagesFromS3(qnaAnswer);
+
+        qnaAnswerRepository.deleteByQnaAnswerId(qnaAnswerId);
     }
 
     private void validateDeleteQnaAnswer(QnaAnswer qnaAnswer) {
@@ -241,7 +247,8 @@ public class QnaAnswerService {
         return qnaAnswerPinId;
     }
 
-    public boolean setLike(Long qnaAnswerId, Member member) {
+    @Transactional
+    public boolean addLike(Long qnaAnswerId, Member member) {
         QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
 
