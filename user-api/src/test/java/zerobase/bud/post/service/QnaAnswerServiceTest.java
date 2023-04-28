@@ -4,8 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -654,8 +653,20 @@ class QnaAnswerServiceTest {
     @DisplayName("success delete qnaAnswer")
     void success_deleteQnaAnswer(){
         //given
+        Post post = Post.builder()
+                .id(1L)
+                .build();
+
+        QnaAnswer qnaAnswer = QnaAnswer.builder()
+                .id(1L)
+                .post(post)
+                .build();
+
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(post));
+
         given(qnaAnswerRepository.findById(anyLong()))
-                .willReturn(Optional.ofNullable(getQnaAnswer()));
+                .willReturn(Optional.ofNullable(qnaAnswer));
 
         ArgumentCaptor<QnaAnswer> captor =
                 ArgumentCaptor.forClass(QnaAnswer.class);
@@ -688,8 +699,13 @@ class QnaAnswerServiceTest {
     @DisplayName("FAIL CHANGE_IMPOSSIBLE_PINNED_ANSWER")
     void fail_deleteQnaAnswer_QnaAnswerPin() {
         //given
+        Post post = Post.builder()
+                .id(1L)
+                .build();
+
         QnaAnswer qnaAnswer = getQnaAnswer();
         qnaAnswer.setId(1L);
+        qnaAnswer.setPost(post);
 
         given(qnaAnswerRepository.findById(anyLong()))
                 .willReturn(Optional.of(qnaAnswer));
@@ -697,31 +713,14 @@ class QnaAnswerServiceTest {
         given(qnaAnswerPinRepository.findByQnaAnswerId(anyLong()))
                 .willReturn(Optional.of(getQnaAnswerPin()));
 
-        //when
-        BudException exception = assertThrows(BudException.class,
-                () -> qnaAnswerService.deleteQnaAnswer(anyLong()));
-
-        //then
-        assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER, exception.getErrorCode());
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("FAIL ALREADY_DELETE_QNA_ANSWER")
-    void fail_deleteQnaAnswer_QnaAnswerAlreadyDelete() {
-        //given
-        QnaAnswer qnaAnswer = getQnaAnswer();
-        qnaAnswer.setQnaAnswerStatus(QnaAnswerStatus.INACTIVE);
-
-        given(qnaAnswerRepository.findById(anyLong()))
-                .willReturn(Optional.of(qnaAnswer));
-
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(post));
         //when
         BudException exception = assertThrows(BudException.class,
                 () -> qnaAnswerService.deleteQnaAnswer(1L));
 
         //then
-        assertEquals(ALREADY_DELETE_QNA_ANSWER, exception.getErrorCode());
+        assertEquals(CHANGE_IMPOSSIBLE_PINNED_ANSWER, exception.getErrorCode());
     }
 
     @Test

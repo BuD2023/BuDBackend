@@ -1,7 +1,6 @@
 package zerobase.bud.post.service;
 
 import static zerobase.bud.common.type.ErrorCode.ADD_IMPOSSIBLE_PINNED_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.ALREADY_DELETE_QNA_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.CANNOT_ANSWER_YOURSELF;
 import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
@@ -189,9 +188,16 @@ public class QnaAnswerService {
         QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
 
+        Post post = postRepository.findById(qnaAnswer.getPost().getId())
+                .orElseThrow(() -> new BudException(NOT_FOUND_POST));
+
         validateDeleteQnaAnswer(qnaAnswer);
 
         deleteImagesFromS3(qnaAnswer);
+
+        post.minusCommentCount();
+
+        postRepository.save(post);
 
         qnaAnswerRepository.deleteByQnaAnswerId(qnaAnswerId);
     }
@@ -201,11 +207,8 @@ public class QnaAnswerService {
                 .ifPresent(ap -> {
                     throw new BudException(CHANGE_IMPOSSIBLE_PINNED_ANSWER);
                 });
-
-        if (Objects.equals(qnaAnswer.getQnaAnswerStatus(), QnaAnswerStatus.INACTIVE)) {
-            throw new BudException(ALREADY_DELETE_QNA_ANSWER);
-        }
     }
+
     @Transactional
     public Long qnaAnswerPin(Long qnaAnswerId, Member member) {
 
