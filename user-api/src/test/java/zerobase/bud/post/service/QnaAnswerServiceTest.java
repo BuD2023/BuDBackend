@@ -664,10 +664,7 @@ class QnaAnswerServiceTest {
         qnaAnswerService.deleteQnaAnswer((long)1);
 
         //then
-        verify(qnaAnswerRepository, times(1))
-                .save(captor.capture());
-
-        assertEquals(QnaAnswerStatus.INACTIVE, captor.getValue().getQnaAnswerStatus());
+        verify(qnaAnswerRepository, times(1)).deleteByQnaAnswerId(anyLong());
     }
 
     @Test
