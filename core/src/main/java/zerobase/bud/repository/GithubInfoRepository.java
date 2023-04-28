@@ -9,4 +9,6 @@ import zerobase.bud.domain.GithubInfo;
 public interface GithubInfoRepository extends JpaRepository<GithubInfo, Long> {
 
     Optional<GithubInfo> findByUserId(String userId);
+
+    void deleteByMemberId(Long memberId);
 }

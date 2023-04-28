@@ -14,6 +14,8 @@ import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.repository.NotificationInfoRepository;
+import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.user.repository.FollowRepository;
 
@@ -32,6 +34,10 @@ import static zerobase.bud.util.Constants.PROFILES;
 public class MemberService implements UserDetailsService {
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
+
+    private final NotificationInfoRepository notificationInfoRepository;
+
+    private final GithubInfoRepository githubInfoRepository;
 
     private final AwsS3Api awsS3Api;
 
@@ -88,6 +94,10 @@ public class MemberService implements UserDetailsService {
 
         followRepository.deleteAllByTarget(member);
         followRepository.deleteAllByMember(member);
+
+        notificationInfoRepository.deleteByMemberId(member.getId());
+
+        githubInfoRepository.deleteByMemberId(member.getId());
 
         do {
             uuid = UUID.randomUUID().toString().substring(0, 8);

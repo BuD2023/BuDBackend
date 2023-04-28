@@ -10,4 +10,6 @@ public interface NotificationInfoRepository extends
     JpaRepository<NotificationInfo, Long> {
 
     Optional<NotificationInfo> findByMemberId(Long memberId);
+
+    void deleteByMemberId(Long memberId);
 }
