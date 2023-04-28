@@ -226,7 +226,7 @@ public class CommentService {
         }
 
         Post post = comment.getPost();
-        post.minusCommentCount(commentRepository.countByParent(comment)+1);
+        post.minusCommentCount(comment.getReComments().size()+1);
         postRepository.save(post);
         commentRepository.delete(comment);
 

@@ -749,15 +749,13 @@ class QnaAnswerCommentServiceTest {
         given(qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(anyLong(), any()))
                 .willReturn(Optional.of(comment));
 
-        given(qnaAnswerCommentRepository.countByParent(any()))
-                .willReturn(2);
         //when
         ArgumentCaptor<QnaAnswer> captor = ArgumentCaptor.forClass(QnaAnswer.class);
         Long result = qnaAnswerCommentService.delete(123L, member);
         //then
         verify(qnaAnswerCommentRepository, times(1)).delete(any());
         verify(qnaAnswerRepository, times(1)).save(captor.capture());
-        assertEquals(0, captor.getValue().getCommentCount());
+        assertEquals(2, captor.getValue().getCommentCount());
         assertEquals(result, 123L);
     }
 
