@@ -1,6 +1,7 @@
 package zerobase.bud.oauth.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +18,7 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.repository.MemberRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoginService {
@@ -43,6 +45,7 @@ public class LoginService {
 
         if(ObjectUtils.isEmpty(response.getBody()) || !response.getBody().contains("access_token") || response.getBody().contains("error")) return "";
         String OAuthAccessToken = response.getBody().replace("access_token=", "").replace("&scope=&token_type=bearer", "");
+        log.info("Response: OAuth2 Access Token by Query_Code: " + OAuthAccessToken);
 
         Member member = memberRepository.findByOauthToken(OAuthAccessToken).orElseThrow(() -> new BudException(ErrorCode.INVALID_TOKEN));
         return "Bearer " + tokenProvider.generateToken(member.getUserId()).getAccessToken();

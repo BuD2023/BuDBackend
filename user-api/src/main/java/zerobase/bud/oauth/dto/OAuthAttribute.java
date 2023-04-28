@@ -16,21 +16,24 @@ public class OAuthAttribute {
     private final String userCode;
     private final String email;
     private final String oAuthAccessToken;
+    private final String githubUsername;
 
     @Builder
-    public OAuthAttribute(Map<String, Object> attributes, String nameAttributeKey, String userId, String email, String oAuthAccessToken, String userCode) {
+    public OAuthAttribute(Map<String, Object> attributes, String nameAttributeKey, String userId, String email, String oAuthAccessToken, String userCode, String githubUsername) {
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
         this.userId = userId;
         this.userCode = userCode;
         this.email = email;
         this.oAuthAccessToken = oAuthAccessToken;
+        this.githubUsername = githubUsername;
     }
 
     public static OAuthAttribute of(String userNameAttributeName, Map<String, Object> attributes, String oAuthAccessToken, String userCode) {
         return OAuthAttribute.builder()
                 .userId((String) attributes.get("login"))
                 .email((String) attributes.get("email"))
+                .githubUsername((String) attributes.get("name"))
                 .userCode(userCode)
                 .oAuthAccessToken(oAuthAccessToken)
                 .attributes(attributes)

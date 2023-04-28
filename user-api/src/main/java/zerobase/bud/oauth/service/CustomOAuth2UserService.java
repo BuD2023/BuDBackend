@@ -1,6 +1,7 @@
 package zerobase.bud.oauth.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Random;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @Service
@@ -37,6 +39,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // String registrationId = userRequest.getClientRegistration().getRegistrationId();
         String oAuthAccessToken = userRequest.getAccessToken().getTokenValue();
+        log.info("Request: OAuth2 Access Token:" + oAuthAccessToken);
+
         String userCode = oAuth2User.getName();
         String userNameAttributeName = userRequest
                 .getClientRegistration().getProviderDetails()
@@ -62,6 +66,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             member = attributes.toEntity(imageUrl);
             githubInfo = GithubInfo.builder()
                     .userId(attributes.getUserId())
+                    .username(attributes.getGithubUsername())
                     .accessToken(attributes.getOAuthAccessToken())
                     .build();
         }
@@ -70,6 +75,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             member.update(attributes.getUserCode(), attributes.getOAuthAccessToken());
             githubInfo = GithubInfo.builder()
                     .userId(attributes.getUserId())
+                    .username(attributes.getGithubUsername())
                     .accessToken(attributes.getOAuthAccessToken())
                     .build();
         }
@@ -79,6 +85,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             githubInfo = optionalGithubInfo.get();
 
             githubInfo.setAccessToken(attributes.getOAuthAccessToken());
+            githubInfo.setUsername(attributes.getGithubUsername());
         }
         memberRepository.save(member);
 
