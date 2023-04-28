@@ -107,6 +107,7 @@ public class GithubService {
             , level.getLevelCode()
             , level.getImagePath()
             , remainCommitCountNextLevel
+            , totalCommitCount
             , todayCommitCount
             , thisWeekCommitCount
             , consecutiveCommitDays
