@@ -664,10 +664,7 @@ class QnaAnswerServiceTest {
         qnaAnswerService.deleteQnaAnswer((long)1);
 
         //then
-        verify(qnaAnswerRepository, times(1))
-                .save(captor.capture());
-
-        assertEquals(QnaAnswerStatus.INACTIVE, captor.getValue().getQnaAnswerStatus());
+        verify(qnaAnswerRepository, times(1)).deleteByQnaAnswerId(anyLong());
     }
 
     @Test
@@ -744,7 +741,7 @@ class QnaAnswerServiceTest {
         ArgumentCaptor<QnaAnswer> qnaAnswerCaptor = ArgumentCaptor.forClass(QnaAnswer.class);
 
         //when
-        boolean setLike = qnaAnswerService.setLike(qnaAnswer.getId(), member);
+        boolean setLike = qnaAnswerService.addLike(qnaAnswer.getId(), member);
 
         //then
         verify(qnaAnswerRepository, times(1)).save(qnaAnswerCaptor.capture());
@@ -774,7 +771,7 @@ class QnaAnswerServiceTest {
         ArgumentCaptor<QnaAnswer> qnaAnswerCaptor = ArgumentCaptor.forClass(QnaAnswer.class);
 
         //when
-        boolean setLike = qnaAnswerService.setLike(qnaAnswer.getId(), member);
+        boolean setLike = qnaAnswerService.addLike(qnaAnswer.getId(), member);
 
         //then
         verify(qnaAnswerRepository, times(1)).save(qnaAnswerCaptor.capture());
@@ -792,7 +789,7 @@ class QnaAnswerServiceTest {
 
         //when
         BudException budException = assertThrows(BudException.class,
-                () -> qnaAnswerService.setLike((long)1, new Member()));
+                () -> qnaAnswerService.addLike((long)1, new Member()));
 
         //then
         assertEquals(NOT_FOUND_QNA_ANSWER, budException.getErrorCode());

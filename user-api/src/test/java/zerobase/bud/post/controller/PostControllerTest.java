@@ -27,6 +27,8 @@ import zerobase.bud.comment.service.CommentService;
 import zerobase.bud.jwt.TokenProvider;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
+import zerobase.bud.post.dto.CreateComment;
+import zerobase.bud.post.dto.RecommentDto;
 import zerobase.bud.post.dto.SearchPost;
 import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
@@ -50,8 +52,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -386,7 +387,7 @@ class PostControllerTest {
     void success_deletePost() throws Exception {
         //given
         Post post = Post.builder()
-                .id((long)1)
+                .id((long) 1)
                 .title("제목")
                 .content("내용")
                 .commentCount(1)
@@ -514,6 +515,117 @@ class PostControllerTest {
                                 preprocessResponse(prettyPrint())
                         )
                 );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("댓글 생성 성공")
+    void successCreateComment() throws Exception {
+        //given
+        given(commentService.createComment(anyLong(), any(), anyString()))
+                .willReturn(
+                        CommentDto.builder()
+                                .commentId(2L)
+                                .content("이것은 댓글입니다")
+                                .numberOfLikes(0)
+                                .memberName("아디다스")
+                                .memberProfileUrl("profiles/images.jpg")
+                                .memberId(2L)
+                                .createdAt("0 초전")
+                                .build()
+                );
+        //when
+        //then
+        this.mockMvc.perform(post("/posts/{postId}/comments", 23)
+                        .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                CreateComment.Request.builder()
+                                        .content("이것은 댓글입니다").build()
+                        ))
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("댓글 수정 성공")
+    void successModifyComment() throws Exception {
+        //given
+        given(commentService.modifyComment(anyLong(), any(), anyString()))
+                .willReturn(
+                        CommentDto.builder()
+                                .commentId(2L)
+                                .content("이것은 댓글입니다")
+                                .numberOfLikes(0)
+                                .memberName("아디다스")
+                                .memberProfileUrl("profiles/images.jpg")
+                                .memberId(2L)
+                                .createdAt("0 초전")
+                                .build()
+                );
+        //when
+        //then
+        this.mockMvc.perform(put("/posts/comments/{commentId}/modify", 3)
+                        .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                CreateComment.Request.builder()
+                                        .content("이것은 댓글입니다").build()
+                        ))
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("대댓글 생성 성공")
+    void successCreateRecomment() throws Exception {
+        //given
+        given(commentService.createRecomment(anyLong(), any(), anyString()))
+                .willReturn(
+                        RecommentDto.builder()
+                                .commentId(2L)
+                                .content("이것은 댓글입니다")
+                                .numberOfLikes(0)
+                                .memberName("아디다스")
+                                .memberProfileUrl("profiles/images.jpg")
+                                .memberId(2L)
+                                .createdAt("0 초전")
+                                .build()
+                );
+        //when
+        //then
+        this.mockMvc.perform(post("/posts/comments/{commentId}", 23)
+                        .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                CreateComment.Request.builder()
+                                        .content("이것은 댓글입니다").build()
+                        ))
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+
     }
 
 
@@ -673,7 +785,7 @@ class PostControllerTest {
                 .willReturn(new SliceImpl<>(dtos));
 
 
-        this.mockMvc.perform(get("/posts/{postId}/comments",1)
+        this.mockMvc.perform(get("/posts/{postId}/comments", 1)
                         .param("page", "0")
                         .param("size", "5")
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
