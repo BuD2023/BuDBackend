@@ -77,7 +77,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getMember().equals(member)) {
+        if (!Objects.equals(comment.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 

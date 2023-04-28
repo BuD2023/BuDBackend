@@ -199,8 +199,7 @@ public class QnaAnswerCommentService {
         QnaAnswerComment qnaAnswerComment = qnaAnswerCommentRepository.findById(commentId)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (!Objects.equals(qnaAnswerComment.getMember()
-                .getId(), member.getId())) {
+        if (!Objects.equals(qnaAnswerComment.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
