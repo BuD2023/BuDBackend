@@ -83,7 +83,7 @@ public class QnaAnswer extends BaseEntity {
         this.commentCount++;
     }
 
-    public void commentCountdown() {
-        this.commentCount--;
+    public void minusCommentCount(int numberOfComments) {
+        this.commentCount -= numberOfComments;
     }
 }

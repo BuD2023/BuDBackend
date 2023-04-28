@@ -16,6 +16,6 @@ public interface QnaAnswerCommentRepository extends JpaRepository<QnaAnswerComme
 
     Slice<QnaAnswerComment> findByQnaAnswerAndParentIsNullAndIdIsNotAndQnaAnswerCommentStatus(QnaAnswer qnaAnswer, Long pinCommentId, QnaAnswerCommentStatus qnaAnswerCommentStatus, Pageable pageable);
 
-    int countByQnaAnswer(QnaAnswer answer);
+    int countByParent(QnaAnswerComment comment);
 
 }

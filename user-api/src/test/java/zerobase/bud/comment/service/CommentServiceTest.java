@@ -732,7 +732,7 @@ class CommentServiceTest {
         //given
         Post post = Post.builder()
                 .id(1L)
-                .commentCount(1)
+                .commentCount(3)
                 .likeCount(1)
                 .build();
 
@@ -746,8 +746,8 @@ class CommentServiceTest {
         given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
                 .willReturn(Optional.of(comment));
 
-        given(commentRepository.countByPost(any()))
-                .willReturn(2);
+        given(commentRepository.countByParent(any()))
+                .willReturn(0);
         //when
         ArgumentCaptor<Post> postArgumentCaptor = ArgumentCaptor.forClass(Post.class);
         Long result = commentService.delete(123L, member);

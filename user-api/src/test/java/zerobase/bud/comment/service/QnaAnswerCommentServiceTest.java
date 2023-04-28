@@ -736,7 +736,7 @@ class QnaAnswerCommentServiceTest {
 
         QnaAnswer qnaAnswer = QnaAnswer.builder()
                 .id(1L)
-                .commentCount(1)
+                .commentCount(3)
                 .build();
 
         QnaAnswerComment comment = QnaAnswerComment.builder()
@@ -749,8 +749,8 @@ class QnaAnswerCommentServiceTest {
         given(qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(anyLong(), any()))
                 .willReturn(Optional.of(comment));
 
-        given(qnaAnswerCommentRepository.countByQnaAnswer(any()))
-                .willReturn(0);
+        given(qnaAnswerCommentRepository.countByParent(any()))
+                .willReturn(2);
         //when
         ArgumentCaptor<QnaAnswer> captor = ArgumentCaptor.forClass(QnaAnswer.class);
         Long result = qnaAnswerCommentService.delete(123L, member);

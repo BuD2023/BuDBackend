@@ -17,5 +17,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Slice<Comment> findByPostAndParentIsNullAndIdIsNotAndCommentStatus(Post post, Long pinCommentId, CommentStatus commentStatus, Pageable pageable);
 
-    int countByPost(Post post);
+    int countByParent(Comment comment);
 }
