@@ -748,6 +748,9 @@ class QnaAnswerCommentServiceTest {
 
         given(qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(anyLong(), any()))
                 .willReturn(Optional.of(comment));
+
+        given(qnaAnswerCommentRepository.countByQnaAnswer(any()))
+                .willReturn(0);
         //when
         ArgumentCaptor<QnaAnswer> captor = ArgumentCaptor.forClass(QnaAnswer.class);
         Long result = qnaAnswerCommentService.delete(123L, member);

@@ -745,13 +745,16 @@ class CommentServiceTest {
 
         given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
                 .willReturn(Optional.of(comment));
+
+        given(commentRepository.countByPost(any()))
+                .willReturn(2);
         //when
         ArgumentCaptor<Post> postArgumentCaptor = ArgumentCaptor.forClass(Post.class);
         Long result = commentService.delete(123L, member);
         //then
         verify(commentRepository, times(1)).delete(any());
         verify(postRepository, times(1)).save(postArgumentCaptor.capture());
-        assertEquals(0, postArgumentCaptor.getValue().getCommentCount());
+        assertEquals(2, postArgumentCaptor.getValue().getCommentCount());
         assertEquals(result, 123L);
     }
 

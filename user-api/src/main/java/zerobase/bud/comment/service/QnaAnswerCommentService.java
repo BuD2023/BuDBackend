@@ -163,7 +163,7 @@ public class QnaAnswerCommentService {
         }
 
         QnaAnswer qnaAnswer = qnaAnswerComment.getQnaAnswer();
-        qnaAnswer.commentCountdown();
+        qnaAnswer.setCommentCount(qnaAnswerCommentRepository.countByQnaAnswer(qnaAnswer));
 
         qnaAnswerRepository.save(qnaAnswer);
         qnaAnswerCommentRepository.delete(qnaAnswerComment);
