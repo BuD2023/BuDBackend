@@ -582,7 +582,7 @@ class QnaAnswerControllerTest {
     @DisplayName("성공 - QNA Answer 좋아요")
     void success_addQnaAnswerLike() throws Exception {
         //given
-        given(qnaAnswerService.setLike(anyLong(), any()))
+        given(qnaAnswerService.addLike(anyLong(), any()))
                 .willReturn(true);
         //when
         //then
@@ -606,7 +606,7 @@ class QnaAnswerControllerTest {
     @DisplayName("성공 - QNA Answer 좋아요 해제")
     void success_removeQnaAnswerLike() throws Exception {
         //given
-        given(qnaAnswerService.setLike(anyLong(), any()))
+        given(qnaAnswerService.addLike(anyLong(), any()))
                 .willReturn(false);
         //when
         //then

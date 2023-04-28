@@ -175,7 +175,7 @@ public class PostService {
             qnaAnswers.forEach(this::deleteQnaAnswerImagesFromS3);
         }
 
-        postRepository.deleteAllByPostId(post.getId());
+        postRepository.deleteByPostId(post.getId());
 
         return post.getId();
     }
