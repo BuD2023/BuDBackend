@@ -69,16 +69,10 @@ public class MemberService implements UserDetailsService {
         return levelArray;
     }
 
-    public String updateProfileRandomImage(Member member) {
+    public String getProfileRandomImage() {
         Random rd = new Random();
         int randomNumber = rd.nextInt(32) + 1;
-
-        String imagePath = PROFILE_BASIC_IMAGE_PREFIX + randomNumber + FILE_EXTENSION_PNG;
-
-        member.updateProfileImage(imagePath);
-        memberRepository.save(member);
-
-        return imagePath;
+        return PROFILE_BASIC_IMAGE_PREFIX + randomNumber + FILE_EXTENSION_PNG;
     }
 
     @Transactional

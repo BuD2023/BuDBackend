@@ -1110,6 +1110,19 @@ include::{snippets}/user-controller-test/success_change-notification-available/h
 |nickName|유저의 닉네임
 |===
 
+=== 12. 랜덤 이미지 가져오는 것
+.request
+include::{snippets}/member-controller-test/success_get-profile-random-image/http-request.adoc[]
+
+.response
+include::{snippets}/member-controller-test/success_get-profile-random-image/http-response.adoc[]
+
+.response field
+|===
+|필드명|설명
+|profile_img|기본 프로필 이미지 경로
+|===
+
 == 알림 API
 === 1. 알림 조회
 .request
