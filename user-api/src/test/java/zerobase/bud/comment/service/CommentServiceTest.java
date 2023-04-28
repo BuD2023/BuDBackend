@@ -1,17 +1,5 @@
 package zerobase.bud.comment.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static zerobase.bud.post.type.PostStatus.ACTIVE;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,9 +23,23 @@ import zerobase.bud.notification.event.like.AddLikeCommentEvent;
 import zerobase.bud.notification.event.pin.CommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.dto.CommentDto;
+import zerobase.bud.post.dto.RecommentDto;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.type.MemberStatus;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static zerobase.bud.post.type.PostStatus.ACTIVE;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -69,6 +71,180 @@ class CommentServiceTest {
             .build();
 
     @Test
+    @DisplayName("댓글 생성 성공")
+    void successCreateCommentTest() {
+        //given
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(Post.builder()
+                        .title("title")
+                        .content("content")
+                        .postStatus(ACTIVE)
+                        .commentCount(0)
+                        .postType(PostType.FEED)
+                        .build()));
+
+        given(commentRepository.save(any()))
+                .willReturn(Comment.builder()
+                        .member(member)
+                        .likeCount(0)
+                        .content("하이하이")
+                        .parent(null)
+                        .createdAt(LocalDateTime.now())
+                        .id(3L)
+                        .build());
+        //when
+        ArgumentCaptor<Comment> commentArgumentCaptor = ArgumentCaptor.forClass(Comment.class);
+        ArgumentCaptor<Post> postArgumentCaptor = ArgumentCaptor.forClass(Post.class);
+        CommentDto dto = commentService.createComment(123L, member, "이것은 댓글입니다");
+        //then
+        verify(commentRepository, times(1)).save(commentArgumentCaptor.capture());
+        verify(postRepository, times(1)).save(postArgumentCaptor.capture());
+        assertEquals("이것은 댓글입니다", commentArgumentCaptor.getValue().getContent());
+        assertEquals(0, dto.getNumberOfLikes());
+        assertEquals(1, postArgumentCaptor.getValue().getCommentCount());
+        assertEquals(1L, dto.getMemberId());
+    }
+
+    @Test
+    @DisplayName("댓글 생성 실패 - 해당 포스트가 없음")
+    void failCreateCommentTestWhenNotFoundPost() {
+        //given
+        given(postRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> commentService.createComment(123L, member, "이것은 댓글입니다"));
+        //then
+        assertEquals(ErrorCode.NOT_FOUND_POST, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 성공")
+    void successModifyComment() {
+        //given
+        Comment comment = Comment.builder()
+                .member(member)
+                .content("수정전텍스트")
+                .likeCount(1)
+                .id(3L)
+                .build();
+
+        given(commentRepository.findById(anyLong()))
+                .willReturn(Optional.of(comment));
+
+        given(commentRepository.save(any()))
+                .willReturn(Comment.builder()
+                        .member(member)
+                        .likeCount(0)
+                        .content("수정후 텍스트")
+                        .createdAt(LocalDateTime.now())
+                        .id(3L)
+                        .build());
+        //when
+        ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
+        CommentDto dto = commentService.modifyComment(123L, member, "이것은 댓글입니다");
+        //then
+        verify(commentRepository, times(1)).save(captor.capture());
+        assertEquals("수정후 텍스트", dto.getContent());
+        assertEquals("이것은 댓글입니다", captor.getValue().getContent());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 해당 댓글이 없음")
+    void failModifyCommentWhenCommentNotFoundTest() {
+        //given
+        given(commentRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> commentService.modifyComment(123L, member, "이것은 댓글입니다"));
+        //then
+        assertEquals(ErrorCode.COMMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 요청한 유저가 댓글 작성자가 아님")
+    void failModifyCommentWhenNotCommentOwnerTest() {
+        //given
+        Member commentWriter = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .profileImg("aaaaaa.jpg")
+                .nickname("비가와")
+                .job("풀스택개발자")
+                .build();
+
+        Comment comment = Comment.builder()
+                .member(commentWriter)
+                .content("수정전텍스트")
+                .likeCount(1)
+                .id(3L)
+                .build();
+
+        given(commentRepository.findById(anyLong()))
+                .willReturn(Optional.of(comment));
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> commentService.modifyComment(123L, member, "이것은 댓글입니다"));
+        //then
+        assertEquals(ErrorCode.NOT_COMMENT_OWNER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("대댓글 생성 성공")
+    void successCreateRecommentTest() {
+        //given
+        Post post = Post.builder()
+                .title("title")
+                .content("content")
+                .postStatus(ACTIVE)
+                .commentCount(0)
+                .postType(PostType.FEED)
+                .build();
+
+        Comment parentComment = Comment.builder()
+                .id(2L)
+                .post(post)
+                .build();
+
+        given(commentRepository.findById(anyLong()))
+                .willReturn(Optional.of(parentComment));
+
+        given(commentRepository.save(any()))
+                .willReturn(Comment.builder()
+                        .member(member)
+                        .likeCount(0)
+                        .content("하이하이")
+                        .parent(parentComment)
+                        .createdAt(LocalDateTime.now())
+                        .id(3L)
+                        .build());
+
+        //when
+        ArgumentCaptor<Comment> commentArgumentCaptor = ArgumentCaptor.forClass(Comment.class);
+        ArgumentCaptor<Post> postArgumentCaptor = ArgumentCaptor.forClass(Post.class);
+        RecommentDto dto = commentService.createRecomment(123L, member, "이것은 댓글입니다");
+        //then
+        verify(commentRepository, times(1)).save(commentArgumentCaptor.capture());
+        verify(postRepository, times(1)).save(postArgumentCaptor.capture());
+        assertEquals("이것은 댓글입니다", commentArgumentCaptor.getValue().getContent());
+        assertEquals(0, dto.getNumberOfLikes());
+        assertEquals(1, postArgumentCaptor.getValue().getCommentCount());
+        assertEquals(1L, dto.getMemberId());
+    }
+
+    @Test
+    @DisplayName("대댓글 실패 - 원댓글이 없음")
+    void failCreateRecommentWhenCommentNotFoundPostTest() {
+        //given
+        given(commentRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> commentService.createRecomment(123L, member, "이것은 대댓글입니다"));
+        //then
+        assertEquals(ErrorCode.COMMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
     @DisplayName("좋아요 성공")
     void successCommentLikeTest() {
         //given
@@ -82,12 +258,12 @@ class CommentServiceTest {
                 .build();
 
         Post post = Post.builder()
-            .member(writer)
-            .title("title")
-            .content("content")
-            .postStatus(ACTIVE)
-            .postType(PostType.FEED)
-            .build();
+                .member(writer)
+                .title("title")
+                .content("content")
+                .postStatus(ACTIVE)
+                .postType(PostType.FEED)
+                .build();
 
         Comment comment = Comment.builder()
                 .member(writer)
@@ -554,18 +730,29 @@ class CommentServiceTest {
     @DisplayName("댓글 삭제 성공")
     void successDeleteWhenCommentNotFoundTest() {
         //given
+        Post post = Post.builder()
+                .id(1L)
+                .commentCount(3)
+                .likeCount(1)
+                .build();
+
         Comment comment = Comment.builder()
                 .member(member)
+                .post(post)
                 .createdAt(LocalDateTime.now())
                 .id(3L)
                 .build();
 
         given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
                 .willReturn(Optional.of(comment));
+
         //when
+        ArgumentCaptor<Post> postArgumentCaptor = ArgumentCaptor.forClass(Post.class);
         Long result = commentService.delete(123L, member);
         //then
         verify(commentRepository, times(1)).delete(any());
+        verify(postRepository, times(1)).save(postArgumentCaptor.capture());
+        assertEquals(2, postArgumentCaptor.getValue().getCommentCount());
         assertEquals(result, 123L);
     }
 

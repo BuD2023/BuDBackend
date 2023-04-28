@@ -1,17 +1,5 @@
 package zerobase.bud.comment.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static zerobase.bud.post.type.PostStatus.ACTIVE;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import zerobase.bud.comment.domain.Comment;
 import zerobase.bud.comment.domain.QnaAnswerComment;
 import zerobase.bud.comment.domain.QnaAnswerCommentLike;
 import zerobase.bud.comment.domain.QnaAnswerCommentPin;
@@ -35,10 +24,25 @@ import zerobase.bud.notification.event.like.AddLikeQnaAnswerCommentEvent;
 import zerobase.bud.notification.event.pin.QnaAnswerCommentPinEvent;
 import zerobase.bud.post.domain.Post;
 import zerobase.bud.post.domain.QnaAnswer;
+import zerobase.bud.post.dto.CommentDto;
 import zerobase.bud.post.dto.QnaAnswerCommentDto;
+import zerobase.bud.post.dto.QnaAnswerRecommentDto;
 import zerobase.bud.post.repository.QnaAnswerRepository;
 import zerobase.bud.post.type.PostType;
 import zerobase.bud.type.MemberStatus;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static zerobase.bud.post.type.PostStatus.ACTIVE;
 
 @ExtendWith(MockitoExtension.class)
 class QnaAnswerCommentServiceTest {
@@ -70,6 +74,174 @@ class QnaAnswerCommentServiceTest {
             .build();
 
     @Test
+    @DisplayName("댓글 생성 성공")
+    void successCreateCommentTest() {
+        //given
+        given(qnaAnswerRepository.findById(anyLong()))
+                .willReturn(Optional.of(QnaAnswer.builder()
+                        .commentCount(0)
+                        .content("이러이러한 답변을 합니다")
+                        .build()));
+
+        given(qnaAnswerCommentRepository.save(any()))
+                .willReturn(QnaAnswerComment.builder()
+                        .member(member)
+                        .likeCount(0)
+                        .content("하이하이")
+                        .parent(null)
+                        .createdAt(LocalDateTime.now())
+                        .id(3L)
+                        .build());
+        //when
+        ArgumentCaptor<QnaAnswerComment> commentArgumentCaptor = ArgumentCaptor.forClass(QnaAnswerComment.class);
+        ArgumentCaptor<QnaAnswer> qnaAnswerArgumentCaptor = ArgumentCaptor.forClass(QnaAnswer.class);
+        QnaAnswerCommentDto dto = qnaAnswerCommentService.createComment(123L, member, "이것은 댓글입니다");
+        //then
+        verify(qnaAnswerCommentRepository, times(1)).save(commentArgumentCaptor.capture());
+        verify(qnaAnswerRepository, times(1)).save(qnaAnswerArgumentCaptor.capture());
+        assertEquals("이것은 댓글입니다", commentArgumentCaptor.getValue().getContent());
+        assertEquals(0, dto.getNumberOfLikes());
+        assertEquals(1, qnaAnswerArgumentCaptor.getValue().getCommentCount());
+        assertEquals(1L, dto.getMemberId());
+    }
+
+    @Test
+    @DisplayName("댓글 생성 실패 - 해당 포스트가 없음")
+    void failCreateCommentTestWhenNotFoundPost() {
+        //given
+        given(qnaAnswerRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> qnaAnswerCommentService.createComment(123L, member, "이것은 댓글입니다"));
+        //then
+        assertEquals(ErrorCode.NOT_FOUND_QNA_ANSWER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 성공")
+    void successModifyComment() {
+        //given
+        QnaAnswerComment comment = QnaAnswerComment.builder()
+                .member(member)
+                .content("수정전텍스트")
+                .likeCount(1)
+                .id(3L)
+                .build();
+
+        given(qnaAnswerCommentRepository.findById(anyLong()))
+                .willReturn(Optional.of(comment));
+
+        given(qnaAnswerCommentRepository.save(any()))
+                .willReturn(QnaAnswerComment.builder()
+                        .member(member)
+                        .likeCount(0)
+                        .content("수정후 텍스트")
+                        .createdAt(LocalDateTime.now())
+                        .id(3L)
+                        .build());
+        //when
+        ArgumentCaptor<QnaAnswerComment> captor = ArgumentCaptor.forClass(QnaAnswerComment.class);
+
+        QnaAnswerCommentDto dto = qnaAnswerCommentService.modifyComment(123L, member, "이것은 댓글입니다");
+        //then
+        verify(qnaAnswerCommentRepository, times(1)).save(captor.capture());
+        assertEquals("수정후 텍스트", dto.getContent());
+        assertEquals("이것은 댓글입니다", captor.getValue().getContent());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 해당 댓글이 없음")
+    void failModifyCommentWhenCommentNotFoundTest() {
+        //given
+        given(qnaAnswerCommentRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> qnaAnswerCommentService.modifyComment(123L, member, "이것은 댓글입니다"));
+        //then
+        assertEquals(ErrorCode.COMMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 요청한 유저가 댓글 작성자가 아님")
+    void failModifyCommentWhenNotCommentOwnerTest() {
+        //given
+        Member commentWriter = Member.builder()
+                .id(2L)
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .profileImg("aaaaaa.jpg")
+                .nickname("비가와")
+                .job("풀스택개발자")
+                .build();
+
+        QnaAnswerComment comment = QnaAnswerComment.builder()
+                .member(commentWriter)
+                .content("수정전텍스트")
+                .likeCount(1)
+                .id(3L)
+                .build();
+
+        given(qnaAnswerCommentRepository.findById(anyLong()))
+                .willReturn(Optional.of(comment));
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> qnaAnswerCommentService.modifyComment(123L, member, "이것은 댓글입니다"));
+        //then
+        assertEquals(ErrorCode.NOT_COMMENT_OWNER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("대댓글 생성 성공")
+    void successCreateRecommentTest() {
+        //given
+        QnaAnswer qnaAnswer = QnaAnswer.builder()
+                .commentCount(0)
+                .build();
+
+        QnaAnswerComment parentComment = QnaAnswerComment.builder()
+                .id(2L)
+                .qnaAnswer(qnaAnswer)
+                .build();
+
+        given(qnaAnswerCommentRepository.findById(anyLong()))
+                .willReturn(Optional.of(parentComment));
+
+        given(qnaAnswerCommentRepository.save(any()))
+                .willReturn(QnaAnswerComment.builder()
+                        .member(member)
+                        .likeCount(0)
+                        .content("하이하이")
+                        .parent(parentComment)
+                        .createdAt(LocalDateTime.now())
+                        .id(3L)
+                        .build());
+
+        //when
+        ArgumentCaptor<QnaAnswerComment> qnaAnswerCommentArgumentCaptor = ArgumentCaptor.forClass(QnaAnswerComment.class);
+        ArgumentCaptor<QnaAnswer> qnaAnswerArgumentCaptor = ArgumentCaptor.forClass(QnaAnswer.class);
+        QnaAnswerRecommentDto dto = qnaAnswerCommentService.createRecomment(123L, member, "이것은 댓글입니다");
+        //then
+        verify(qnaAnswerCommentRepository, times(1)).save(qnaAnswerCommentArgumentCaptor.capture());
+        verify(qnaAnswerRepository, times(1)).save(qnaAnswerArgumentCaptor.capture());
+        assertEquals("이것은 댓글입니다", qnaAnswerCommentArgumentCaptor.getValue().getContent());
+        assertEquals(0, dto.getNumberOfLikes());
+        assertEquals(1, qnaAnswerArgumentCaptor.getValue().getCommentCount());
+        assertEquals(1L, dto.getMemberId());
+    }
+
+    @Test
+    @DisplayName("대댓글 실패 - 원댓글이 없음")
+    void failCreateRecommentWhenCommentNotFoundPostTest() {
+        //given
+        given(qnaAnswerCommentRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        BudException exception = assertThrows(BudException.class,
+                () -> qnaAnswerCommentService.createRecomment(123L, member, "이것은 대댓글입니다"));
+        //then
+        assertEquals(ErrorCode.COMMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
     @DisplayName("qna 댓글 좋아요 성공")
     void successCommentLikeTest() {
         //given
@@ -83,17 +255,17 @@ class QnaAnswerCommentServiceTest {
                 .build();
 
         Post post = Post.builder()
-            .id(1L)
-            .member(writer)
-            .title("title")
-            .content("content")
-            .postStatus(ACTIVE)
-            .postType(PostType.FEED)
-            .build();
+                .id(1L)
+                .member(writer)
+                .title("title")
+                .content("content")
+                .postStatus(ACTIVE)
+                .postType(PostType.FEED)
+                .build();
 
         QnaAnswer qnaAnswer = QnaAnswer.builder()
-            .post(post)
-            .build();
+                .post(post)
+                .build();
 
         QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
                 .member(writer)
@@ -561,18 +733,29 @@ class QnaAnswerCommentServiceTest {
     @DisplayName("qna 댓글 삭제 성공")
     void successDeleteWhenCommentNotFoundTest() {
         //given
+
+        QnaAnswer qnaAnswer = QnaAnswer.builder()
+                .id(1L)
+                .commentCount(3)
+                .build();
+
         QnaAnswerComment comment = QnaAnswerComment.builder()
                 .member(member)
+                .qnaAnswer(qnaAnswer)
                 .createdAt(LocalDateTime.now())
                 .id(3L)
                 .build();
 
         given(qnaAnswerCommentRepository.findByIdAndQnaAnswerCommentStatus(anyLong(), any()))
                 .willReturn(Optional.of(comment));
+
         //when
+        ArgumentCaptor<QnaAnswer> captor = ArgumentCaptor.forClass(QnaAnswer.class);
         Long result = qnaAnswerCommentService.delete(123L, member);
         //then
         verify(qnaAnswerCommentRepository, times(1)).delete(any());
+        verify(qnaAnswerRepository, times(1)).save(captor.capture());
+        assertEquals(2, captor.getValue().getCommentCount());
         assertEquals(result, 123L);
     }
 
