@@ -730,8 +730,15 @@ class CommentServiceTest {
     @DisplayName("댓글 삭제 성공")
     void successDeleteWhenCommentNotFoundTest() {
         //given
+        Post post = Post.builder()
+                .id(1L)
+                .commentCount(1)
+                .likeCount(1)
+                .build();
+
         Comment comment = Comment.builder()
                 .member(member)
+                .post(post)
                 .createdAt(LocalDateTime.now())
                 .id(3L)
                 .build();
@@ -739,9 +746,12 @@ class CommentServiceTest {
         given(commentRepository.findByIdAndCommentStatus(anyLong(), any()))
                 .willReturn(Optional.of(comment));
         //when
+        ArgumentCaptor<Post> postArgumentCaptor = ArgumentCaptor.forClass(Post.class);
         Long result = commentService.delete(123L, member);
         //then
         verify(commentRepository, times(1)).delete(any());
+        verify(postRepository, times(1)).save(postArgumentCaptor.capture());
+        assertEquals(0, postArgumentCaptor.getValue().getCommentCount());
         assertEquals(result, 123L);
     }
 

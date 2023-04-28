@@ -68,7 +68,7 @@ public class QnaAnswerCommentService {
 
             Post post = qnaAnswerComment.getQnaAnswer().getPost();
             eventPublisher.publishEvent(new AddLikeQnaAnswerCommentEvent(
-                member, qnaAnswerComment, post.getId()
+                    member, qnaAnswerComment, post.getId()
             ));
         }
         qnaAnswerCommentRepository.save(qnaAnswerComment);
@@ -162,7 +162,12 @@ public class QnaAnswerCommentService {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
+        QnaAnswer qnaAnswer = qnaAnswerComment.getQnaAnswer();
+        qnaAnswer.commentCountdown();
+
+        qnaAnswerRepository.save(qnaAnswer);
         qnaAnswerCommentRepository.delete(qnaAnswerComment);
+
         return commentId;
     }
 
@@ -172,19 +177,17 @@ public class QnaAnswerCommentService {
         QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_QNA_ANSWER));
 
-        QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
+        QnaAnswerComment qnaAnswerComment = qnaAnswerCommentRepository.save(QnaAnswerComment.builder()
                 .qnaAnswer(qnaAnswer)
                 .member(member)
                 .content(content)
                 .likeCount(0)
                 .parent(null)
                 .qnaAnswerCommentStatus(QnaAnswerCommentStatus.ACTIVE)
-                .build();
+                .build());
 
-        qnaAnswer.setCommentCount(qnaAnswer.getCommentCount() + 1);
-
-        qnaAnswerCommentRepository.save(qnaAnswerComment);
         qnaAnswerRepository.save(qnaAnswer);
+        qnaAnswer.commentCountUp();
 
         eventPublisher.publishEvent(new CreateAnswerCommentEvent(member, qnaAnswer));
 
@@ -196,14 +199,13 @@ public class QnaAnswerCommentService {
         QnaAnswerComment qnaAnswerComment = qnaAnswerCommentRepository.findById(commentId)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if(!Objects.equals(qnaAnswerComment.getMember()
+        if (!Objects.equals(qnaAnswerComment.getMember()
                 .getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
         qnaAnswerComment.setContent(content);
-        qnaAnswerCommentRepository.save(qnaAnswerComment);
-        return QnaAnswerCommentDto.from(qnaAnswerComment);
+        return QnaAnswerCommentDto.from(qnaAnswerCommentRepository.save(qnaAnswerComment));
     }
 
     @Transactional
@@ -212,23 +214,18 @@ public class QnaAnswerCommentService {
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
         QnaAnswer qnaAnswer = parentComment.getQnaAnswer();
-        qnaAnswer.setCommentCount(qnaAnswer.getCommentCount() + 1);
 
-        QnaAnswerComment qnaAnswerComment = QnaAnswerComment.builder()
+        qnaAnswer.commentCountUp();
+        qnaAnswerRepository.save(qnaAnswer);
+
+        QnaAnswerComment qnaAnswerComment = qnaAnswerCommentRepository.save(QnaAnswerComment.builder()
                 .qnaAnswer(qnaAnswer)
                 .member(member)
                 .content(content)
                 .likeCount(0)
                 .parent(parentComment)
                 .qnaAnswerCommentStatus(QnaAnswerCommentStatus.ACTIVE)
-                .build();
-
-        parentComment.getReComments().add(qnaAnswerComment);
-
-
-        qnaAnswerCommentRepository.save(parentComment);
-        qnaAnswerCommentRepository.save(qnaAnswerComment);
-        qnaAnswerRepository.save(qnaAnswer);
+                .build());
 
         eventPublisher.publishEvent(new CreateAnswerRecommentEvent(member, parentComment));
 

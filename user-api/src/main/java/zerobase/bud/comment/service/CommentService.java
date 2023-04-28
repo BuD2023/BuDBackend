@@ -225,6 +225,10 @@ public class CommentService {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
+        Post post = comment.getPost();
+        post.minusCommentCount();
+
+        postRepository.save(post);
         commentRepository.delete(comment);
 
         return commentId;

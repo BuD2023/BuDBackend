@@ -78,4 +78,12 @@ public class QnaAnswer extends BaseEntity {
     public void likeCountDown() {
         this.likeCount--;
     }
+
+    public void commentCountUp() {
+        this.commentCount++;
+    }
+
+    public void commentCountdown() {
+        this.commentCount--;
+    }
 }
