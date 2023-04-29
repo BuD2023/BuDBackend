@@ -1,12 +1,15 @@
 package zerobase.bud.oauth.controller;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import zerobase.bud.domain.Member;
 import zerobase.bud.oauth.service.LoginService;
 
 import java.util.List;
@@ -25,4 +28,11 @@ public class LoginController {
                 .header("JWT_USER_INFORMATION", tokenInfo.get(1))
                 .build();
     }
+
+    @GetMapping("/check")
+    public ResponseEntity<Map<String, Boolean>> isAddInfo(@AuthenticationPrincipal Member member) {
+
+        return ResponseEntity.ok().body(loginService.isAddInfo(member));
+    }
+
 }
