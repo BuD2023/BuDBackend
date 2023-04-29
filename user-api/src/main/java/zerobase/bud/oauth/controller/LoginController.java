@@ -9,16 +9,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import zerobase.bud.oauth.service.LoginService;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class LoginController {
     private final LoginService loginService;
     @GetMapping("/token")
     public ResponseEntity<?> requestCode(@RequestParam(value = "code", required = false) String code) {
-        String token = loginService.codeToJwt(code);
-        if(ObjectUtils.isEmpty(token)) return ResponseEntity.ok(null);
+        List<String> tokenInfo = loginService.codeToJwt(code);
+        if(ObjectUtils.isEmpty(tokenInfo.get(0))) return ResponseEntity.ok(null);
 
-        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, token).build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, tokenInfo.get(0))
+                .header("JWT_USER_INFORMATION", tokenInfo.get(1))
+                .build();
     }
-
 }

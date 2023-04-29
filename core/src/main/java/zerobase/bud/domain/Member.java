@@ -63,6 +63,19 @@ public class Member extends BaseEntity implements UserDetails {
         return this;
     }
 
+    public static Member register(String userId, String userCode, String nickname, String token, String profileImg, Level level) {
+        return Member.builder()
+                .userId(userId)
+                .userCode(userCode)
+                .nickname(nickname)
+                .oauthToken(token)
+                .profileImg(profileImg)
+                .level(level)
+                .addInfoYn(false)
+                .status(MemberStatus.VERIFIED)
+                .build();
+    }
+
     public void updateLevel(Level level) {
         this.level = level;
     }
