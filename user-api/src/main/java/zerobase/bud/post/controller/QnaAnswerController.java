@@ -132,21 +132,21 @@ public class QnaAnswerController {
                 qnaAnswerService.addLike(qnaAnswerId, member) ? "좋아요" : "좋아요 해제");
     }
 
-    @PostMapping("/{postId}/comments")
+    @PostMapping("/{postId}/qna-comments")
     public ResponseEntity<QnaAnswerCommentDto> createComment(@PathVariable Long postId,
                                                     @AuthenticationPrincipal Member member,
                                                     @RequestBody @Valid Map<String, String> req) {
         return ResponseEntity.ok(qnaAnswerCommentService.createComment(postId, member, req.get("content")));
     }
 
-    @PutMapping("/comments/{commentId}/modify")
+    @PutMapping("/qna-comments/{commentId}/modify")
     public ResponseEntity<QnaAnswerCommentDto> modifyComment(@PathVariable Long commentId,
                                                     @AuthenticationPrincipal Member member,
                                                              @RequestBody @Valid Map<String, String> req) {
         return ResponseEntity.ok(qnaAnswerCommentService.modifyComment(commentId, member, req.get("content")));
     }
 
-    @PostMapping("/comments/{commentId}")
+    @PostMapping("/qna-comments/{commentId}")
     public ResponseEntity<QnaAnswerRecommentDto> createRecomment(@PathVariable Long commentId,
                                                         @AuthenticationPrincipal Member member,
                                                                  @RequestBody @Valid Map<String, String> req) {

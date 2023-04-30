@@ -2,7 +2,6 @@ package zerobase.bud.oauth.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.util.ObjectUtils;
@@ -33,9 +32,10 @@ public class OAuthController {
     @PostMapping("/addInfo")
     public ResponseEntity<Boolean> addInfo(@AuthenticationPrincipal Member member,
                                      @RequestPart(required = false) MultipartFile file,
+                                     @RequestPart(required = false) String imagePath,
                                      @RequestPart String nickname,
                                      @RequestPart String job) {
-        return ResponseEntity.ok(authService.addAdditionalInfo(member, file, nickname, job));
+        return ResponseEntity.ok(authService.addAdditionalInfo(member, file, nickname, job, imagePath));
     }
 
     @GetMapping("/checkNickname")

@@ -44,12 +44,16 @@ public class AuthService {
         return tokenProvider.generateToken(authentication.getName());
     }
 
-    public boolean addAdditionalInfo(Member member, MultipartFile file, String nickname, String job) {
+    public boolean addAdditionalInfo(Member member, MultipartFile file, String nickname, String job, String imagePath) {
         if(memberRepository.findByNickname(nickname).isPresent()) {
             throw new BudException(ErrorCode.ALREADY_USING_NICKNAME);
         }
-        if(!ObjectUtils.isEmpty(file))
+        if(!ObjectUtils.isEmpty(file) && ObjectUtils.isEmpty(imagePath)) {
             member.setProfileImg(awsS3Api.uploadImage(file, PROFILES));
+        }
+        else if(ObjectUtils.isEmpty(file) && !ObjectUtils.isEmpty(imagePath)) {
+            member.setProfileImg(imagePath);
+        }
         
         member.setNickname(nickname);
         member.setJob(job);

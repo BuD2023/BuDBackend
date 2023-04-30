@@ -47,15 +47,19 @@ public class MemberService implements UserDetailsService {
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_REGISTERED_MEMBER));
     }
 
-    public boolean modifyInfo(Member member, MultipartFile file, String nickname, String introduceMessage, String job) {
+    public boolean modifyInfo(Member member, MultipartFile file, String nickname, String introduceMessage, String job, String imagePath) {
         if(!ObjectUtils.isEmpty(nickname))
             member.setNickname(nickname);
-        if(!ObjectUtils.isEmpty(file))
-            member.setProfileImg(awsS3Api.uploadImage(file, PROFILES));
         if(!ObjectUtils.isEmpty(introduceMessage))
             member.setIntroduceMessage(introduceMessage);
         if(!ObjectUtils.isEmpty(job))
             member.setJob(job);
+        if(!ObjectUtils.isEmpty(file) && ObjectUtils.isEmpty(imagePath)) {
+            member.setProfileImg(awsS3Api.uploadImage(file, PROFILES));
+        }
+        else if(ObjectUtils.isEmpty(file) && !ObjectUtils.isEmpty(imagePath)) {
+            member.setProfileImg(imagePath);
+        }
 
         memberRepository.save(member);
         return true;

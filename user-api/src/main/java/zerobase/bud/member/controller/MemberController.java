@@ -23,8 +23,9 @@ public class MemberController {
                                               @RequestPart(required = false) MultipartFile file,
                                               @RequestPart(required = false) String nickname,
                                               @RequestPart(required = false) String introduceMessage,
+                                              @RequestPart(required = false) String imagePath,
                                               @RequestPart String job) {
-        return ResponseEntity.ok(memberService.modifyInfo(member, file, nickname, introduceMessage, job));
+        return ResponseEntity.ok(memberService.modifyInfo(member, file, nickname, introduceMessage, job, imagePath));
     }
 
     @GetMapping("/getLevelImage")
