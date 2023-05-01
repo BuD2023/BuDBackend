@@ -6,11 +6,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import zerobase.bud.domain.Member;
+import zerobase.bud.oauth.dto.CodeDto;
 import zerobase.bud.oauth.service.LoginService;
 
 import java.util.List;
@@ -20,8 +18,8 @@ import java.util.List;
 public class LoginController {
     private final LoginService loginService;
     @PostMapping("/token")
-    public ResponseEntity<?> requestCode(@RequestParam(value = "code", required = false) String code) {
-        List<String> tokenInfo = loginService.codeToJwt(code);
+    public ResponseEntity<?> requestCode(@RequestBody CodeDto code) {
+        List<String> tokenInfo = loginService.codeToJwt(code.getAuthorizationCode());
         if(ObjectUtils.isEmpty(tokenInfo.get(0))) return ResponseEntity.ok(null);
 
         return ResponseEntity.ok()
