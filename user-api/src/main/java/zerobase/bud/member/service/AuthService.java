@@ -58,6 +58,7 @@ public class AuthService {
         member.setNickname(nickname);
         member.setJob(job);
         member.setLevel(levelRepository.findById(1L).get());
+        member.setIntroduceMessage("안녕하세요. " + nickname + "입니다.");
         member.setAddInfoYn(true);
         memberRepository.save(member);
         return true;
