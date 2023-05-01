@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import zerobase.bud.domain.Member;
+import zerobase.bud.oauth.dto.CodeDto;
 import zerobase.bud.oauth.service.LoginService;
 
 import java.util.List;
@@ -16,9 +17,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LoginController {
     private final LoginService loginService;
+    
     @PostMapping("/token")
-    public ResponseEntity<?> requestCode(@RequestBody String code) {
-        List<String> tokenInfo = loginService.codeToJwt(code);
+    public ResponseEntity<?> requestCode(@RequestBody CodeDto code) {
+        List<String> tokenInfo = loginService.codeToJwt(code.getAuthorizationCode());
         if(ObjectUtils.isEmpty(tokenInfo.get(0))) return ResponseEntity.ok(null);
 
         return ResponseEntity.ok()
