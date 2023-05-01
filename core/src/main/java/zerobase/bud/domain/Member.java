@@ -3,6 +3,7 @@ package zerobase.bud.domain;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -63,11 +64,11 @@ public class Member extends BaseEntity implements UserDetails {
         return this;
     }
 
-    public static Member register(String userId, String userCode, String nickname, String token, String profileImg, Level level) {
+    public static Member register(String userId, String userCode, String token, String profileImg, Level level) {
         return Member.builder()
                 .userId(userId)
                 .userCode(userCode)
-                .nickname(nickname)
+                .nickname(UUID.randomUUID().toString())
                 .oauthToken(token)
                 .profileImg(profileImg)
                 .level(level)
