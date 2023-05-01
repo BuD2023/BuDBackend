@@ -17,9 +17,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LoginController {
     private final LoginService loginService;
-    @PostMapping("/token")
-    public ResponseEntity<?> requestCode(@RequestBody CodeDto code) {
-        List<String> tokenInfo = loginService.codeToJwt(code.getAuthorizationCode());
+    @GetMapping("/token")
+    public ResponseEntity<?> requestCode(@RequestParam(value = "code") String code) {
+        List<String> tokenInfo = loginService.codeToJwt(code);
         if(ObjectUtils.isEmpty(tokenInfo.get(0))) return ResponseEntity.ok(null);
 
         return ResponseEntity.ok()

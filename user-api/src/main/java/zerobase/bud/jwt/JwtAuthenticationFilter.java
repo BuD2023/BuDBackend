@@ -25,8 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(checkUrl(request, "/token") || checkUrl(request, "/refresh") || checkUrl(request, "https://github.com/login/oauth/access_token") || checkUrl(request, "https://api.github.com/user")
-        ) {
+        if(checkUrl(request, "/token") || checkUrl(request, "/refresh")) {
             log.info("토큰이 필요하지 않은 요청입니다.");
             filterChain.doFilter(request, response);
             return;
