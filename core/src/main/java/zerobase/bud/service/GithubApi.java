@@ -58,7 +58,7 @@ public class GithubApi {
         getCommitInfoFromGithub(githubInfo.getUsername(), commitDateCountMap,
             lastCommitDate);
 
-        saveCommitHistory(githubInfo, commitDateCountMap);
+        saveOrUpdateCommitHistory(githubInfo, commitDateCountMap);
 
         log.info("complete saveCommitInfoFromLastCommitDate... "
             + LocalDateTime.now());
@@ -66,27 +66,13 @@ public class GithubApi {
         return githubInfo.getUsername();
     }
 
-    private void saveCommitHistory(
-        GithubInfo githubInfo
-        , Map<LocalDate, Long> commitDateCountMap
-    ) {
-        List<Entry<LocalDate, Long>> commitDateCountList =
-            new ArrayList<>(commitDateCountMap.entrySet());
-
-        if (commitDateCountMap.size() > 1) {
-            commitDateCountList = commitDateCountMap.entrySet()
-                .stream().sorted(Entry.comparingByKey())
-                .collect(Collectors.toList());
-        }
-
-        for (Entry<LocalDate, Long> entry : commitDateCountList) {
-            commitHistoryRepository.findByGithubInfoIdAndCommitDate(
-                githubInfo.getId()
-                , entry.getKey()
-            ).ifPresentOrElse(
-                commitHistory -> commitHistory.setCommitCount(entry.getValue()),
-                () -> saveCommitHistory(githubInfo, entry)
-            );
+    private void connectGithub(String accessToken) {
+        try {
+            github = new GitHubBuilder().withOAuthToken(accessToken).build();
+            github.checkApiUrlValidity();
+        } catch (IOException e) {
+            log.error("IOException is occurred FAILED_CONNECT_GITHUB ", e);
+            throw new BudException(FAILED_CONNECT_GITHUB);
         }
     }
 
@@ -131,13 +117,27 @@ public class GithubApi {
         }
     }
 
-    private void connectGithub(String accessToken) {
-        try {
-            github = new GitHubBuilder().withOAuthToken(accessToken).build();
-            github.checkApiUrlValidity();
-        } catch (IOException e) {
-            log.error("IOException is occurred FAILED_CONNECT_GITHUB ", e);
-            throw new BudException(FAILED_CONNECT_GITHUB);
+    private void saveOrUpdateCommitHistory(
+        GithubInfo githubInfo
+        , Map<LocalDate, Long> commitDateCountMap
+    ) {
+        List<Entry<LocalDate, Long>> commitDateCountList =
+            new ArrayList<>(commitDateCountMap.entrySet());
+
+        if (commitDateCountMap.size() > 1) {
+            commitDateCountList = commitDateCountMap.entrySet()
+                .stream().sorted(Entry.comparingByKey())
+                .collect(Collectors.toList());
+        }
+
+        for (Entry<LocalDate, Long> entry : commitDateCountList) {
+            commitHistoryRepository.findByGithubInfoIdAndCommitDate(
+                githubInfo.getId()
+                , entry.getKey()
+            ).ifPresentOrElse(
+                commitHistory -> commitHistory.updateCommitCount(entry.getValue()),
+                () -> saveCommitHistory(githubInfo, entry)
+            );
         }
     }
 

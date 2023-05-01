@@ -35,4 +35,7 @@ public class CommitHistory extends BaseEntity {
 
     private LocalDate commitDate;
 
+    public void updateCommitCount(Long commitCount) {
+        this.commitCount = commitCount;
+    }
 }
