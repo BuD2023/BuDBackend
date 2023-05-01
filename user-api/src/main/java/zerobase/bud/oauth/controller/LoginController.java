@@ -37,7 +37,7 @@ public class LoginController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, tokenInfo.get(0))
                 .header("JWT_USER_INFORMATION", tokenInfo.get(1))
-                .header("JWT_EXPIRATION_TIME", tokenInfo.get(2))
+                .header("JWT_EXPIR_TIME", tokenInfo.get(2))
                 .build();
     }
 
