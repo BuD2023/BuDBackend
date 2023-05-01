@@ -134,7 +134,7 @@ public class LoginService {
         JwtDto token = tokenProvider.generateToken(member.getUserId());
         tokenInfo.add(token.getGrantType() + token.getAccessToken());
         tokenInfo.add(member.getUserId());
-        tokenInfo.add(token.getAccessTokenExpiresTime().toString());
+        tokenInfo.add(String.valueOf(token.getAccessTokenExpiresTime()));
         member.setRefreshToken(token.getRefreshToken());
         memberRepository.save(member);
 

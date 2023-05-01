@@ -11,5 +11,5 @@ public class JwtDto {
     String grantType;
     String accessToken;
     String refreshToken;
-    Date accessTokenExpiresTime;
+    long accessTokenExpiresTime;
 }

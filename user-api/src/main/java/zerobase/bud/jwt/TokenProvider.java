@@ -57,18 +57,18 @@ public class TokenProvider {
         Claims claims = Jwts.claims().setSubject(userId);
         claims.put(KEY_ROLE, role);
 
-        Date now = new Date();
+        long now = System.currentTimeMillis();
         Date accessTokenExpiredTime = new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRE_TIME);
 
         String accessToken = Jwts.builder()
                 .setClaims(claims)
-                .setIssuedAt(now)
+                .setIssuedAt(new Date(now))
                 .setExpiration(accessTokenExpiredTime)
                 .signWith(SignatureAlgorithm.HS512, this.secretKey)
                 .compact();
         String refreshToken = Jwts.builder()
                 .setClaims(claims)
-                .setIssuedAt(now)
+                .setIssuedAt(new Date(now))
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(SignatureAlgorithm.HS512, this.secretKey)
                 .compact();
@@ -76,7 +76,7 @@ public class TokenProvider {
                 .grantType("Bearer ")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .accessTokenExpiresTime(accessTokenExpiredTime)
+                .accessTokenExpiresTime(now)
                 .build();
     }
 
