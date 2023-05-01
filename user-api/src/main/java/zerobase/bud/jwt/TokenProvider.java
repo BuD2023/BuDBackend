@@ -31,7 +31,7 @@ public class TokenProvider {
     private String secretKey;
 
     private static final String KEY_ROLE = "role";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60;
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 5;
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;
     private final MemberRepository memberRepository;
     private final MemberService memberService;
