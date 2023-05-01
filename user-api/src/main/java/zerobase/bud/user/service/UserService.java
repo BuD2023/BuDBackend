@@ -67,7 +67,7 @@ public class UserService {
         boolean isFollowing = followRepository.existsByTargetAndMember(targetMember, member);
 
         return UserDto.of(targetMember, Objects.equals(member.getId(), targetMember.getId()),
-                isFollowing, numberOfFollowers, numberOfFollows, numberOfPosts , member.getStatus());
+                isFollowing, numberOfFollowers, numberOfFollows, numberOfPosts , targetMember.getStatus());
     }
 
     public UserDto readMyProfile(Member member) {
