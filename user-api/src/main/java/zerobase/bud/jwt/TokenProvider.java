@@ -58,7 +58,7 @@ public class TokenProvider {
         claims.put(KEY_ROLE, role);
 
         long now = System.currentTimeMillis();
-        Date accessTokenExpiredTime = new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRE_TIME);
+        Date accessTokenExpiredTime = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
 
         String accessToken = Jwts.builder()
                 .setClaims(claims)
@@ -69,14 +69,14 @@ public class TokenProvider {
         String refreshToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date(now))
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRE_TIME))
+                .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(SignatureAlgorithm.HS512, this.secretKey)
                 .compact();
         return JwtDto.builder()
                 .grantType("Bearer ")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .accessTokenExpiresTime(now)
+                .accessTokenExpiresTime(now + ACCESS_TOKEN_EXPIRE_TIME)
                 .build();
     }
 
