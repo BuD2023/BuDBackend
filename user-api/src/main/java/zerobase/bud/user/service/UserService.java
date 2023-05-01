@@ -10,6 +10,7 @@ import zerobase.bud.domain.Member;
 import zerobase.bud.notification.event.follow.FollowEvent;
 import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.repository.MemberRepository;
+import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.domain.Follow;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
@@ -32,7 +33,7 @@ public class UserService {
 
     @Transactional
     public Long follow(Long memberId, Member member) {
-        Member targetMember = memberRepository.findById(memberId)
+        Member targetMember = memberRepository.findByIdAndStatus(memberId, MemberStatus.VERIFIED)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
         if (Objects.equals(member.getId(), targetMember.getId())) {
@@ -66,7 +67,7 @@ public class UserService {
         boolean isFollowing = followRepository.existsByTargetAndMember(targetMember, member);
 
         return UserDto.of(targetMember, Objects.equals(member.getId(), targetMember.getId()),
-                isFollowing, numberOfFollowers, numberOfFollows, numberOfPosts);
+                isFollowing, numberOfFollowers, numberOfFollows, numberOfPosts , targetMember.getStatus());
     }
 
     public UserDto readMyProfile(Member member) {
@@ -79,14 +80,14 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowings(Member member) {
-        return followRepository.findByMember(member).stream()
+        return followRepository.findByMemberAndMemberStatus(member, MemberStatus.VERIFIED).stream()
                 .map(follow -> FollowDto.of(follow.getTarget(), true))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<FollowDto> readMyFollowers(Member member) {
-        return followRepository.findByTarget(member).stream()
+        return followRepository.findByTargetAndMemberStatus(member, MemberStatus.VERIFIED).stream()
                 .map(follow -> FollowDto.of(follow.getMember(),
                         followRepository.existsByTargetAndMember(follow.getMember(), member)))
                 .collect(Collectors.toList());
@@ -97,7 +98,7 @@ public class UserService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        return followRepository.findByMember(member).stream()
+        return followRepository.findByMemberAndMemberStatus(member, MemberStatus.VERIFIED).stream()
                 .map(follow -> toFollowDto(reader, follow.getTarget()))
                 .collect(Collectors.toList());
     }
@@ -107,7 +108,7 @@ public class UserService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        return followRepository.findByTarget(member).stream()
+        return followRepository.findByTargetAndMemberStatus(member, MemberStatus.VERIFIED).stream()
                 .map(follow -> toFollowDto(reader, follow.getMember()))
                 .collect(Collectors.toList());
     }

@@ -1,7 +1,6 @@
 package zerobase.bud.post.service;
 
 import static zerobase.bud.common.type.ErrorCode.ADD_IMPOSSIBLE_PINNED_ANSWER;
-import static zerobase.bud.common.type.ErrorCode.ALREADY_DELETE_QNA_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.CANNOT_ANSWER_YOURSELF;
 import static zerobase.bud.common.type.ErrorCode.CHANGE_IMPOSSIBLE_PINNED_ANSWER;
 import static zerobase.bud.common.type.ErrorCode.INVALID_POST_STATUS;
@@ -121,10 +120,14 @@ public class QnaAnswerService {
     }
 
     private void deleteImages(QnaAnswer qnaAnswer) {
-        qnaAnswer.getQnaAnswerImages()
-            .forEach(qnaAnswerImage -> awsS3Api.deleteImage(qnaAnswerImage.getImagePath()));
+        deleteImagesFromS3(qnaAnswer);
 
         qnaAnswerImageRepository.deleteAllByQnaAnswerId(qnaAnswer.getId());
+    }
+
+    private void deleteImagesFromS3(QnaAnswer qnaAnswer) {
+        qnaAnswer.getQnaAnswerImages()
+                .forEach(qnaAnswerImage -> awsS3Api.deleteImage(qnaAnswerImage.getImagePath()));
     }
 
     private void validateUpdateQnaAnswer(
@@ -180,14 +183,23 @@ public class QnaAnswerService {
                 qnaAnswerDtos.getTotalElements());
     }
 
+    @Transactional
     public void deleteQnaAnswer(Long qnaAnswerId) {
         QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
 
+        Post post = postRepository.findById(qnaAnswer.getPost().getId())
+                .orElseThrow(() -> new BudException(NOT_FOUND_POST));
+
         validateDeleteQnaAnswer(qnaAnswer);
 
-        qnaAnswer.setQnaAnswerStatus(QnaAnswerStatus.INACTIVE);
-        qnaAnswerRepository.save(qnaAnswer);
+        deleteImagesFromS3(qnaAnswer);
+
+        post.minusCommentCount();
+
+        postRepository.save(post);
+
+        qnaAnswerRepository.deleteByQnaAnswerId(qnaAnswerId);
     }
 
     private void validateDeleteQnaAnswer(QnaAnswer qnaAnswer) {
@@ -195,11 +207,8 @@ public class QnaAnswerService {
                 .ifPresent(ap -> {
                     throw new BudException(CHANGE_IMPOSSIBLE_PINNED_ANSWER);
                 });
-
-        if (Objects.equals(qnaAnswer.getQnaAnswerStatus(), QnaAnswerStatus.INACTIVE)) {
-            throw new BudException(ALREADY_DELETE_QNA_ANSWER);
-        }
     }
+
     @Transactional
     public Long qnaAnswerPin(Long qnaAnswerId, Member member) {
 
@@ -241,7 +250,8 @@ public class QnaAnswerService {
         return qnaAnswerPinId;
     }
 
-    public boolean setLike(Long qnaAnswerId, Member member) {
+    @Transactional
+    public boolean addLike(Long qnaAnswerId, Member member) {
         QnaAnswer qnaAnswer = qnaAnswerRepository.findById(qnaAnswerId)
                 .orElseThrow(() -> new BudException(NOT_FOUND_QNA_ANSWER));
 

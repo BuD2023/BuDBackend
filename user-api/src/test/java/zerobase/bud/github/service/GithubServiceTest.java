@@ -75,6 +75,7 @@ class GithubServiceTest {
         assertEquals("씩씩한_새싹", info.getLevelCode());
         assertEquals("images/test.png", info.getImagePath());
         assertEquals(14, info.getRemainCommitCountNextLevel());
+        assertEquals(3, info.getTotalCommitCount());
         assertEquals(3, info.getTodayCommitCount());
         assertEquals(3, info.getThisWeekCommitCount());
         assertEquals(1, info.getConsecutiveCommitDays());
@@ -103,6 +104,7 @@ class GithubServiceTest {
         assertEquals("씩씩한_새싹", info.getLevelCode());
         assertEquals("images/test.png", info.getImagePath());
         assertEquals(17, info.getRemainCommitCountNextLevel());
+        assertEquals(0, info.getTotalCommitCount());
         assertEquals(0, info.getTodayCommitCount());
         assertEquals(0, info.getThisWeekCommitCount());
         assertEquals(0, info.getConsecutiveCommitDays());

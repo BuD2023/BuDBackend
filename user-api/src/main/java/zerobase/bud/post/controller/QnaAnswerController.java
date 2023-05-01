@@ -129,7 +129,7 @@ public class QnaAnswerController {
             @AuthenticationPrincipal Member member
     ) {
         return ResponseEntity.ok(
-                qnaAnswerService.setLike(qnaAnswerId, member) ? "좋아요" : "좋아요 해제");
+                qnaAnswerService.addLike(qnaAnswerId, member) ? "좋아요" : "좋아요 해제");
     }
 
     @PostMapping("/{postId}/qna-comments")

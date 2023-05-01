@@ -20,6 +20,7 @@ public class CommitHistoryInfo {
     private String levelCode;
     private String imagePath;
     private long remainCommitCountNextLevel;
+    private long totalCommitCount;
     private long todayCommitCount;
     private long thisWeekCommitCount;
     private long consecutiveCommitDays;
@@ -42,6 +43,7 @@ public class CommitHistoryInfo {
         , String levelCode
         , String imagePath
         , long nextLevelStartCommitCount
+        , long totalCommitCount
         , long todayCommitCount
         , long thisWeekCommitCount
         , long consecutiveCommitDays
@@ -52,6 +54,7 @@ public class CommitHistoryInfo {
             .levelCode(levelCode)
             .imagePath(imagePath)
             .remainCommitCountNextLevel(nextLevelStartCommitCount)
+            .totalCommitCount(totalCommitCount)
             .todayCommitCount(todayCommitCount)
             .thisWeekCommitCount(thisWeekCommitCount)
             .consecutiveCommitDays(consecutiveCommitDays)

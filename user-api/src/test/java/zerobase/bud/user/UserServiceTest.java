@@ -93,7 +93,7 @@ class UserServiceTest {
                 .build();
 
 
-        given(memberRepository.findById(anyLong()))
+        given(memberRepository.findByIdAndStatus(anyLong(), any()))
                 .willReturn(Optional.of(targetMember));
 
         given(followRepository.findByTargetAndMember(any(), any()))
@@ -130,7 +130,7 @@ class UserServiceTest {
                 .build();
 
 
-        given(memberRepository.findById(anyLong()))
+        given(memberRepository.findByIdAndStatus(anyLong(), any()))
                 .willReturn(Optional.of(targetMember));
 
         given(followRepository.findByTargetAndMember(any(), any()))
@@ -164,7 +164,7 @@ class UserServiceTest {
                 .build();
 
 
-        given(memberRepository.findById(anyLong()))
+        given(memberRepository.findByIdAndStatus(anyLong(), any()))
                 .willReturn(Optional.of(targetMember));
 
         //when
@@ -179,7 +179,7 @@ class UserServiceTest {
     @DisplayName("팔로우 실패 - 타겟 유저 없음")
     void failFollowTest() {
         //given
-        given(memberRepository.findById(anyLong()))
+        given(memberRepository.findByIdAndStatus(anyLong(), any()))
                 .willReturn(Optional.empty());
         //when
         MemberException exception = assertThrows(MemberException.class,
@@ -292,7 +292,7 @@ class UserServiceTest {
                         .member(member)
                         .build()
         );
-        given(followRepository.findByMember(any())).willReturn(follows);
+        given(followRepository.findByMemberAndMemberStatus(any(), any())).willReturn(follows);
         //when
         List<FollowDto> followDtos = userService.readMyFollowings(member);
         //then
@@ -341,7 +341,7 @@ class UserServiceTest {
                         .member(targetMember2)
                         .build()
         );
-        given(followRepository.findByTarget(any())).willReturn(follows);
+        given(followRepository.findByTargetAndMemberStatus(any(), any())).willReturn(follows);
         given(followRepository.existsByTargetAndMember(targetMember, member)).willReturn(true);
         given(followRepository.existsByTargetAndMember(targetMember2, member)).willReturn(false);
         //when
@@ -394,7 +394,7 @@ class UserServiceTest {
         );
 
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(profileMember));
-        given(followRepository.findByMember(any())).willReturn(follows);
+        given(followRepository.findByMemberAndMemberStatus(any(), any())).willReturn(follows);
         given(followRepository.existsByTargetAndMember(member, member))
                 .willReturn(false);
         given(followRepository.existsByTargetAndMember(targetMember, member))
@@ -450,7 +450,7 @@ class UserServiceTest {
         );
 
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(profileMember));
-        given(followRepository.findByTarget(any())).willReturn(follows);
+        given(followRepository.findByTargetAndMemberStatus(any(), any())).willReturn(follows);
         given(followRepository.existsByTargetAndMember(member, member))
                 .willReturn(false);
         given(followRepository.existsByTargetAndMember(targetMember, member))

@@ -806,7 +806,7 @@ include::{snippets}/qna-answer-controller-test/success_cancel-qna-answer-pin/htt
 |qnaAnswerPinId|Number|Y|path variable, QnA답글 핀의 Id
 |===
 
-=== 27. 댓글 생성
+=== 28. 댓글 생성
 .request
 include::{snippets}/post-controller-test/success-create-comment/http-request.adoc[]
 
@@ -814,11 +814,80 @@ include::{snippets}/post-controller-test/success-create-comment/http-request.ado
 |===
 |필드명|타입|필수여부|설명
 |postId|Number|Y|게시글 아이디, path variable
-|content|
 |===
 
 .response
-include::{snippets}/post-controller-test/success-delete-comment/http-response.adoc[]
+include::{snippets}/post-controller-test/success-create-comment/http-response.adoc[]
+
+=== 29. 대댓글 생성
+.request
+include::{snippets}/post-controller-test/success-create-recomment/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|commentId|Number|Y|댓글 아이디, path variable
+|===
+
+.response
+include::{snippets}/post-controller-test/success-create-recomment/http-response.adoc[]
+
+
+=== 30. 댓글 수정
+.request
+include::{snippets}/post-controller-test/success-modify-comment/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|commentId|Number|Y|댓글 아이디, path variable
+|===
+
+.response
+include::{snippets}/post-controller-test/success-modify-comment/http-response.adoc[]
+
+
+=== 31. Q&A 댓글 생성
+.request
+include::{snippets}/qna-answer-controller-test/success-create-comment/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|postId|Number|Y|게시글 아이디, path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success-create-comment/http-response.adoc[]
+
+=== 32. Q&A 대댓글 생성
+.request
+include::{snippets}/qna-answer-controller-test/success-create-recomment/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|commentId|Number|Y|댓글 아이디, path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success-create-recomment/http-response.adoc[]
+
+
+=== 33. Q&A 댓글 수정
+.request
+include::{snippets}/qna-answer-controller-test/success-modify-comment/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|commentId|Number|Y|댓글 아이디, path variable
+|===
+
+.response
+include::{snippets}/qna-answer-controller-test/success-modify-comment/http-response.adoc[]
+
+
 
 == 유저 API
 === 1. 유저 팔로우 / 팔로우 취소
@@ -1039,6 +1108,19 @@ include::{snippets}/user-controller-test/success_change-notification-available/h
 |===
 |필드명|설명
 |nickName|유저의 닉네임
+|===
+
+=== 12. 랜덤 이미지 가져오는 것
+.request
+include::{snippets}/member-controller-test/success_get-profile-random-image/http-request.adoc[]
+
+.response
+include::{snippets}/member-controller-test/success_get-profile-random-image/http-response.adoc[]
+
+.response field
+|===
+|필드명|설명
+|profile_img|기본 프로필 이미지 경로
 |===
 
 == 알림 API

@@ -1,10 +1,5 @@
 package zerobase.bud.comment.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +28,12 @@ import zerobase.bud.post.repository.PostRepository;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -52,19 +53,19 @@ public class CommentService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BudException(ErrorCode.NOT_FOUND_POST));
 
-        Comment comment = Comment.builder()
+
+        post.plusCommentCount();
+
+        postRepository.save(post);
+
+        Comment comment = commentRepository.save(Comment.builder()
                 .post(post)
                 .member(member)
                 .content(content)
                 .likeCount(0)
                 .parent(null)
                 .commentStatus(CommentStatus.ACTIVE)
-                .build();
-
-        post.setCommentCount(post.getCommentCount() + 1);
-
-        commentRepository.save(comment);
-        postRepository.save(post);
+                .build());
 
         eventPublisher.publishEvent(new CreateCommentEvent(member, post));
 
@@ -76,13 +77,12 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getMember().equals(member)) {
+        if (!Objects.equals(comment.getMember().getId(), member.getId())) {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
         comment.setContent(content);
-        commentRepository.save(comment);
-        return CommentDto.of(comment);
+        return CommentDto.of(commentRepository.save(comment));
     }
 
     @Transactional
@@ -91,22 +91,18 @@ public class CommentService {
                 .orElseThrow(() -> new BudException(ErrorCode.COMMENT_NOT_FOUND));
 
         Post post = parentComment.getPost();
-        post.setCommentCount(post.getCommentCount() + 1);
+        post.plusCommentCount();
 
-        Comment comment = Comment.builder()
+        postRepository.save(post);
+
+        Comment comment = commentRepository.save(Comment.builder()
                 .post(post)
                 .member(member)
                 .content(content)
                 .likeCount(0)
                 .parent(parentComment)
                 .commentStatus(CommentStatus.ACTIVE)
-                .build();
-
-        parentComment.getReComments().add(comment);
-
-        commentRepository.save(parentComment);
-        commentRepository.save(comment);
-        postRepository.save(post);
+                .build());
 
         eventPublisher.publishEvent(new CreateRecommentEvent(member, parentComment));
 
@@ -229,6 +225,9 @@ public class CommentService {
             throw new BudException(ErrorCode.NOT_COMMENT_OWNER);
         }
 
+        Post post = comment.getPost();
+        post.minusCommentCount(comment.getReComments().size()+1);
+        postRepository.save(post);
         commentRepository.delete(comment);
 
         return commentId;

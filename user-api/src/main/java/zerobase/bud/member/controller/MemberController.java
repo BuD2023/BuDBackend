@@ -33,9 +33,9 @@ public class MemberController {
         return ResponseEntity.ok(memberService.getLevelImage(member));
     }
 
-    @PostMapping("/random-image")
-    public ResponseEntity<String> updateProfileRandomImage(@AuthenticationPrincipal Member member) {
-        return ResponseEntity.ok(memberService.updateProfileRandomImage(member));
+    @GetMapping("/random-image")
+    public ResponseEntity<String> getProfileRandomImage() {
+        return ResponseEntity.ok(memberService.getProfileRandomImage());
     }
 
     @PostMapping("/withdraw")

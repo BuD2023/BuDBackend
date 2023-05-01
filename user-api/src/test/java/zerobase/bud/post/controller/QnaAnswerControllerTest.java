@@ -1,8 +1,7 @@
 package zerobase.bud.post.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -15,8 +14,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,8 +52,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import zerobase.bud.comment.service.QnaAnswerCommentService;
 import zerobase.bud.jwt.TokenProvider;
-import zerobase.bud.post.dto.QnaAnswerCommentDto;
-import zerobase.bud.post.dto.SearchQnaAnswer;
+import zerobase.bud.post.dto.*;
 import zerobase.bud.post.service.QnaAnswerService;
 import zerobase.bud.post.type.QnaAnswerStatus;
 
@@ -582,7 +579,7 @@ class QnaAnswerControllerTest {
     @DisplayName("성공 - QNA Answer 좋아요")
     void success_addQnaAnswerLike() throws Exception {
         //given
-        given(qnaAnswerService.setLike(anyLong(), any()))
+        given(qnaAnswerService.addLike(anyLong(), any()))
                 .willReturn(true);
         //when
         //then
@@ -606,7 +603,7 @@ class QnaAnswerControllerTest {
     @DisplayName("성공 - QNA Answer 좋아요 해제")
     void success_removeQnaAnswerLike() throws Exception {
         //given
-        given(qnaAnswerService.setLike(anyLong(), any()))
+        given(qnaAnswerService.addLike(anyLong(), any()))
                 .willReturn(false);
         //when
         //then
@@ -623,5 +620,116 @@ class QnaAnswerControllerTest {
                                 preprocessResponse(prettyPrint())
                         )
                 );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("댓글 생성 성공")
+    void successCreateComment() throws Exception {
+        //given
+        given(qnaAnswerCommentService.createComment(anyLong(), any(), anyString()))
+                .willReturn(
+                        QnaAnswerCommentDto.builder()
+                                .commentId(2L)
+                                .content("이것은 댓글입니다")
+                                .numberOfLikes(0)
+                                .memberName("아디다스")
+                                .memberProfileUrl("profiles/images.jpg")
+                                .memberId(2L)
+                                .createdAt("0 초전")
+                                .build()
+                );
+        //when
+        //then
+        this.mockMvc.perform(post("/posts/qna-answers/{postId}/qna-comments", 23)
+                        .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                CreateComment.Request.builder()
+                                        .content("이것은 댓글입니다").build()
+                        ))
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("댓글 수정 성공")
+    void successModifyComment() throws Exception {
+        //given
+        given(qnaAnswerCommentService.modifyComment(anyLong(), any(), anyString()))
+                .willReturn(
+                        QnaAnswerCommentDto.builder()
+                                .commentId(2L)
+                                .content("이것은 댓글입니다")
+                                .numberOfLikes(0)
+                                .memberName("아디다스")
+                                .memberProfileUrl("profiles/images.jpg")
+                                .memberId(2L)
+                                .createdAt("0 초전")
+                                .build()
+                );
+        //when
+        //then
+        this.mockMvc.perform(put("/posts/qna-answers/qna-comments/{commentId}/modify", 3)
+                        .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                CreateComment.Request.builder()
+                                        .content("이것은 댓글입니다").build()
+                        ))
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("대댓글 생성 성공")
+    void successCreateRecomment() throws Exception {
+        //given
+        given(qnaAnswerCommentService.createRecomment(anyLong(), any(), anyString()))
+                .willReturn(
+                        QnaAnswerRecommentDto.builder()
+                                .commentId(2L)
+                                .content("이것은 댓글입니다")
+                                .numberOfLikes(0)
+                                .memberName("아디다스")
+                                .memberProfileUrl("profiles/images.jpg")
+                                .memberId(2L)
+                                .createdAt("0 초전")
+                                .build()
+                );
+        //when
+        //then
+        this.mockMvc.perform(post("/posts/qna-answers/qna-comments/{commentId}", 23)
+                        .header(HttpHeaders.AUTHORIZATION, TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                CreateComment.Request.builder()
+                                        .content("이것은 댓글입니다").build()
+                        ))
+                )
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()))
+                );
+
     }
 }

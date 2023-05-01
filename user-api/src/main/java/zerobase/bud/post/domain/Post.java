@@ -89,6 +89,14 @@ public class Post extends BaseEntity {
         this.commentCount += 1;
     }
 
+    public void minusCommentCount() {
+        this.commentCount -= 1;
+    }
+
+    public void minusCommentCount(int numberOfComments) {
+        this.commentCount -= numberOfComments;
+    }
+
     public void scrapCountUp() {
         this.scrapCount++;
     }

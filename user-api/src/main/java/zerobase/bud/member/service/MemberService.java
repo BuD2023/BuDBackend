@@ -14,6 +14,8 @@ import zerobase.bud.awsS3.AwsS3Api;
 import zerobase.bud.common.exception.BudException;
 import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.Member;
+import zerobase.bud.notification.repository.NotificationInfoRepository;
+import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.repository.MemberRepository;
 import zerobase.bud.user.repository.FollowRepository;
 
@@ -32,6 +34,10 @@ import static zerobase.bud.util.Constants.PROFILES;
 public class MemberService implements UserDetailsService {
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
+
+    private final NotificationInfoRepository notificationInfoRepository;
+
+    private final GithubInfoRepository githubInfoRepository;
 
     private final AwsS3Api awsS3Api;
 
@@ -73,16 +79,10 @@ public class MemberService implements UserDetailsService {
         return levelArray;
     }
 
-    public String updateProfileRandomImage(Member member) {
+    public String getProfileRandomImage() {
         Random rd = new Random();
         int randomNumber = rd.nextInt(32) + 1;
-
-        String imagePath = PROFILE_BASIC_IMAGE_PREFIX + randomNumber + FILE_EXTENSION_PNG;
-
-        member.updateProfileImage(imagePath);
-        memberRepository.save(member);
-
-        return imagePath;
+        return PROFILE_BASIC_IMAGE_PREFIX + randomNumber + FILE_EXTENSION_PNG;
     }
 
     @Transactional
@@ -90,8 +90,12 @@ public class MemberService implements UserDetailsService {
         String uuid;
         String withdrawMemberPrefix = "Deleted User ";
 
-        followRepository.deleteAllByTarget(member);
-        followRepository.deleteAllByMember(member);
+        followRepository.deleteAllByTargetId(member.getId());
+        followRepository.deleteAllByMemberId(member.getId());
+
+        notificationInfoRepository.deleteByMemberId(member.getId());
+
+        githubInfoRepository.deleteByMemberId(member.getId());
 
         do {
             uuid = UUID.randomUUID().toString().substring(0, 8);

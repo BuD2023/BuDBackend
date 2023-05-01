@@ -1,6 +1,8 @@
 package zerobase.bud.post.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import zerobase.bud.domain.Member;
 import zerobase.bud.post.domain.Post;
@@ -14,4 +16,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Optional<Post> findByIdAndPostStatus(Long id, PostStatus postStatus);
 
+    @Modifying
+    @Query(value = "delete from post where id=:postId" , nativeQuery = true)
+    void deleteByPostId(Long postId);
 }

@@ -1,5 +1,6 @@
 package zerobase.bud.oauth.controller;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -39,4 +40,11 @@ public class LoginController {
                 .header("JWT_EXPIRATION_TIME", tokenInfo.get(2))
                 .build();
     }
+
+    @GetMapping("/check")
+    public ResponseEntity<Map<String, Boolean>> isAddInfo(@AuthenticationPrincipal Member member) {
+
+        return ResponseEntity.ok().body(loginService.isAddInfo(member));
+    }
+
 }

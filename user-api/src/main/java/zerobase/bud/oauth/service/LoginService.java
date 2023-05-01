@@ -1,5 +1,6 @@
 package zerobase.bud.oauth.service;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,8 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class LoginService {
+
+    private final static String IS_ADD_INFO = "isAddInfo";
     private final TokenProvider tokenProvider;
     private final LevelRepository levelRepository;
     private final MemberRepository memberRepository;
@@ -117,6 +120,7 @@ public class LoginService {
         return member;
     }
 
+
     public List<String> tokenRefresh(Member member) {
         if(!tokenProvider.validateToken(member.getRefreshToken())) {
             throw new BudException(ErrorCode.INVALID_TOKEN);
@@ -135,5 +139,9 @@ public class LoginService {
         memberRepository.save(member);
 
         return tokenInfo;
+
+    public Map<String, Boolean> isAddInfo(Member member) {
+        return Map.of(IS_ADD_INFO, member.isAddInfoYn());
+
     }
 }

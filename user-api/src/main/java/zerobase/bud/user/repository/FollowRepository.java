@@ -2,8 +2,11 @@ package zerobase.bud.user.repository;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import zerobase.bud.domain.Member;
+import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.domain.Follow;
 
 import java.util.Optional;
@@ -12,9 +15,9 @@ import java.util.Optional;
 public interface FollowRepository extends JpaRepository<Follow, Long> {
     Optional<Follow> findByTargetAndMember(Member target, Member member);
 
-    List<Follow> findByTarget(Member target);
+    List<Follow> findByTargetAndMemberStatus(Member target, MemberStatus status);
 
-    List<Follow> findByMember(Member member);
+    List<Follow> findByMemberAndMemberStatus(Member member, MemberStatus status);
 
     Long countByTarget(Member target);
 
@@ -24,6 +27,11 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     List<Follow> findAllByTargetId(Long senderId);
 
-    void deleteAllByMember(Member member);
-    void deleteAllByTarget(Member target);
+    @Modifying
+    @Query(value = "delete from follow where member_id=:memberId", nativeQuery = true)
+    void deleteAllByMemberId(Long memberId);
+
+    @Modifying
+    @Query(value = "delete from follow where target_id=:targetId", nativeQuery = true)
+    void deleteAllByTargetId(Long targetId);
 }

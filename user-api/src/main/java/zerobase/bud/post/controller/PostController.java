@@ -1,7 +1,5 @@
 package zerobase.bud.post.controller;
 
-import static zerobase.bud.post.util.Constants.*;
-
 import com.querydsl.core.types.Order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +18,8 @@ import zerobase.bud.post.type.PostType;
 
 import javax.validation.Valid;
 import java.util.List;
+
+import static zerobase.bud.post.util.Constants.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -104,23 +104,23 @@ public class PostController {
 
     @PostMapping("/{postId}/comments")
     public ResponseEntity<CommentDto> createComment(@PathVariable Long postId,
-                                                @AuthenticationPrincipal Member member,
-                                                @RequestBody String content) {
-        return ResponseEntity.ok(commentService.createComment(postId, member, content));
+                                                    @AuthenticationPrincipal Member member,
+                                                    @Valid @RequestBody CreateComment.Request request) {
+        return ResponseEntity.ok(commentService.createComment(postId, member, request.getContent()));
     }
 
     @PutMapping("/comments/{commentId}/modify")
     public ResponseEntity<CommentDto> modifyComment(@PathVariable Long commentId,
-                                                @AuthenticationPrincipal Member member,
-                                                @RequestBody String content) {
-        return ResponseEntity.ok(commentService.modifyComment(commentId, member, content));
+                                                    @AuthenticationPrincipal Member member,
+                                                    @Valid @RequestBody CreateComment.Request request) {
+        return ResponseEntity.ok(commentService.modifyComment(commentId, member, request.getContent()));
     }
 
     @PostMapping("/comments/{commentId}")
     public ResponseEntity<RecommentDto> createRecomment(@PathVariable Long commentId,
                                                         @AuthenticationPrincipal Member member,
-                                                        @RequestBody String content) {
-        return ResponseEntity.ok(commentService.createRecomment(commentId, member, content));
+                                                        @Valid @RequestBody CreateComment.Request request) {
+        return ResponseEntity.ok(commentService.createRecomment(commentId, member, request.getContent()));
     }
 
     @PostMapping("/comments/{commentId}/like")
@@ -152,7 +152,7 @@ public class PostController {
 
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Long> deleteComment(@PathVariable Long commentId,
-                                                 @AuthenticationPrincipal Member member) {
+                                              @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(commentService.delete(commentId, member));
     }
 }
