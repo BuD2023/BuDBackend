@@ -3,6 +3,7 @@ package zerobase.bud.user.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import zerobase.bud.domain.Member;
+import zerobase.bud.type.MemberStatus;
 
 @Getter
 @Builder
@@ -23,9 +24,11 @@ public class UserDto {
     private Boolean isReader;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isFollowing;
+    private MemberStatus memberStatus;
 
     public static UserDto of(Member member, boolean isReader, boolean isFollowing,
-                             Long numberOfFollowrs, Long numberOfFollows, Long numberOfPosts){
+                             Long numberOfFollowrs, Long numberOfFollows,
+                             Long numberOfPosts , MemberStatus memberStatus){
         return UserDto.builder()
                 .id(member.getId())
                 .userId(member.getUserId())
@@ -39,6 +42,7 @@ public class UserDto {
                 .isReader(isReader)
                 .isFollowing(isFollowing)
                 .job(member.getJob())
+                .memberStatus(memberStatus)
                 .build();
     }
 

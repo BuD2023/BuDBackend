@@ -93,7 +93,7 @@ class UserServiceTest {
                 .build();
 
 
-        given(memberRepository.findById(anyLong()))
+        given(memberRepository.findByIdAndStatus(anyLong(), any()))
                 .willReturn(Optional.of(targetMember));
 
         given(followRepository.findByTargetAndMember(any(), any()))
@@ -130,7 +130,7 @@ class UserServiceTest {
                 .build();
 
 
-        given(memberRepository.findById(anyLong()))
+        given(memberRepository.findByIdAndStatus(anyLong(), any()))
                 .willReturn(Optional.of(targetMember));
 
         given(followRepository.findByTargetAndMember(any(), any()))
@@ -164,7 +164,7 @@ class UserServiceTest {
                 .build();
 
 
-        given(memberRepository.findById(anyLong()))
+        given(memberRepository.findByIdAndStatus(anyLong(), any()))
                 .willReturn(Optional.of(targetMember));
 
         //when
@@ -179,7 +179,7 @@ class UserServiceTest {
     @DisplayName("팔로우 실패 - 타겟 유저 없음")
     void failFollowTest() {
         //given
-        given(memberRepository.findById(anyLong()))
+        given(memberRepository.findByIdAndStatus(anyLong(), any()))
                 .willReturn(Optional.empty());
         //when
         MemberException exception = assertThrows(MemberException.class,

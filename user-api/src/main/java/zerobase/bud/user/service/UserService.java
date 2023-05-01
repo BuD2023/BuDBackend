@@ -33,7 +33,7 @@ public class UserService {
 
     @Transactional
     public Long follow(Long memberId, Member member) {
-        Member targetMember = memberRepository.findById(memberId)
+        Member targetMember = memberRepository.findByIdAndStatus(memberId, MemberStatus.VERIFIED)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
         if (Objects.equals(member.getId(), targetMember.getId())) {
@@ -67,7 +67,7 @@ public class UserService {
         boolean isFollowing = followRepository.existsByTargetAndMember(targetMember, member);
 
         return UserDto.of(targetMember, Objects.equals(member.getId(), targetMember.getId()),
-                isFollowing, numberOfFollowers, numberOfFollows, numberOfPosts);
+                isFollowing, numberOfFollowers, numberOfFollows, numberOfPosts , member.getStatus());
     }
 
     public UserDto readMyProfile(Member member) {
