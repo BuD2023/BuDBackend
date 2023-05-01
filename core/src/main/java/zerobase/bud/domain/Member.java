@@ -55,6 +55,8 @@ public class Member extends BaseEntity implements UserDetails {
     private MemberStatus status;
     private String introduceMessage;
 
+    private String refreshToken;
+
     private boolean addInfoYn;
 
     public Member update(String userCode, String oauthToken) {

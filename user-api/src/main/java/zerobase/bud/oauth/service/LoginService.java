@@ -11,10 +11,13 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 import zerobase.bud.awsS3.AwsS3Api;
+import zerobase.bud.common.exception.BudException;
+import zerobase.bud.common.type.ErrorCode;
 import zerobase.bud.domain.GithubInfo;
 import zerobase.bud.domain.Level;
 import zerobase.bud.domain.Member;
 import zerobase.bud.jwt.TokenProvider;
+import zerobase.bud.jwt.dto.JwtDto;
 import zerobase.bud.repository.GithubInfoRepository;
 import zerobase.bud.repository.LevelRepository;
 import zerobase.bud.repository.MemberRepository;
@@ -64,11 +67,7 @@ public class LoginService {
 
         Member member = saveOrUpdate(userResponse.getBody(), OAuthAccessToken);
 
-        List<String> tokenInfo = new ArrayList<>();
-        tokenInfo.add("Bearer " + tokenProvider.generateToken(member.getUserId()).getAccessToken());
-        tokenInfo.add(member.getUserId());
-
-        return tokenInfo;
+        return setTokenInfo(member);
     }
 
     private Member saveOrUpdate(Map userResponse, String token) {
@@ -116,5 +115,25 @@ public class LoginService {
         githubInfo.setMember(member);
         githubInfoRepository.save(githubInfo);
         return member;
+    }
+
+    public List<String> tokenRefresh(Member member) {
+        if(!tokenProvider.validateToken(member.getRefreshToken())) {
+            throw new BudException(ErrorCode.INVALID_TOKEN);
+        }
+
+        return setTokenInfo(member);
+    }
+
+    private List<String> setTokenInfo(Member member) {
+        List<String> tokenInfo = new ArrayList<>();
+        JwtDto token = tokenProvider.generateToken(member.getUserId());
+        tokenInfo.add(token.getGrantType() + token.getAccessToken());
+        tokenInfo.add(member.getUserId());
+        tokenInfo.add(token.getAccessTokenExpiresTime().toString());
+        member.setRefreshToken(token.getRefreshToken());
+        memberRepository.save(member);
+
+        return tokenInfo;
     }
 }

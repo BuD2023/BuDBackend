@@ -31,7 +31,7 @@ public class TokenProvider {
     private String secretKey;
 
     private static final String KEY_ROLE = "role";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 60;
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60;
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;
     private final MemberRepository memberRepository;
     private final MemberService memberService;
@@ -93,8 +93,7 @@ public class TokenProvider {
         if (!StringUtils.hasText(token)) return false;
 
         Claims claims = this.parseClaims(token);
-//        return !claims.getExpiration().before(new Date());
-        return true;
+        return !claims.getExpiration().before(new Date());
     }
 
     private Claims parseClaims(String token) {
