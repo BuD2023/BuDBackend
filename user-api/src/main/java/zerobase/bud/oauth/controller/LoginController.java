@@ -30,7 +30,7 @@ public class LoginController {
                 .build();
     }
 
-    @PostMapping("/refresh")
+    @GetMapping("/refresh")
     public ResponseEntity<?> refreshToken(@AuthenticationPrincipal Member member) {
         List<String> tokenInfo = loginService.tokenRefresh(member);
 
