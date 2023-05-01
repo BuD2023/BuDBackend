@@ -2,6 +2,8 @@ package zerobase.bud.user.repository;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import zerobase.bud.domain.Member;
 import zerobase.bud.type.MemberStatus;
@@ -25,6 +27,11 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     List<Follow> findAllByTargetId(Long senderId);
 
-    void deleteAllByMember(Member member);
-    void deleteAllByTarget(Member target);
+    @Modifying
+    @Query(value = "delete from follow where member_id=:memberId", nativeQuery = true)
+    void deleteAllByMemberId(Long memberId);
+
+    @Modifying
+    @Query(value = "delete from follow where target_id=:targetId", nativeQuery = true)
+    void deleteAllByTargetId(Long targetId);
 }

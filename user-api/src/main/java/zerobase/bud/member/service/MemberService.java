@@ -90,8 +90,8 @@ public class MemberService implements UserDetailsService {
         String uuid;
         String withdrawMemberPrefix = "Deleted User ";
 
-        followRepository.deleteAllByTarget(member);
-        followRepository.deleteAllByMember(member);
+        followRepository.deleteAllByTargetId(member.getId());
+        followRepository.deleteAllByMemberId(member.getId());
 
         notificationInfoRepository.deleteByMemberId(member.getId());
 
