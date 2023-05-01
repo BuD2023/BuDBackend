@@ -25,13 +25,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(checkUrl(request, "/token") || checkUrl(request, "/refresh")) {
+        if(checkUrl(request, "/token")) {
             log.info("토큰이 필요하지 않은 요청입니다.");
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = this.resolveTokenFromRequest(request);
+        if(checkUrl(request, "/refresh") && StringUtils.hasText(token)) {
+            log.info("토큰이 필요하지 않은 요청입니다.");
+            Authentication auth = this.tokenProvider.getAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            return;
+        }
+
         if (StringUtils.hasText(token) && this.tokenProvider.validateToken(token)) {
             Authentication auth = this.tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(auth);
