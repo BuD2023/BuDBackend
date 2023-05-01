@@ -20,7 +20,7 @@ import java.util.List;
 public class LoginController {
     private final LoginService loginService;
     @PostMapping("/token")
-    public ResponseEntity<?> requestCode(@RequestParam(value = "code", required = false) String code) {
+    public ResponseEntity<?> requestCode(@RequestBody String code) {
         List<String> tokenInfo = loginService.codeToJwt(code);
         if(ObjectUtils.isEmpty(tokenInfo.get(0))) return ResponseEntity.ok(null);
 
