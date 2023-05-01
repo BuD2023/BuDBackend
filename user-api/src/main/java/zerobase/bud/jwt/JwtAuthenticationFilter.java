@@ -36,6 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("토큰이 필요하지 않은 요청입니다.");
             Authentication auth = this.tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(auth);
+            filterChain.doFilter(request, response);
             return;
         }
 
