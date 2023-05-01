@@ -87,7 +87,7 @@ public class LoginService {
             int randNum = random.nextInt(30) + 1;
             String imageUrl = awsS3Api.getImageUrl("profiles/basic/" + randNum + ".png");
 
-            member = Member.register(userId, userCode, nickname, token, imageUrl, level);
+            member = Member.register(userId, userCode, token, imageUrl, level);
             githubInfo = GithubInfo.builder()
                     .userId(userId)
                     .username(nickname)
