@@ -641,7 +641,7 @@ class QnaAnswerControllerTest {
                 );
         //when
         //then
-        this.mockMvc.perform(post("/posts/qna-answers/{postId}/comments", 23)
+        this.mockMvc.perform(post("/posts/qna-answers/{postId}/qna-comments", 23)
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -678,7 +678,7 @@ class QnaAnswerControllerTest {
                 );
         //when
         //then
-        this.mockMvc.perform(put("/posts/qna-answers/comments/{commentId}/modify", 3)
+        this.mockMvc.perform(put("/posts/qna-answers/qna-comments/{commentId}/modify", 3)
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -715,7 +715,7 @@ class QnaAnswerControllerTest {
                 );
         //when
         //then
-        this.mockMvc.perform(post("/posts/qna-answers/comments/{commentId}", 23)
+        this.mockMvc.perform(post("/posts/qna-answers/qna-comments/{commentId}", 23)
                         .header(HttpHeaders.AUTHORIZATION, TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
