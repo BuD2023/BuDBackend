@@ -139,6 +139,7 @@ public class LoginService {
         memberRepository.save(member);
 
         return tokenInfo;
+    }
 
     public Map<String, Boolean> isAddInfo(Member member) {
         return Map.of(IS_ADD_INFO, member.isAddInfoYn());
