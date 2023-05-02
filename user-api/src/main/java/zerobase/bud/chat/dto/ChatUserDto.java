@@ -42,6 +42,7 @@ public class ChatUserDto {
                 .userId(member.getUserId())
                 .nickName(member.getNickname())
                 .description(member.getIntroduceMessage())
+                .profileUrl(member.getProfileImg())
                 .isHost(isHost)
                 .build();
     }

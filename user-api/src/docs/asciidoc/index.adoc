@@ -149,6 +149,29 @@ include::{snippets}/chat-room-controller-test/success-chat-users-test/response-f
 |400|CHATROOM_NOT_FOUND|해당 채팅방 정보가 없습니다.
 |===
 
+=== 9. 채팅 참여 유저 프로필
+.request
+include::{snippets}/chat-room-controller-test/success-chat-users-test/http-request.adoc[]
+
+.request field
+|===
+|필드명|타입|필수여부|설명
+|chatroomId|Number|Y|path variable
+|userId|Number|Y|path variable
+|===
+
+.response
+include::{snippets}/chat-room-controller-test/success-chat-user-profile-test/http-response.adoc[]
+
+.response field
+include::{snippets}/chat-room-controller-test/success-chat-user-profile-test/response-fields.adoc[]
+
+.error response
+|===
+|status|ErrorCode|message
+|400|CHATROOM_NOT_FOUND|해당 채팅방 정보가 없습니다.
+|===
+
 
 === 8. 웹소켓 sub
 .STOMP
