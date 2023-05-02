@@ -81,7 +81,14 @@ public class LoginService {
 
         String userId = userResponse.get("login").toString();
         String userCode = userResponse.get("id").toString();
-        String nickname = userResponse.get("name").toString();
+        String nickname;
+
+        if(ObjectUtils.isEmpty(userResponse.get("name"))) {
+            nickname = userId;
+        }
+        else {
+            nickname = userResponse.get("name").toString();
+        }
         Level level =  levelRepository.findById(1L).get();
 
         if(optionalMember.isEmpty()) {
