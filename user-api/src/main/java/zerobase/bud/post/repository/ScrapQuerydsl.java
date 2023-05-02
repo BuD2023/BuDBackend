@@ -50,6 +50,7 @@ public class ScrapQuerydsl {
                         new QScrapDto(
                                 scrap.id,
                                 scrap.post,
+                                scrap.post.member.status,
                                 postLike.member.id.eq(memberId).as("isLike"),
                                 follow.member.id.eq(memberId).as("isFollow"),
                                 scrap.createdAt
