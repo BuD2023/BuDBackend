@@ -31,6 +31,7 @@ import zerobase.bud.post.service.PostService;
 import zerobase.bud.post.service.ScrapService;
 import zerobase.bud.post.type.PostStatus;
 import zerobase.bud.post.type.PostType;
+import zerobase.bud.type.MemberStatus;
 import zerobase.bud.user.controller.UserController;
 import zerobase.bud.user.dto.FollowDto;
 import zerobase.bud.user.dto.UserDto;
@@ -501,6 +502,10 @@ class UserControllerTest {
             list.add(SearchScrap.Response.builder()
                     .scrapId(1L)
                     .postId(1L)
+                    .postRegisterMemberNickname("엄태민")
+                    .postRegisterMemberId(1L)
+                    .postRegisterMemberProfileImg("imagePath")
+                    .postRegisterMemberStatus(MemberStatus.VERIFIED)
                     .title("제목")
                     .content("내용")
                     .commentCount(i)
@@ -549,6 +554,14 @@ class UserControllerTest {
                                                 .description("스크랩 고유 id"),
                                         fieldWithPath("content[].postId").type(JsonFieldType.NUMBER)
                                                 .description("스크랩한 게시글 고유 id"),
+                                        fieldWithPath("content[].postRegisterMemberNickname").type(JsonFieldType.STRING)
+                                            .description("스크랩한 게시글 작성자 닉네임"),
+                                        fieldWithPath("content[].postRegisterMemberId").type(JsonFieldType.NUMBER)
+                                            .description("스크랩한 게시글 작성자 고유 아이디"),
+                                        fieldWithPath("content[].postRegisterMemberProfileImg").type(JsonFieldType.STRING)
+                                            .description("스크랩한 게시글 작성자 프로필 url"),
+                                        fieldWithPath("content[].postRegisterMemberStatus").type(JsonFieldType.STRING)
+                                            .description("스크랩한 게시글 작성자 상태"),
                                         fieldWithPath("content[].title").type(
                                                         JsonFieldType.STRING)
                                                 .description("스크랩한 게시글 제목"),

@@ -12,13 +12,16 @@ import zerobase.bud.post.type.PostType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import zerobase.bud.type.MemberStatus;
 
 public class SearchScrap {
+
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class Response {
+
         private Long scrapId;
 
         private Long postId;
@@ -26,6 +29,7 @@ public class SearchScrap {
         private Long postRegisterMemberId;
         private String postRegisterMemberNickname;
         private String postRegisterMemberProfileImg;
+        private MemberStatus postRegisterMemberStatus;
 
         private String title;
 
@@ -57,27 +61,28 @@ public class SearchScrap {
             Post post = scrapDto.getPost();
 
             return Response.builder()
-                    .scrapId(scrapDto.getScrapId())
-                    .postId(post.getId())
-                    .postRegisterMemberId(post.getMember().getId())
-                    .postRegisterMemberNickname(post.getMember().getNickname())
-                    .postRegisterMemberProfileImg(post.getMember()
-                            .getProfileImg())
-                    .title(post.getTitle())
-                    .content(post.getContent())
-                    .imageUrls(imageUrls)
-                    .commentCount(post.getCommentCount())
-                    .likeCount(post.getLikeCount())
-                    .scrapCount(post.getScrapCount())
-                    .hitCount(post.getHitCount())
-                    .postStatus(post.getPostStatus())
-                    .postType(post.getPostType())
-                    .createdAt(post.getCreatedAt())
-                    .updatedAt(post.getUpdatedAt())
-                    .isLike(scrapDto.isPostLike())
-                    .isFollow(scrapDto.isPostRegisterMemberFollow())
-                    .scrapCreatedAt(scrapDto.getCreatedAt())
-                    .build();
+                .scrapId(scrapDto.getScrapId())
+                .postId(post.getId())
+                .postRegisterMemberId(post.getMember().getId())
+                .postRegisterMemberNickname(post.getMember().getNickname())
+                .postRegisterMemberProfileImg(post.getMember()
+                    .getProfileImg())
+                .postRegisterMemberStatus(scrapDto.getPostRegisterMemberStatus())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .imageUrls(imageUrls)
+                .commentCount(post.getCommentCount())
+                .likeCount(post.getLikeCount())
+                .scrapCount(post.getScrapCount())
+                .hitCount(post.getHitCount())
+                .postStatus(post.getPostStatus())
+                .postType(post.getPostType())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .isLike(scrapDto.isPostLike())
+                .isFollow(scrapDto.isPostRegisterMemberFollow())
+                .scrapCreatedAt(scrapDto.getCreatedAt())
+                .build();
         }
     }
 }
