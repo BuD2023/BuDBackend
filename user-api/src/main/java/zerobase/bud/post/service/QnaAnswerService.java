@@ -91,6 +91,24 @@ public class QnaAnswerService {
         return member.getUserId();
     }
 
+    private void validateCreateQnaAnswer(Post post , Member member) {
+        if(Objects.equals(post.getMember().getId(), member.getId())){
+            throw new BudException(CANNOT_ANSWER_YOURSELF);
+        }
+
+        if (!Objects.equals(post.getPostType(), PostType.QNA)) {
+            throw new BudException(INVALID_POST_TYPE_FOR_ANSWER);
+        }
+
+        if (!Objects.equals(post.getPostStatus(), PostStatus.ACTIVE)) {
+            throw new BudException(INVALID_POST_STATUS);
+        }
+
+        if( Objects.nonNull(post.getQnaAnswerPin())){
+            throw new BudException(ADD_IMPOSSIBLE_PINNED_ANSWER);
+        }
+    }
+
     @Transactional
     public Long updateQnaAnswer(
         Long qnaAnswerId, List<MultipartFile> images, UpdateQnaAnswer.Request request , Member member
@@ -108,26 +126,6 @@ public class QnaAnswerService {
         saveImages(images, qnaAnswer);
 
         return qnaAnswerId;
-    }
-
-    private void saveImages(List<MultipartFile> images, QnaAnswer qnaAnswer) {
-        if (Objects.nonNull(images)) {
-            for (MultipartFile image : images) {
-                String imagePath = awsS3Api.uploadImage(image, QNA_ANSWERS);
-                qnaAnswerImageRepository.save(QnaAnswerImage.of(qnaAnswer, imagePath));
-            }
-        }
-    }
-
-    private void deleteImages(QnaAnswer qnaAnswer) {
-        deleteImagesFromS3(qnaAnswer);
-
-        qnaAnswerImageRepository.deleteAllByQnaAnswerId(qnaAnswer.getId());
-    }
-
-    private void deleteImagesFromS3(QnaAnswer qnaAnswer) {
-        qnaAnswer.getQnaAnswerImages()
-                .forEach(qnaAnswerImage -> awsS3Api.deleteImage(qnaAnswerImage.getImagePath()));
     }
 
     private void validateUpdateQnaAnswer(
@@ -149,22 +147,24 @@ public class QnaAnswerService {
             });
     }
 
-    private void validateCreateQnaAnswer(Post post , Member member) {
-        if(Objects.equals(post.getMember().getId(), member.getId())){
-            throw new BudException(CANNOT_ANSWER_YOURSELF);
+    private void saveImages(List<MultipartFile> images, QnaAnswer qnaAnswer) {
+        if (Objects.nonNull(images)) {
+            for (MultipartFile image : images) {
+                String imagePath = awsS3Api.uploadImage(image, QNA_ANSWERS);
+                qnaAnswerImageRepository.save(QnaAnswerImage.of(qnaAnswer, imagePath));
+            }
         }
+    }
 
-        if (!Objects.equals(post.getPostType(), PostType.QNA)) {
-            throw new BudException(INVALID_POST_TYPE_FOR_ANSWER);
-        }
+    private void deleteImages(QnaAnswer qnaAnswer) {
+        deleteImagesFromS3(qnaAnswer);
 
-        if (!Objects.equals(post.getPostStatus(), PostStatus.ACTIVE)) {
-            throw new BudException(INVALID_POST_STATUS);
-        }
+        qnaAnswerImageRepository.deleteAllByQnaAnswerId(qnaAnswer.getId());
+    }
 
-        if( Objects.nonNull(post.getQnaAnswerPin())){
-            throw new BudException(ADD_IMPOSSIBLE_PINNED_ANSWER);
-        }
+    private void deleteImagesFromS3(QnaAnswer qnaAnswer) {
+        qnaAnswer.getQnaAnswerImages()
+                .forEach(qnaAnswerImage -> awsS3Api.deleteImage(qnaAnswerImage.getImagePath()));
     }
 
     public Page<SearchQnaAnswer.Response> searchQnaAnswers(Member member,
