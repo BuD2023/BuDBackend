@@ -11,7 +11,6 @@ import zerobase.bud.chat.service.ChatRoomService;
 import zerobase.bud.domain.Member;
 
 import javax.validation.Valid;
-import java.net.URI;
 import java.util.List;
 
 @Slf4j
@@ -70,6 +69,12 @@ public class ChatRoomController {
     private ResponseEntity<List<ChatUserDto>> chatUsers(@PathVariable Long chatroomId,
                                                         @AuthenticationPrincipal Member member) {
         return ResponseEntity.ok(chatRoomService.readChatUsers(chatroomId, member));
+    }
+
+    @GetMapping("/{chatroomId}/users/{userId}")
+    private ResponseEntity<ChatUserDto> chatUsers(@PathVariable Long chatroomId,
+                                                  @PathVariable Long userId) {
+        return ResponseEntity.ok(chatRoomService.chatUserProfile(chatroomId, userId));
     }
 
     @GetMapping("/status")
