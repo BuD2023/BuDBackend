@@ -160,6 +160,7 @@ public class ChatRoomService {
         return setOperations.members(CHATROOM + chatroomId);
     }
 
+    @Transactional
     public ChatUserDto chatUserProfile(Long chatroomId, Long userId) {
         chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
