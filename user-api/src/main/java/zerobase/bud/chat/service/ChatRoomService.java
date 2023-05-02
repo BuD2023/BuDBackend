@@ -162,7 +162,7 @@ public class ChatRoomService {
 
     @Transactional
     public ChatUserDto chatUserProfile(Long chatroomId, Long userId) {
-        chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
+        ChatRoom chatRoom = chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
                 .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
 
         Member member = memberRepository.findById(userId)
@@ -172,6 +172,6 @@ public class ChatRoomService {
             throw new ChatRoomException(MEMBER_NOT_FOUND_IN_CHATROOM);
         }
 
-        return ChatUserDto.of(member, true);
+        return ChatUserDto.of(member, Objects.equals(chatRoom.getMember().getId(), userId));
     }
 }
