@@ -115,9 +115,10 @@ public class ChatRoomService {
 
     public ChatRoomStatusDto chatRoomsStatus() {
         HashOperations<String, String, ChatRoomSession> hashOperations = redisTemplate.opsForHash();
+        long numberOfChatRoom = chatRoomRepository.countByStatus(ACTIVE);
         return ChatRoomStatusDto.of(
-                chatRoomRepository.countByStatus(ACTIVE),
-                hashOperations.size(SESSION));
+                numberOfChatRoom,
+                numberOfChatRoom == 0 ? 0 : hashOperations.size(SESSION));
     }
 
 
@@ -157,5 +158,19 @@ public class ChatRoomService {
     private Set<String> getUserList(Long chatroomId) {
         setOperations = redisTemplate.opsForSet();
         return setOperations.members(CHATROOM + chatroomId);
+    }
+
+    public ChatUserDto chatUserProfile(Long chatroomId, Long userId) {
+        chatRoomRepository.findByIdAndStatus(chatroomId, ACTIVE)
+                .orElseThrow(() -> new ChatRoomException(CHATROOM_NOT_FOUND));
+
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
+
+        if (!getUserList(chatroomId).contains(member.getUserId())) {
+            throw new ChatRoomException(MEMBER_NOT_FOUND_IN_CHATROOM);
+        }
+
+        return ChatUserDto.of(member, true);
     }
 }

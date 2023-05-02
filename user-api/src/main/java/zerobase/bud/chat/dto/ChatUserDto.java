@@ -20,6 +20,8 @@ public class ChatUserDto {
     private Boolean isReader;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isFollowing;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean isHost;
     private String profileUrl;
 
     public static ChatUserDto of(Member member, boolean isReader, boolean isFollowing){
@@ -31,6 +33,16 @@ public class ChatUserDto {
                 .isReader(isReader)
                 .isFollowing(isFollowing)
                 .profileUrl(member.getProfileImg())
+                .build();
+    }
+
+    public static ChatUserDto of(Member member, boolean isHost){
+        return ChatUserDto.builder()
+                .id(member.getId())
+                .userId(member.getUserId())
+                .nickName(member.getNickname())
+                .description(member.getIntroduceMessage())
+                .isHost(isHost)
                 .build();
     }
 }
