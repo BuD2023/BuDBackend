@@ -533,5 +533,48 @@ class ChatRoomControllerTest {
                 );
     }
 
+    @Test
+    @DisplayName("채팅방 유저 프로필 불러오기 성공")
+    void successChatUserProfileTest() throws Exception {
+        //given
+        ChatUserDto dto = ChatUserDto.builder()
+                .nickName("하이")
+                .id(1L)
+                .userId("sddff")
+                .profileUrl("dddffk.jpg")
+                .isHost(false)
+                .description("안녕하세요 어저구")
+                .build();
+
+        given(chatRoomService.chatUserProfile(anyLong(), anyLong())).willReturn(dto);
+        //when
+        //then
+        this.mockMvc.perform(get("/chatrooms/{chatroomId}/users/{userId}",1L,2L)
+                        .header(HttpHeaders.AUTHORIZATION, token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+
+                .andDo(
+                        document("{class-name}/{method-name}",
+                                preprocessRequest(modifyUris().scheme(scheme).host(host).port(port), prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                relaxedResponseFields(
+                                        fieldWithPath("userId").type(JsonFieldType.STRING)
+                                                .description("깃허브 유저 아이디"),
+                                        fieldWithPath("id").type(JsonFieldType.NUMBER)
+                                                .description("회원 고유값"),
+                                        fieldWithPath("description").type(JsonFieldType.STRING)
+                                                .description("한줄 소개"),
+                                        fieldWithPath("nickName").type(JsonFieldType.STRING)
+                                                .description("회원의 닉네임"),
+                                        fieldWithPath("profileUrl").type(JsonFieldType.STRING)
+                                                .description("회원의 프로필 url"),
+                                        fieldWithPath("isHost").type(JsonFieldType.BOOLEAN)
+                                                .description("읽는 회원이 채팅방 호스트인지")
+                                )
+                        )
+                );
+    }
+
 
 }

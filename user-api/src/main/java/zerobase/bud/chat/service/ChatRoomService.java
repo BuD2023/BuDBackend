@@ -168,10 +168,6 @@ public class ChatRoomService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_REGISTERED_MEMBER));
 
-        if (!getUserList(chatroomId).contains(member.getUserId())) {
-            throw new ChatRoomException(MEMBER_NOT_FOUND_IN_CHATROOM);
-        }
-
         return ChatUserDto.of(member, Objects.equals(chatRoom.getMember().getId(), userId));
     }
 }

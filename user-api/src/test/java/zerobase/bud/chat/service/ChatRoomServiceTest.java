@@ -540,4 +540,102 @@ class ChatRoomServiceTest {
         //then
         assertEquals(ErrorCode.CHATROOM_NOT_FOUND, exception.getErrorCode());
     }
+
+    @Test
+    @DisplayName("채팅방 유저 프로필 조회 성공 - 호스트의 프로필을 조회")
+    void successChatUserProfileTest() {
+        //given
+        Member host = Member.builder()
+                .id(2L)
+                .userId("thefn")
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .build();
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .id(1L)
+                .title("임의의타이틀")
+                .description("임의의 첫번째 설명")
+                .hashTag("#해시태그#해시#")
+                .status(ChatRoomStatus.ACTIVE)
+                .member(host)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.of(host));
+
+        //when
+        ArgumentCaptor<ChatRoom> captor = ArgumentCaptor.forClass(ChatRoom.class);
+        ChatUserDto dto = chatRoomService.chatUserProfile(1L, 2L);
+        //then
+        assertEquals(dto.getIsHost(), true);
+    }
+
+    @Test
+    @DisplayName("채팅방 유저 프로필 조회 성공 - 호스트가 아닌 유저의 프로필을 조회")
+    void successChatUserProfileTestWhenChatUserIsNotHost() {
+        //given
+        ChatRoom chatRoom = ChatRoom.builder()
+                .id(1L)
+                .title("임의의타이틀")
+                .description("임의의 첫번째 설명")
+                .hashTag("#해시태그#해시#")
+                .status(ChatRoomStatus.ACTIVE)
+                .member(member)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Member chatUser = Member.builder()
+                .id(2L)
+                .userId("thefn")
+                .createdAt(LocalDateTime.now())
+                .status(MemberStatus.VERIFIED)
+                .build();
+
+        given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.of(chatUser));
+
+        //when
+        ChatUserDto dto = chatRoomService.chatUserProfile(1L, 2L);
+        //then
+        assertEquals(dto.getIsHost(), false);
+    }
+
+    @Test
+    @DisplayName("호스트 변경 실패 - 채팅방 없음")
+    void failChatUserProfileTest_ChatRoomNotFound() {
+        //given
+        given(chatRoomRepository.findByIdAndStatus(anyLong(), any()))
+                .willReturn(Optional.empty());
+        //when
+        ChatRoomException exception = assertThrows(ChatRoomException.class,
+                () -> chatRoomService.chatUserProfile(1L, 2L));
+        //then
+        assertEquals(ErrorCode.CHATROOM_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("채팅방 유저 프로필 조회 성공 - 해당 유저 찾을 수 없음")
+    void failChatUserProfileTest_MemberNotFound() {
+        //given
+        ChatRoom chatRoom = ChatRoom.builder()
+                .id(1L)
+                .title("임의의타이틀")
+                .description("임의의 첫번째 설명")
+                .hashTag("#해시태그#해시#")
+                .status(ChatRoomStatus.ACTIVE)
+                .member(member)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(chatRoomRepository.findByIdAndStatus(any(), any())).willReturn(Optional.of(chatRoom));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        MemberException exception = assertThrows(MemberException.class,
+                () -> chatRoomService.chatUserProfile(1L, 2L));
+        //then
+        assertEquals(ErrorCode.NOT_REGISTERED_MEMBER, exception.getErrorCode());
+    }
+
 }
