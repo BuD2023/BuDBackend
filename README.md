@@ -13,10 +13,10 @@
 🎄 우리들의 좌충우돌 개발 이야기, 현업 이야기를 함께 나누고 공유해보아요!
 
 # 프로젝트 아키텍쳐
-<img src = ""/>
+<img src = "images/Architecture.png"/>
 
 # ERD
-<img src = ""/>
+<img src = "images/ERD.png"/>
 
 # 주요 기능
 1. 검색 및 필터 기능
