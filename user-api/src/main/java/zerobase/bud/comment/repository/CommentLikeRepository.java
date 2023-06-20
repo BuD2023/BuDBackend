@@ -11,5 +11,5 @@ import java.util.Optional;
 @Repository
 public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> {
     Optional<CommentLike> findByCommentAndMember(Comment comment, Member member);
-    boolean existsByCommentAndAndMember(Comment comment, Member member);
+    boolean existsByCommentAndMember(Comment comment, Member member);
 }

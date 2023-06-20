@@ -610,7 +610,7 @@ class CommentServiceTest {
         given(postRepository.findByIdAndPostStatus(anyLong(), any()))
                 .willReturn(Optional.of(post));
 
-        given(commentLikeRepository.existsByCommentAndAndMember(any(), any()))
+        given(commentLikeRepository.existsByCommentAndMember(any(), any()))
                 .willReturn(true);
 
         given(commentRepository
@@ -698,7 +698,7 @@ class CommentServiceTest {
         given(postRepository.findByIdAndPostStatus(anyLong(), any()))
                 .willReturn(Optional.of(post));
 
-        given(commentLikeRepository.existsByCommentAndAndMember(any(), any()))
+        given(commentLikeRepository.existsByCommentAndMember(any(), any()))
                 .willReturn(true);
 
         given(commentRepository

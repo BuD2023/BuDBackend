@@ -205,13 +205,13 @@ public class CommentService {
     private CommentDto toCommentDto(Member member, Comment comment, boolean isPinned) {
         return CommentDto.of(comment,
                 Objects.equals(member.getId(), comment.getMember().getId()),
-                commentLikeRepository.existsByCommentAndAndMember(comment, member),
+                commentLikeRepository.existsByCommentAndMember(comment, member),
                 isPinned,
                 comment.getReComments().stream()
                         .map(reComment ->
                                 CommentDto.of(reComment,
                                         Objects.equals(member.getId(), reComment.getMember().getId()),
-                                        commentLikeRepository.existsByCommentAndAndMember(reComment, member))
+                                        commentLikeRepository.existsByCommentAndMember(reComment, member))
                         ).collect(Collectors.toList())
         );
     }
